@@ -12,6 +12,7 @@ use App\Models\Stock;
 use App\Models\StockTransfer;
 use App\Models\StockTransferItem;
 use App\Models\User;
+use App\Models\Vendor;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 
@@ -55,20 +56,33 @@ class DatabaseSeeder extends Seeder
             'location_id' => $branch2->id,
         ]);
 
+        // ── Vendors ─────────────────────────────────────────────────
+        $vendors = collect([
+            ['name' => 'Nasty Juice Indonesia', 'contact_person' => 'Andi'],
+            ['name' => 'Crush Vape Distributor', 'contact_person' => 'Bambang'],
+            ['name' => 'Zap Juice Official', 'contact_person' => 'Cindy'],
+            ['name' => 'Pachamama Asia', 'contact_person' => 'Dewi'],
+            ['name' => 'Voopoo Indo', 'contact_person' => 'Eko'],
+            ['name' => 'Uwell Distributor', 'contact_person' => 'Fajar'],
+            ['name' => 'Xros Official', 'contact_person' => 'Gilang'],
+            ['name' => 'Aksesoris Vape Makmur', 'contact_person' => 'Hendra'],
+        ])->map(fn ($data) => Vendor::create($data));
+
         // ── Products ───────────────────────────────────────────────
         $products = collect([
-            ['sku' => 'LIQ001', 'name' => 'Nasty Juice Fruity 30ml', 'unit' => 'bottle', 'purchase_price' => 35000, 'selling_price' => 55000],
-            ['sku' => 'LIQ002', 'name' => 'Crush Frozen Mint 30ml', 'unit' => 'bottle', 'purchase_price' => 35000, 'selling_price' => 55000],
-            ['sku' => 'LIQ003', 'name' => 'Zap Juice Tobacco Gold 60ml', 'unit' => 'bottle', 'purchase_price' => 60000, 'selling_price' => 95000],
-            ['sku' => 'LIQ004', 'name' => 'Pachamama Strawberry 30ml', 'unit' => 'bottle', 'purchase_price' => 40000, 'selling_price' => 65000],
-            ['sku' => 'COL001', 'name' => 'Voopoo PnP Coils 0.4ohm', 'unit' => 'pack', 'purchase_price' => 40000, 'selling_price' => 65000],
-            ['sku' => 'COL002', 'name' => 'Voopoo PnP Coils 0.8ohm', 'unit' => 'pack', 'purchase_price' => 40000, 'selling_price' => 65000],
-            ['sku' => 'COL003', 'name' => 'Uwell Caliburn Coils', 'unit' => 'pack', 'purchase_price' => 35000, 'selling_price' => 55000],
-            ['sku' => 'POD001', 'name' => 'Voopoo Drag Nano 2', 'unit' => 'pcs', 'purchase_price' => 180000, 'selling_price' => 275000],
-            ['sku' => 'POD002', 'name' => 'Uwell Caliburn G2', 'unit' => 'pcs', 'purchase_price' => 220000, 'selling_price' => 340000],
-            ['sku' => 'POD003', 'name' => 'Xros 3 Mini', 'unit' => 'pcs', 'purchase_price' => 150000, 'selling_price' => 235000],
-            ['sku' => 'ACC001', 'name' => 'USB-C Charging Cable', 'unit' => 'pcs', 'purchase_price' => 15000, 'selling_price' => 25000],
-            ['sku' => 'ACC002', 'name' => 'Carrying Case (Small)', 'unit' => 'pcs', 'purchase_price' => 20000, 'selling_price' => 35000],
+            ['vendor_id' => $vendors[0]->id, 'name' => 'Nasty Juice Fruity 30ml', 'purchase_price' => 35000, 'reseller_price' => 45000, 'store_price' => 55000],
+            ['vendor_id' => $vendors[0]->id, 'name' => 'Nasty Juice Grape 30ml', 'purchase_price' => 35000, 'reseller_price' => 45000, 'store_price' => 55000],
+            ['vendor_id' => $vendors[1]->id, 'name' => 'Crush Frozen Mint 30ml', 'purchase_price' => 35000, 'reseller_price' => 45000, 'store_price' => 55000],
+            ['vendor_id' => $vendors[2]->id, 'name' => 'Zap Juice Tobacco Gold 60ml', 'purchase_price' => 60000, 'reseller_price' => 75000, 'store_price' => 95000],
+            ['vendor_id' => $vendors[3]->id, 'name' => 'Pachamama Strawberry 30ml', 'purchase_price' => 40000, 'reseller_price' => 50000, 'store_price' => 65000],
+            ['vendor_id' => $vendors[4]->id, 'name' => 'Voopoo PnP Coils 0.4ohm', 'purchase_price' => 40000, 'reseller_price' => 50000, 'store_price' => 65000],
+            ['vendor_id' => $vendors[4]->id, 'name' => 'Voopoo PnP Coils 0.8ohm', 'purchase_price' => 40000, 'reseller_price' => 50000, 'store_price' => 65000],
+            ['vendor_id' => $vendors[5]->id, 'name' => 'Uwell Caliburn Coils', 'purchase_price' => 35000, 'reseller_price' => 45000, 'store_price' => 55000],
+            ['vendor_id' => $vendors[4]->id, 'name' => 'Voopoo Drag Nano 2', 'purchase_price' => 180000, 'reseller_price' => 220000, 'store_price' => 275000],
+            ['vendor_id' => $vendors[5]->id, 'name' => 'Uwell Caliburn G2', 'purchase_price' => 220000, 'reseller_price' => 270000, 'store_price' => 340000],
+            ['vendor_id' => $vendors[6]->id, 'name' => 'Xros 3 Mini', 'purchase_price' => 150000, 'reseller_price' => 190000, 'store_price' => 235000],
+            ['vendor_id' => $vendors[7]->id, 'name' => 'USB-C Charging Cable', 'purchase_price' => 15000, 'reseller_price' => 20000, 'store_price' => 25000],
+            ['vendor_id' => $vendors[7]->id, 'name' => 'Carrying Case (Small)', 'purchase_price' => 20000, 'reseller_price' => 28000, 'store_price' => 35000],
         ])->map(fn ($data) => Product::create($data));
 
         // ── Stock at warehouse ─────────────────────────────────────
@@ -126,7 +140,7 @@ class DatabaseSeeder extends Seeder
             for ($i = 0; $i < rand(1, 3); $i++) {
                 $product = $products->random();
                 $qty = rand(1, 2);
-                $subtotal = $product->selling_price * $qty;
+                $subtotal = $product->store_price * $qty;
 
                 try {
                     $sale = app(CreateSale::class)->execute(

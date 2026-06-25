@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Product;
+use App\Models\Vendor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -13,12 +14,11 @@ class ProductFactory extends Factory
     public function definition(): array
     {
         return [
-            'sku' => strtoupper(fake()->lexify('???').fake()->numerify('###')),
+            'vendor_id' => Vendor::factory(),
             'name' => fake()->words(3, true),
-            'unit' => fake()->randomElement(['pcs', 'bottle', 'pack']),
             'purchase_price' => fake()->randomFloat(2, 10, 100),
-            'selling_price' => fake()->randomFloat(2, 15, 150),
-            'status' => 'active',
+            'reseller_price' => fake()->randomFloat(2, 15, 120),
+            'store_price' => fake()->randomFloat(2, 20, 150),
         ];
     }
 }

@@ -2,11 +2,9 @@
 
 use Livewire\Component;
 
-new class extends Component
-{
+new class extends Component {
     //
 };
-
 ?>
 
 <div class="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#020617]">

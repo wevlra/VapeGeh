@@ -31,7 +31,7 @@ it('creates a sale with items and deducts stock', function () {
         'role' => 'staff',
         'location_id' => $location->id,
     ]);
-    $product = Product::factory()->create(['selling_price' => 25000]);
+    $product = Product::factory()->create(['store_price' => 25000]);
 
     Stock::factory()->create([
         'product_id' => $product->id,
@@ -78,7 +78,7 @@ it('throws exception when stock is insufficient for sale', function () {
         'role' => 'staff',
         'location_id' => $location->id,
     ]);
-    $product = Product::factory()->create(['selling_price' => 10000]);
+    $product = Product::factory()->create(['store_price' => 10000]);
 
     Stock::factory()->create([
         'product_id' => $product->id,
@@ -105,7 +105,7 @@ it('generates an invoice number automatically', function () {
         'role' => 'staff',
         'location_id' => $location->id,
     ]);
-    $product = Product::factory()->create(['selling_price' => 10000]);
+    $product = Product::factory()->create(['store_price' => 10000]);
 
     Stock::factory()->create([
         'product_id' => $product->id,
@@ -140,7 +140,7 @@ it('relates sale to user and location', function () {
         'role' => 'staff',
         'location_id' => $location->id,
     ]);
-    $product = Product::factory()->create(['selling_price' => 10000]);
+    $product = Product::factory()->create(['store_price' => 10000]);
 
     Stock::factory()->create([
         'product_id' => $product->id,

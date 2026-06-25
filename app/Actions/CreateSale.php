@@ -40,13 +40,13 @@ class CreateSale
                     );
                 }
 
-                $subtotal = $product->selling_price * $item['qty'];
+                $subtotal = $product->store_price * $item['qty'];
                 $total += $subtotal;
 
                 $saleItems[] = [
                     'product_id' => $product->id,
                     'qty' => $item['qty'],
-                    'price' => $product->selling_price,
+                    'price' => $product->store_price,
                     'subtotal' => $subtotal,
                 ];
             }

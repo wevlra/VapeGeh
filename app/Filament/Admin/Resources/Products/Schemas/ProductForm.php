@@ -12,33 +12,44 @@ class ProductForm
     {
         return $schema
             ->components([
-                TextInput::make('sku')
-                    ->required()
-                    ->maxLength(50)
-                    ->unique(ignoreRecord: true),
                 TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                TextInput::make('unit')
-                    ->required()
-                    ->maxLength(50),
+                Select::make('vendor_id')
+                    ->label('Vendor')
+                    ->relationship('vendor', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->createOptionForm([
+                        TextInput::make('name')
+                            ->required()
+                            ->maxLength(255),
+                        TextInput::make('contact_person')
+                            ->maxLength(255),
+                        TextInput::make('phone')
+                            ->maxLength(50),
+                        TextInput::make('email')
+                            ->email()
+                            ->maxLength(255),
+                        TextInput::make('address')
+                            ->maxLength(255),
+                    ])
+                    ->required(),
                 TextInput::make('purchase_price')
                     ->required()
                     ->numeric()
                     ->minValue(0)
                     ->prefix('Rp'),
-                TextInput::make('selling_price')
+                TextInput::make('reseller_price')
                     ->required()
                     ->numeric()
                     ->minValue(0)
                     ->prefix('Rp'),
-                Select::make('status')
+                TextInput::make('store_price')
                     ->required()
-                    ->options([
-                        'active' => 'Active',
-                        'inactive' => 'Inactive',
-                    ])
-                    ->default('active'),
+                    ->numeric()
+                    ->minValue(0)
+                    ->prefix('Rp'),
             ]);
     }
 }

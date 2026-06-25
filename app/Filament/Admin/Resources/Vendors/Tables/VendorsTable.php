@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Admin\Resources\Products\Tables;
+namespace App\Filament\Admin\Resources\Vendors\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -9,28 +9,24 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class ProductsTable
+class VendorsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('sku')
-                    ->searchable()
-                    ->sortable(),
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('vendor.name')
-                    ->label('Vendor')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('purchase_price')
-                    ->money('IDR'),
-                TextColumn::make('reseller_price')
-                    ->money('IDR'),
-                TextColumn::make('store_price')
-                    ->money('IDR'),
+                TextColumn::make('contact_person')
+                    ->searchable(),
+                TextColumn::make('phone')
+                    ->searchable(),
+                TextColumn::make('email')
+                    ->searchable(),
+                TextColumn::make('products_count')
+                    ->counts('products')
+                    ->label('Products'),
             ])
             ->filters([])
             ->recordActions([

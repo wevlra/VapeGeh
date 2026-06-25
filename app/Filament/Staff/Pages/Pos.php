@@ -8,6 +8,7 @@ use App\Models\Stock;
 use App\Models\StockMovement;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -20,13 +21,12 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 class Pos extends Page implements HasTable
 {
+    use InteractsWithActions;
     use InteractsWithTable;
-    use \Filament\Actions\Concerns\InteractsWithActions;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
 
@@ -49,7 +49,7 @@ class Pos extends Page implements HasTable
         return $table
             ->query(
                 Product::query()
-                    ->where('status', 'active')
+                    ->whereHas('vendor')
                     ->whereHas('stocks', fn ($q) => $q
                         ->where('location_id', $locationId)
                         ->where('qty', '>', 0),
@@ -73,7 +73,7 @@ class Pos extends Page implements HasTable
                         default => 'success',
                     })
                     ->getStateUsing(fn (Product $record): int => $record->stocks->first()?->qty ?? 0),
-                TextColumn::make('selling_price')
+                TextColumn::make('store_price')
                     ->label('Price')
                     ->formatStateUsing(fn ($state): string => 'Rp '.number_format((float) $state, 0, ',', '.'))
                     ->sortable(),
@@ -104,8 +104,8 @@ class Pos extends Page implements HasTable
                 return null;
             }
             $item['name'] = $product->name;
-            $item['price'] = $product->selling_price;
-            $item['subtotal'] = $product->selling_price * $item['qty'];
+            $item['price'] = $product->store_price;
+            $item['subtotal'] = $product->store_price * $item['qty'];
 
             return $item;
         })->filter()->values()->toArray();
@@ -247,7 +247,7 @@ class Pos extends Page implements HasTable
                 $sale->items()->create([
                     'product_id' => $item['product_id'],
                     'qty' => $item['qty'],
-                    'price' => $product->selling_price,
+                    'price' => $product->store_price,
                     'subtotal' => $item['subtotal'],
                 ]);
 

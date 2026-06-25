@@ -10,7 +10,7 @@ uses(RefreshDatabase::class);
 
 it('has the correct product columns', function () {
     expect(Schema::hasColumns('products', [
-        'sku', 'name', 'unit', 'purchase_price', 'selling_price', 'status',
+        'sku', 'name', 'purchase_price', 'reseller_price', 'store_price',
     ]))->toBeTrue();
 });
 
@@ -42,7 +42,7 @@ it('creates a product with factory', function () {
     expect($product)->toBeInstanceOf(Product::class)
         ->and($product->sku)->not->toBeEmpty()
         ->and($product->name)->not->toBeEmpty()
-        ->and($product->selling_price)->toBeGreaterThan(0);
+        ->and($product->store_price)->toBeGreaterThan(0);
 });
 
 it('creates stock for a product at a location', function () {
