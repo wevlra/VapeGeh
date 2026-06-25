@@ -13,6 +13,8 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Hammadzafar05\MobileBottomNav\MobileBottomNav;
+use Hammadzafar05\MobileBottomNav\MobileBottomNavItem;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -28,8 +30,29 @@ class StaffPanelProvider extends PanelProvider
             ->id('staff')
             ->path('staff')
             ->login()
+            ->profile()
             ->colors([
                 'primary' => Color::Amber,
+            ])
+            ->plugins([
+                MobileBottomNav::make()
+                    ->items([
+                        MobileBottomNavItem::make('Dashboard')
+                            ->icon('heroicon-o-home')
+                            ->activeIcon('heroicon-s-home')
+                            ->url('/staff')
+                            ->isActive(fn () => request()->is('staff')),
+                        MobileBottomNavItem::make('Products')
+                            ->icon('heroicon-o-archive-box')
+                            ->activeIcon('heroicon-s-archive-box')
+                            ->url('/staff/products')
+                            ->isActive(fn () => request()->is('staff/products*')),
+                        MobileBottomNavItem::make('Sales')
+                            ->icon('heroicon-o-banknotes')
+                            ->activeIcon('heroicon-s-banknotes')
+                            ->url('/staff/sales')
+                            ->isActive(fn () => request()->is('staff/sales*')),
+                    ]),
             ])
             ->discoverResources(in: app_path('Filament/Staff/Resources'), for: 'App\Filament\Staff\Resources')
             ->discoverPages(in: app_path('Filament/Staff/Pages'), for: 'App\Filament\Staff\Pages')

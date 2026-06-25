@@ -14,6 +14,8 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Hammadzafar05\MobileBottomNav\MobileBottomNav;
+use Hammadzafar05\MobileBottomNav\MobileBottomNavItem;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -30,8 +32,29 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->profile()
             ->colors([
                 'primary' => Color::Amber,
+            ])
+            ->plugins([
+                MobileBottomNav::make()
+                    ->items([
+                        MobileBottomNavItem::make('Dashboard')
+                            ->icon('heroicon-o-home')
+                            ->activeIcon('heroicon-s-home')
+                            ->url('/admin')
+                            ->isActive(fn () => request()->is('admin')),
+                        MobileBottomNavItem::make('Products')
+                            ->icon('heroicon-o-archive-box')
+                            ->activeIcon('heroicon-s-archive-box')
+                            ->url('/admin/products')
+                            ->isActive(fn () => request()->is('admin/products*')),
+                        MobileBottomNavItem::make('Sales')
+                            ->icon('heroicon-o-banknotes')
+                            ->activeIcon('heroicon-s-banknotes')
+                            ->url('/admin/sales')
+                            ->isActive(fn () => request()->is('admin/sales*')),
+                    ]),
             ])
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\Filament\Admin\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\Filament\Admin\Pages')
