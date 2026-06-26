@@ -5,7 +5,9 @@ namespace App\Filament\Admin\Resources\Vendors;
 use App\Filament\Admin\Resources\Vendors\Pages\CreateVendor;
 use App\Filament\Admin\Resources\Vendors\Pages\EditVendor;
 use App\Filament\Admin\Resources\Vendors\Pages\ListVendors;
+use App\Filament\Admin\Resources\Vendors\Pages\ViewVendor;
 use App\Filament\Admin\Resources\Vendors\Schemas\VendorForm;
+use App\Filament\Admin\Resources\Vendors\Schemas\VendorInfolist;
 use App\Filament\Admin\Resources\Vendors\Tables\VendorsTable;
 use App\Models\Vendor;
 use BackedEnum;
@@ -39,12 +41,18 @@ class VendorResource extends Resource
         ];
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return VendorInfolist::configure($schema);
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => ListVendors::route('/'),
             'create' => CreateVendor::route('/create'),
             'edit' => EditVendor::route('/{record}/edit'),
+            'view' => ViewVendor::route('/{record}'),
         ];
     }
 

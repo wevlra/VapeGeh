@@ -2,6 +2,8 @@
 
 namespace App\Filament\Admin\Resources\Sales\Tables;
 
+use App\Filament\Admin\Resources\Sales\SaleResource;
+use App\Models\Sale;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -11,6 +13,7 @@ class SalesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->recordUrl(fn (Sale $record): string => SaleResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('invoice_number')
                     ->searchable()

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Admin\Resources\Incomes\Tables;
 
+use App\Filament\Admin\Resources\Incomes\IncomeResource;
+use App\Models\Income;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -14,6 +16,7 @@ class IncomesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->recordUrl(fn (Income $record): string => IncomeResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('location.name')
                     ->label('Location')

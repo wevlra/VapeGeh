@@ -2,9 +2,8 @@
 
 namespace App\Filament\Admin\Resources\Stocks\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
+use App\Filament\Admin\Resources\Stocks\StockResource;
+use App\Models\Stock;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -15,6 +14,7 @@ class StocksTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->recordUrl(fn (Stock $record): string => StockResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('product.name')
                     ->searchable()
@@ -38,12 +38,7 @@ class StocksTable
             ])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make(),
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->toolbarActions([]);
     }
 }

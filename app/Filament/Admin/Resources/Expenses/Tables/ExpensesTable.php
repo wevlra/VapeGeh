@@ -2,6 +2,8 @@
 
 namespace App\Filament\Admin\Resources\Expenses\Tables;
 
+use App\Filament\Admin\Resources\Expenses\ExpenseResource;
+use App\Models\Expense;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -14,6 +16,7 @@ class ExpensesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->recordUrl(fn (Expense $record): string => ExpenseResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('location.name')
                     ->label('Location')

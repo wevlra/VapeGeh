@@ -5,7 +5,9 @@ namespace App\Filament\Admin\Resources\Incomes;
 use App\Filament\Admin\Resources\Incomes\Pages\CreateIncome;
 use App\Filament\Admin\Resources\Incomes\Pages\EditIncome;
 use App\Filament\Admin\Resources\Incomes\Pages\ListIncomes;
+use App\Filament\Admin\Resources\Incomes\Pages\ViewIncome;
 use App\Filament\Admin\Resources\Incomes\Schemas\IncomeForm;
+use App\Filament\Admin\Resources\Incomes\Schemas\IncomeInfolist;
 use App\Filament\Admin\Resources\Incomes\Tables\IncomesTable;
 use App\Models\Income;
 use BackedEnum;
@@ -39,12 +41,18 @@ class IncomeResource extends Resource
         ];
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return IncomeInfolist::configure($schema);
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => ListIncomes::route('/'),
             'create' => CreateIncome::route('/create'),
             'edit' => EditIncome::route('/{record}/edit'),
+            'view' => ViewIncome::route('/{record}'),
         ];
     }
 

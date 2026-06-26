@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dfe1c32d2cc3489e8131c3339afa267c",
+    "content-hash": "8f0bc4d495b958fc319868a0fb11128c",
     "packages": [
         {
             "name": "blade-ui-kit/blade-heroicons",
@@ -8122,6 +8122,57 @@
                 }
             ],
             "time": "2026-04-26T05:33:54+00:00"
+        },
+        {
+            "name": "wezlo/filament-responsive-table",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mustafakhaleddev/filament-responsive-table.git",
+                "reference": "af365d91cca4b3bf42627190a3707856718c021f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mustafakhaleddev/filament-responsive-table/zipball/af365d91cca4b3bf42627190a3707856718c021f",
+                "reference": "af365d91cca4b3bf42627190a3707856718c021f",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^4.0 || ^5.0",
+                "php": "^8.2",
+                "spatie/laravel-package-tools": "^1.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Wezlo\\FilamentResponsiveTable\\FilamentResponsiveTableServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Wezlo\\FilamentResponsiveTable\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Render a Filament list table as stacked cards below a configurable Tailwind breakpoint.",
+            "keywords": [
+                "cards",
+                "filament",
+                "laravel",
+                "mobile",
+                "responsive",
+                "table"
+            ],
+            "support": {
+                "issues": "https://github.com/mustafakhaleddev/filament-responsive-table/issues",
+                "source": "https://github.com/mustafakhaleddev/filament-responsive-table/tree/1.0.0"
+            },
+            "time": "2026-04-22T01:11:02+00:00"
         }
     ],
     "packages-dev": [

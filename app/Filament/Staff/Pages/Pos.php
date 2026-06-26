@@ -98,8 +98,11 @@ class Pos extends Page implements HasTable
 
     public function getCartItems(): array
     {
-        return collect($this->cart)->map(function ($item) {
-            $product = Product::find($item['product_id']);
+        $productIds = collect($this->cart)->pluck('product_id');
+        $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
+
+        return collect($this->cart)->map(function ($item) use ($products) {
+            $product = $products->get($item['product_id']);
             if (! $product) {
                 return null;
             }
@@ -242,18 +245,24 @@ class Pos extends Page implements HasTable
             $cartItems = $this->getCartItems();
 
             foreach ($cartItems as $item) {
-                $product = Product::find($item['product_id']);
+                $stock = Stock::where('product_id', $item['product_id'])
+                    ->where('location_id', $locationId)
+                    ->first();
+
+                if (! $stock || $stock->qty < $item['qty']) {
+                    throw new \DomainException(
+                        "Insufficient stock for product \"{$item['name']}\"."
+                    );
+                }
 
                 $sale->items()->create([
                     'product_id' => $item['product_id'],
                     'qty' => $item['qty'],
-                    'price' => $product->store_price,
+                    'price' => $item['price'],
                     'subtotal' => $item['subtotal'],
                 ]);
 
-                Stock::where('product_id', $item['product_id'])
-                    ->where('location_id', $locationId)
-                    ->decrement('qty', $item['qty']);
+                $stock->decrement('qty', $item['qty']);
 
                 StockMovement::create([
                     'product_id' => $item['product_id'],

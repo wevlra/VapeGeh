@@ -2,6 +2,8 @@
 
 namespace App\Filament\Admin\Resources\Locations\Tables;
 
+use App\Filament\Admin\Resources\Locations\LocationResource;
+use App\Models\Location;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -15,6 +17,7 @@ class LocationsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->recordUrl(fn (Location $record): string => LocationResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('name')
                     ->searchable()

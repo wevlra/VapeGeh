@@ -13,11 +13,10 @@ class StockTransferInfolist
     public static function configure(Schema $schema): Schema
     {
         return $schema
-            ->columns(2)
             ->schema([
                 Section::make('Transfer Details')
-                    ->columns(2)
                     ->columnSpanFull()
+                    ->columns(2)
                     ->schema([
                         TextEntry::make('transfer_number'),
                         TextEntry::make('status')

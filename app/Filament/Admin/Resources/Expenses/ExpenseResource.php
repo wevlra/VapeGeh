@@ -5,7 +5,9 @@ namespace App\Filament\Admin\Resources\Expenses;
 use App\Filament\Admin\Resources\Expenses\Pages\CreateExpense;
 use App\Filament\Admin\Resources\Expenses\Pages\EditExpense;
 use App\Filament\Admin\Resources\Expenses\Pages\ListExpenses;
+use App\Filament\Admin\Resources\Expenses\Pages\ViewExpense;
 use App\Filament\Admin\Resources\Expenses\Schemas\ExpenseForm;
+use App\Filament\Admin\Resources\Expenses\Schemas\ExpenseInfolist;
 use App\Filament\Admin\Resources\Expenses\Tables\ExpensesTable;
 use App\Models\Expense;
 use BackedEnum;
@@ -39,12 +41,18 @@ class ExpenseResource extends Resource
         ];
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return ExpenseInfolist::configure($schema);
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => ListExpenses::route('/'),
             'create' => CreateExpense::route('/create'),
             'edit' => EditExpense::route('/{record}/edit'),
+            'view' => ViewExpense::route('/{record}'),
         ];
     }
 

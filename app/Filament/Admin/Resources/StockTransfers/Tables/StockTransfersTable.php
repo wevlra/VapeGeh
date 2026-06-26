@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\StockTransfers\Tables;
 
 use App\Actions\CompleteStockTransfer;
+use App\Filament\Admin\Resources\StockTransfers\StockTransferResource;
 use App\Models\StockTransfer;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
@@ -16,6 +17,7 @@ class StockTransfersTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->recordUrl(fn (StockTransfer $record): string => StockTransferResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('transfer_number')
                     ->searchable()

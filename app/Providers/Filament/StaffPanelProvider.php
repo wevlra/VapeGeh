@@ -21,6 +21,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Wezlo\FilamentResponsiveTable\FilamentResponsiveTablePlugin;
 
 class StaffPanelProvider extends PanelProvider
 {
@@ -35,6 +36,8 @@ class StaffPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->plugins([
+                FilamentResponsiveTablePlugin::make()
+                    ->defaultBreakpoint('md'),
                 MobileBottomNav::make()
                     ->items([
                         MobileBottomNavItem::make('Dashboard')

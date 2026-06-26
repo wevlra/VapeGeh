@@ -3,7 +3,9 @@
 namespace App\Filament\Admin\Resources\Sales;
 
 use App\Filament\Admin\Resources\Sales\Pages\ListSales;
+use App\Filament\Admin\Resources\Sales\Pages\ViewSale;
 use App\Filament\Admin\Resources\Sales\Schemas\SaleForm;
+use App\Filament\Admin\Resources\Sales\Schemas\SaleInfolist;
 use App\Filament\Admin\Resources\Sales\Tables\SalesTable;
 use App\Models\Sale;
 use BackedEnum;
@@ -37,10 +39,16 @@ class SaleResource extends Resource
         ];
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return SaleInfolist::configure($schema);
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => ListSales::route('/'),
+            'view' => ViewSale::route('/{record}'),
         ];
     }
 

@@ -5,7 +5,9 @@ namespace App\Filament\Admin\Resources\Products;
 use App\Filament\Admin\Resources\Products\Pages\CreateProduct;
 use App\Filament\Admin\Resources\Products\Pages\EditProduct;
 use App\Filament\Admin\Resources\Products\Pages\ListProducts;
+use App\Filament\Admin\Resources\Products\Pages\ViewProduct;
 use App\Filament\Admin\Resources\Products\Schemas\ProductForm;
+use App\Filament\Admin\Resources\Products\Schemas\ProductInfolist;
 use App\Filament\Admin\Resources\Products\Tables\ProductsTable;
 use App\Models\Product;
 use BackedEnum;
@@ -39,12 +41,18 @@ class ProductResource extends Resource
         ];
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return ProductInfolist::configure($schema);
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => ListProducts::route('/'),
             'create' => CreateProduct::route('/create'),
             'edit' => EditProduct::route('/{record}/edit'),
+            'view' => ViewProduct::route('/{record}'),
         ];
     }
 
