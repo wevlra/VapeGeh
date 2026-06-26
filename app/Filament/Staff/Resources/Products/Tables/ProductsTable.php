@@ -20,12 +20,9 @@ class ProductsTable
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('vendor.name')
-                    ->label('Vendor')
-                    ->searchable()
+                TextColumn::make('purchase_price')
+                    ->money('IDR')
                     ->sortable(),
-                TextColumn::make('store_price')
-                    ->money('IDR'),
             ])
             ->filters([])
             ->recordActions([])

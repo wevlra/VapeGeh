@@ -2,6 +2,8 @@
 
 namespace App\Filament\Admin\Resources\Products\Schemas;
 
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\RepeatableEntry\TableColumn;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -18,23 +20,27 @@ class ProductInfolist
                     ->schema([
                         TextEntry::make('sku'),
                         TextEntry::make('name'),
-                        TextEntry::make('vendor.name')
-                            ->label('Vendor'),
-                    ]),
-
-                Section::make('Pricing')
-                    ->columnSpanFull()
-                    ->columns(2)
-                    ->schema([
                         TextEntry::make('purchase_price')
                             ->money('IDR')
                             ->label('Purchase Price'),
-                        TextEntry::make('reseller_price')
-                            ->money('IDR')
-                            ->label('Reseller Price'),
-                        TextEntry::make('store_price')
-                            ->money('IDR')
-                            ->label('Store Price'),
+                    ]),
+
+                Section::make('Selling Prices')
+                    ->columnSpanFull()
+                    ->schema([
+                        RepeatableEntry::make('prices')
+                            ->hiddenLabel()
+                            ->table([
+                                TableColumn::make('Label'),
+                                TableColumn::make('Price'),
+                            ])
+                            ->schema([
+                                TextEntry::make('label')
+                                    ->label('Label'),
+                                TextEntry::make('price')
+                                    ->label('Price')
+                                    ->money('IDR'),
+                            ]),
                     ]),
             ]);
     }

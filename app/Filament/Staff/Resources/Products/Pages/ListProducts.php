@@ -23,7 +23,7 @@ class ListProducts extends ListRecords
     public function responsiveTable(ResponsiveTableConfiguration $config): ResponsiveTableConfiguration
     {
         return $config
-            ->only(['name', 'store_price'])
-            ->cardTitle(fn ($record) => $record->name);
+            ->only(['name', 'purchase_price'])
+            ->cardTitle(fn ($record) => $record->sku);
     }
 }

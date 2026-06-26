@@ -23,6 +23,7 @@ class CompleteStockTransfer
             foreach ($transfer->items as $item) {
                 $sourceStock = Stock::where('product_id', $item->product_id)
                     ->where('location_id', $transfer->from_location_id)
+                    ->lockForUpdate()
                     ->first();
 
                 if (! $sourceStock || $sourceStock->qty < $item->qty) {
@@ -33,14 +34,20 @@ class CompleteStockTransfer
 
                 $sourceStock->decrement('qty', $item->qty);
 
-                $destinationStock = Stock::firstOrCreate(
-                    [
+                $destinationStock = Stock::where('product_id', $item->product_id)
+                    ->where('location_id', $transfer->to_location_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $destinationStock) {
+                    $destinationStock = Stock::create([
                         'product_id' => $item->product_id,
                         'location_id' => $transfer->to_location_id,
-                    ],
-                    ['qty' => 0]
-                );
-                $destinationStock->increment('qty', $item->qty);
+                        'qty' => $item->qty,
+                    ]);
+                } else {
+                    $destinationStock->increment('qty', $item->qty);
+                }
 
                 StockMovement::create([
                     'product_id' => $item->product_id,

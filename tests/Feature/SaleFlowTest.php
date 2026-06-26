@@ -31,7 +31,9 @@ it('creates a sale with items and deducts stock', function () {
         'role' => 'staff',
         'location_id' => $location->id,
     ]);
-    $product = Product::factory()->create(['store_price' => 25000]);
+    $product = Product::factory()->create();
+    $price = (float) $product->prices->first()->price;
+    $total = round($price * 3, 2);
 
     Stock::factory()->create([
         'product_id' => $product->id,
@@ -47,18 +49,18 @@ it('creates a sale with items and deducts stock', function () {
             ['product_id' => $product->id, 'qty' => 3],
         ],
         paymentMethod: 'cash',
-        paidAmount: 75000,
+        paidAmount: $total,
     );
 
     expect($sale)->toBeInstanceOf(Sale::class)
         ->and($sale->invoice_number)->toStartWith('INV-')
-        ->and($sale->total)->toBe('75000.00')
+        ->and($sale->total)->toEqual((string) number_format($total, 2, '.', ''))
         ->and($sale->items)->toHaveCount(1);
 
     $item = $sale->items->first();
     expect($item->qty)->toBe(3)
-        ->and($item->price)->toBe('25000.00')
-        ->and($item->subtotal)->toBe('75000.00');
+        ->and((float) $item->price)->toBe($price)
+        ->and((float) $item->subtotal)->toBe($total);
 
     $stock = Stock::where('product_id', $product->id)
         ->where('location_id', $location->id)
@@ -78,7 +80,7 @@ it('throws exception when stock is insufficient for sale', function () {
         'role' => 'staff',
         'location_id' => $location->id,
     ]);
-    $product = Product::factory()->create(['store_price' => 10000]);
+    $product = Product::factory()->create();
 
     Stock::factory()->create([
         'product_id' => $product->id,
@@ -105,7 +107,7 @@ it('generates an invoice number automatically', function () {
         'role' => 'staff',
         'location_id' => $location->id,
     ]);
-    $product = Product::factory()->create(['store_price' => 10000]);
+    $product = Product::factory()->create();
 
     Stock::factory()->create([
         'product_id' => $product->id,
@@ -140,7 +142,7 @@ it('relates sale to user and location', function () {
         'role' => 'staff',
         'location_id' => $location->id,
     ]);
-    $product = Product::factory()->create(['store_price' => 10000]);
+    $product = Product::factory()->create();
 
     Stock::factory()->create([
         'product_id' => $product->id,

@@ -8,6 +8,7 @@ use App\Models\Expense;
 use App\Models\Income;
 use App\Models\Location;
 use App\Models\Product;
+use App\Models\ProductPrice;
 use App\Models\Stock;
 use App\Models\StockTransfer;
 use App\Models\StockTransferItem;
@@ -24,7 +25,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // ── Locations ──────────────────────────────────────────────
-        $warehouse = Location::factory()->warehouse()->create(['name' => 'Gudang Pusat']);
+        $warehouse = Location::factory()->warehouse()->create(['name' => 'Main Warehouse']);
         $mainStore = Location::factory()->create(['name' => 'VapeGeh Central']);
         $branch1 = Location::factory()->create(['name' => 'VapeGeh Mall']);
         $branch2 = Location::factory()->create(['name' => 'VapeGeh Plaza']);
@@ -65,25 +66,49 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Voopoo Indo', 'contact_person' => 'Eko'],
             ['name' => 'Uwell Distributor', 'contact_person' => 'Fajar'],
             ['name' => 'Xros Official', 'contact_person' => 'Gilang'],
-            ['name' => 'Aksesoris Vape Makmur', 'contact_person' => 'Hendra'],
+            ['name' => 'Vape Accessories Makmur', 'contact_person' => 'Hendra'],
         ])->map(fn ($data) => Vendor::create($data));
 
         // ── Products ───────────────────────────────────────────────
         $products = collect([
-            ['vendor_id' => $vendors[0]->id, 'name' => 'Nasty Juice Fruity 30ml', 'purchase_price' => 35000, 'reseller_price' => 45000, 'store_price' => 55000],
-            ['vendor_id' => $vendors[0]->id, 'name' => 'Nasty Juice Grape 30ml', 'purchase_price' => 35000, 'reseller_price' => 45000, 'store_price' => 55000],
-            ['vendor_id' => $vendors[1]->id, 'name' => 'Crush Frozen Mint 30ml', 'purchase_price' => 35000, 'reseller_price' => 45000, 'store_price' => 55000],
-            ['vendor_id' => $vendors[2]->id, 'name' => 'Zap Juice Tobacco Gold 60ml', 'purchase_price' => 60000, 'reseller_price' => 75000, 'store_price' => 95000],
-            ['vendor_id' => $vendors[3]->id, 'name' => 'Pachamama Strawberry 30ml', 'purchase_price' => 40000, 'reseller_price' => 50000, 'store_price' => 65000],
-            ['vendor_id' => $vendors[4]->id, 'name' => 'Voopoo PnP Coils 0.4ohm', 'purchase_price' => 40000, 'reseller_price' => 50000, 'store_price' => 65000],
-            ['vendor_id' => $vendors[4]->id, 'name' => 'Voopoo PnP Coils 0.8ohm', 'purchase_price' => 40000, 'reseller_price' => 50000, 'store_price' => 65000],
-            ['vendor_id' => $vendors[5]->id, 'name' => 'Uwell Caliburn Coils', 'purchase_price' => 35000, 'reseller_price' => 45000, 'store_price' => 55000],
-            ['vendor_id' => $vendors[4]->id, 'name' => 'Voopoo Drag Nano 2', 'purchase_price' => 180000, 'reseller_price' => 220000, 'store_price' => 275000],
-            ['vendor_id' => $vendors[5]->id, 'name' => 'Uwell Caliburn G2', 'purchase_price' => 220000, 'reseller_price' => 270000, 'store_price' => 340000],
-            ['vendor_id' => $vendors[6]->id, 'name' => 'Xros 3 Mini', 'purchase_price' => 150000, 'reseller_price' => 190000, 'store_price' => 235000],
-            ['vendor_id' => $vendors[7]->id, 'name' => 'USB-C Charging Cable', 'purchase_price' => 15000, 'reseller_price' => 20000, 'store_price' => 25000],
-            ['vendor_id' => $vendors[7]->id, 'name' => 'Carrying Case (Small)', 'purchase_price' => 20000, 'reseller_price' => 28000, 'store_price' => 35000],
+            ['name' => 'Nasty Juice Fruity 30ml', 'purchase_price' => 35000],
+            ['name' => 'Nasty Juice Grape 30ml', 'purchase_price' => 35000],
+            ['name' => 'Crush Frozen Mint 30ml', 'purchase_price' => 35000],
+            ['name' => 'Zap Juice Tobacco Gold 60ml', 'purchase_price' => 60000],
+            ['name' => 'Pachamama Strawberry 30ml', 'purchase_price' => 40000],
+            ['name' => 'Voopoo PnP Coils 0.4ohm', 'purchase_price' => 40000],
+            ['name' => 'Voopoo PnP Coils 0.8ohm', 'purchase_price' => 40000],
+            ['name' => 'Uwell Caliburn Coils', 'purchase_price' => 35000],
+            ['name' => 'Voopoo Drag Nano 2', 'purchase_price' => 180000],
+            ['name' => 'Uwell Caliburn G2', 'purchase_price' => 220000],
+            ['name' => 'Xros 3 Mini', 'purchase_price' => 150000],
+            ['name' => 'USB-C Charging Cable', 'purchase_price' => 15000],
+            ['name' => 'Carrying Case (Small)', 'purchase_price' => 20000],
         ])->map(fn ($data) => Product::create($data));
+
+        // ── Product prices ──────────────────────────────────────────────
+        $prices = [
+            [$products[0]->id, 'Store', 55000],  [$products[0]->id, 'Reseller', 45000],
+            [$products[1]->id, 'Store', 55000],  [$products[1]->id, 'Reseller', 45000],
+            [$products[2]->id, 'Store', 55000],  [$products[2]->id, 'Reseller', 45000],
+            [$products[3]->id, 'Store', 95000],  [$products[3]->id, 'Reseller', 75000],
+            [$products[4]->id, 'Store', 65000],  [$products[4]->id, 'Reseller', 50000],
+            [$products[5]->id, 'Store', 65000],  [$products[5]->id, 'Reseller', 50000],
+            [$products[6]->id, 'Store', 65000],  [$products[6]->id, 'Reseller', 50000],
+            [$products[7]->id, 'Store', 55000],  [$products[7]->id, 'Reseller', 45000],
+            [$products[8]->id, 'Store', 275000], [$products[8]->id, 'Reseller', 220000],
+            [$products[9]->id, 'Store', 340000], [$products[9]->id, 'Reseller', 270000],
+            [$products[10]->id, 'Store', 235000], [$products[10]->id, 'Reseller', 190000],
+            [$products[11]->id, 'Store', 25000], [$products[11]->id, 'Reseller', 20000],
+            [$products[12]->id, 'Store', 35000], [$products[12]->id, 'Reseller', 28000],
+        ];
+        foreach ($prices as [$productId, $label, $price]) {
+            ProductPrice::create([
+                'product_id' => $productId,
+                'label' => $label,
+                'price' => $price,
+            ]);
+        }
 
         // ── Stock at warehouse ─────────────────────────────────────
         foreach ($products as $product) {
@@ -163,16 +188,16 @@ class DatabaseSeeder extends Seeder
 
         // ── Income entries (spread over last 30 days) ──────────────
         $incomeData = [
-            ['category' => 'sale', 'description' => 'Penjualan eceran harian', 'amount' => 275000],
-            ['category' => 'sale', 'description' => 'Penjualan paket bundle', 'amount' => 450000],
-            ['category' => 'sale', 'description' => 'Pembelian online via QRIS', 'amount' => 180000],
-            ['category' => 'debt_payment', 'description' => 'Pembayaran hutang dari pelanggan', 'amount' => 500000],
-            ['category' => 'debt_payment', 'description' => 'Pelunasan cicilan stok', 'amount' => 350000],
-            ['category' => 'other', 'description' => 'Pengembalian dana supplier', 'amount' => 120000],
+            ['category' => 'sale', 'description' => 'Daily retail sales', 'amount' => 275000],
+            ['category' => 'sale', 'description' => 'Bundle package sales', 'amount' => 450000],
+            ['category' => 'sale', 'description' => 'Online purchase via QRIS', 'amount' => 180000],
+            ['category' => 'debt_payment', 'description' => 'Customer debt payment', 'amount' => 500000],
+            ['category' => 'debt_payment', 'description' => 'Stock installment settlement', 'amount' => 350000],
+            ['category' => 'other', 'description' => 'Supplier refund', 'amount' => 120000],
             ['category' => 'sale', 'description' => 'Restock selling fee', 'amount' => 200000],
-            ['category' => 'sale', 'description' => 'Penjualan POD mingguan', 'amount' => 320000],
-            ['category' => 'other', 'description' => 'Bonus dari distributor', 'amount' => 150000],
-            ['category' => 'sale', 'description' => 'Penjualan coil dan cartridge', 'amount' => 285000],
+            ['category' => 'sale', 'description' => 'Weekly POD sales', 'amount' => 320000],
+            ['category' => 'other', 'description' => 'Distributor bonus', 'amount' => 150000],
+            ['category' => 'sale', 'description' => 'Coil and cartridge sales', 'amount' => 285000],
         ];
 
         foreach ($allStores as $store) {
@@ -192,18 +217,18 @@ class DatabaseSeeder extends Seeder
 
         // ── Expense entries (spread over last 30 days) ─────────────
         $expenseData = [
-            ['category' => 'purchase', 'description' => 'Restock liquid Nasty Juice 30ml', 'amount' => 350000],
-            ['category' => 'purchase', 'description' => 'Restock coil Voopoo PnP', 'amount' => 400000],
-            ['category' => 'salary', 'description' => 'Gaji karyawan bulan ini', 'amount' => 4500000],
-            ['category' => 'utilities', 'description' => 'Listrik dan air bulan ini', 'amount' => 750000],
-            ['category' => 'utilities', 'description' => 'Internet dan WiFi', 'amount' => 350000],
-            ['category' => 'transport', 'description' => 'Biaya pengiriman ke cabang', 'amount' => 150000],
-            ['category' => 'transport', 'description' => 'Bensin picking ke supplier', 'amount' => 85000],
-            ['category' => 'purchase', 'description' => 'Restock device Uwell Caliburn', 'amount' => 660000],
-            ['category' => 'purchase', 'description' => 'Pembelian casing dan aksesoris', 'amount' => 200000],
-            ['category' => 'other', 'description' => 'Pembersihan toko bulanan', 'amount' => 100000],
-            ['category' => 'purchase', 'description' => 'Restock liquid Pachamama', 'amount' => 400000],
-            ['category' => 'utilities', 'description' => 'Biaya parkir karyawan', 'amount' => 120000],
+            ['category' => 'purchase', 'description' => 'Restock Nasty Juice 30ml liquid', 'amount' => 350000],
+            ['category' => 'purchase', 'description' => 'Restock Voopoo PnP coils', 'amount' => 400000],
+            ['category' => 'salary', 'description' => 'Monthly employee salary', 'amount' => 4500000],
+            ['category' => 'utilities', 'description' => 'Monthly electricity and water', 'amount' => 750000],
+            ['category' => 'utilities', 'description' => 'Internet and WiFi', 'amount' => 350000],
+            ['category' => 'transport', 'description' => 'Branch delivery fee', 'amount' => 150000],
+            ['category' => 'transport', 'description' => 'Gas for supplier pickup', 'amount' => 85000],
+            ['category' => 'purchase', 'description' => 'Restock Uwell Caliburn device', 'amount' => 660000],
+            ['category' => 'purchase', 'description' => 'Cases and accessories purchase', 'amount' => 200000],
+            ['category' => 'other', 'description' => 'Monthly store cleaning', 'amount' => 100000],
+            ['category' => 'purchase', 'description' => 'Restock Pachamama liquid', 'amount' => 400000],
+            ['category' => 'utilities', 'description' => 'Employee parking fee', 'amount' => 120000],
         ];
 
         foreach ($allStores as $store) {

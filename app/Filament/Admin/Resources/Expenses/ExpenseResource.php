@@ -20,7 +20,7 @@ class ExpenseResource extends Resource
 {
     protected static ?string $model = Expense::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCreditCard;
+    protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedArrowUpTray;
 
     protected static \UnitEnum|string|null $navigationGroup = 'Bookkeeping';
 

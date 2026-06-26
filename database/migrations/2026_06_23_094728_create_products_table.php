@@ -10,12 +10,9 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('vendor_id')->constrained()->cascadeOnDelete();
             $table->string('sku', 50);
             $table->string('name');
-            $table->decimal('purchase_price', 12, 2);
-            $table->decimal('reseller_price', 12, 2);
-            $table->decimal('store_price', 12, 2);
+            $table->decimal('purchase_price', 12, 2)->default(0);
             $table->timestamps();
         });
     }

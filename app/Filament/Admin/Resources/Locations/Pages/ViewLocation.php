@@ -3,9 +3,27 @@
 namespace App\Filament\Admin\Resources\Locations\Pages;
 
 use App\Filament\Admin\Resources\Locations\LocationResource;
+use App\Filament\Admin\Resources\Locations\RelationManagers\StocksRelationManager;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
 
 class ViewLocation extends ViewRecord
 {
     protected static string $resource = LocationResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            EditAction::make(),
+            DeleteAction::make(),
+        ];
+    }
+
+    public function getRelationManagers(): array
+    {
+        return [
+            StocksRelationManager::class,
+        ];
+    }
 }

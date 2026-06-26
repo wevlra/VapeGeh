@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Incomes\Tables;
 use App\Filament\Admin\Resources\Incomes\IncomeResource;
 use App\Models\Income;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -60,6 +61,7 @@ class IncomesTable
             ])
             ->recordActions([
                 EditAction::make(),
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

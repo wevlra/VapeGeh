@@ -2,13 +2,24 @@
 
 namespace App\Filament\Admin\Resources\Locations\RelationManagers;
 
+use App\Actions\AdjustStock;
+use App\Models\Stock;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Actions\EditAction as TableEditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class StocksRelationManager extends RelationManager
 {
     protected static string $relationship = 'stocks';
+
+    public function isReadOnly(): bool
+    {
+        return false;
+    }
 
     public function table(Table $table): Table
     {
@@ -32,6 +43,34 @@ class StocksRelationManager extends RelationManager
                     })
                     ->sortable(),
             ])
-            ->defaultSort('product.name');
+            ->defaultSort('product.name')
+            ->recordActions([
+                TableEditAction::make()
+                    ->modalHeading('Adjust Stock')
+                    ->form([
+                        TextInput::make('qty')
+                            ->label('Quantity')
+                            ->required()
+                            ->integer()
+                            ->minValue(0)
+                            ->default(fn (Stock $record): int => $record->qty),
+                        Textarea::make('notes')
+                            ->label('Notes')
+                            ->rows(2)
+                            ->maxLength(1000),
+                    ])
+                    ->action(function (Stock $record, array $data): void {
+                        app(AdjustStock::class)->execute(
+                            $record,
+                            (int) $data['qty'],
+                            $data['notes'] ?? null,
+                        );
+
+                        Notification::make()
+                            ->title('Stock adjusted')
+                            ->success()
+                            ->send();
+                    }),
+            ]);
     }
 }

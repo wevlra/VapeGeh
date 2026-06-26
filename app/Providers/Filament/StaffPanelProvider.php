@@ -32,6 +32,9 @@ class StaffPanelProvider extends PanelProvider
             ->path('staff')
             ->login()
             ->profile()
+            ->brandLogo(asset('assets/images/logo-wordmark-light-tr.png'))
+            ->darkModeBrandLogo(asset('assets/images/logo-wordmark-dark-tr.png'))
+            ->brandLogoHeight('4rem')
             ->colors([
                 'primary' => Color::Amber,
             ])

@@ -24,7 +24,7 @@ class ListVendors extends ListRecords
     public function responsiveTable(ResponsiveTableConfiguration $config): ResponsiveTableConfiguration
     {
         return $config
-            ->only(['name', 'products_count'])
+            ->only(['name', 'contact_person'])
             ->cardTitle(fn ($record) => $record->name);
     }
 }

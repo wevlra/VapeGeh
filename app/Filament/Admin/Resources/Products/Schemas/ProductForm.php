@@ -2,7 +2,8 @@
 
 namespace App\Filament\Admin\Resources\Products\Schemas;
 
-use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
@@ -15,41 +16,35 @@ class ProductForm
                 TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                Select::make('vendor_id')
-                    ->label('Vendor')
-                    ->relationship('vendor', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->createOptionForm([
-                        TextInput::make('name')
-                            ->required()
-                            ->maxLength(255),
-                        TextInput::make('contact_person')
-                            ->maxLength(255),
-                        TextInput::make('phone')
-                            ->maxLength(50),
-                        TextInput::make('email')
-                            ->email()
-                            ->maxLength(255),
-                        TextInput::make('address')
-                            ->maxLength(255),
-                    ])
-                    ->required(),
                 TextInput::make('purchase_price')
+                    ->label('Purchase Price')
                     ->required()
                     ->numeric()
                     ->minValue(0)
                     ->prefix('Rp'),
-                TextInput::make('reseller_price')
-                    ->required()
-                    ->numeric()
-                    ->minValue(0)
-                    ->prefix('Rp'),
-                TextInput::make('store_price')
-                    ->required()
-                    ->numeric()
-                    ->minValue(0)
-                    ->prefix('Rp'),
+                Repeater::make('prices')
+                    ->relationship()
+                    ->columnSpanFull()
+                    ->label('Selling Prices')
+                    ->defaultItems(1)
+                    ->addActionLabel('Add Price')
+                    ->table([
+                        TableColumn::make('Label'),
+                        TableColumn::make('Price'),
+                    ])
+                    ->schema([
+                        TextInput::make('label')
+                            ->label('Label')
+                            ->required()
+                            ->maxLength(50)
+                            ->placeholder('e.g. Reseller, Store, Wholesale'),
+                        TextInput::make('price')
+                            ->label('Price')
+                            ->required()
+                            ->numeric()
+                            ->minValue(0)
+                            ->prefix('Rp'),
+                    ]),
             ]);
     }
 }

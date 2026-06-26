@@ -44,6 +44,11 @@ class SalesTable
                     ->sortable(),
             ])
             ->filters([
+                SelectFilter::make('user_id')
+                    ->label('Staff')
+                    ->relationship('user', 'name')
+                    ->searchable()
+                    ->preload(),
                 SelectFilter::make('location_id')
                     ->label('Location')
                     ->relationship('location', 'name'),

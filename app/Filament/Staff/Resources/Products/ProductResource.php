@@ -4,6 +4,7 @@ namespace App\Filament\Staff\Resources\Products;
 
 use App\Filament\Staff\Resources\Products\Pages\ListProducts;
 use App\Filament\Staff\Resources\Products\Pages\ViewProduct;
+use App\Filament\Staff\Resources\Products\RelationManagers\StockRelationManager;
 use App\Filament\Staff\Resources\Products\Schemas\ProductInfolist;
 use App\Filament\Staff\Resources\Products\Tables\ProductsTable;
 use App\Models\Product;
@@ -12,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class ProductResource extends Resource
 {
@@ -21,6 +23,14 @@ class ProductResource extends Resource
 
     protected static \UnitEnum|string|null $navigationGroup = 'Inventory';
 
+    public static function getEloquentQuery(): Builder
+    {
+        $locationId = auth()->user()?->location_id;
+
+        return parent::getEloquentQuery()
+            ->whereHas('stocks', fn (Builder $q) => $q->where('location_id', $locationId));
+    }
+
     public static function table(Table $table): Table
     {
         return ProductsTable::configure($table);
@@ -29,6 +39,13 @@ class ProductResource extends Resource
     public static function infolist(Schema $schema): Schema
     {
         return ProductInfolist::configure($schema);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            StockRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

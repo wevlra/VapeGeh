@@ -6,11 +6,10 @@ use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-#[Fillable(['vendor_id', 'name', 'purchase_price', 'reseller_price', 'store_price'])]
+#[Fillable(['name', 'purchase_price'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
@@ -24,11 +23,11 @@ class Product extends Model
     }
 
     /**
-     * @return BelongsTo<Vendor, $this>
+     * @return HasMany<ProductPrice, $this>
      */
-    public function vendor(): BelongsTo
+    public function prices(): HasMany
     {
-        return $this->belongsTo(Vendor::class);
+        return $this->hasMany(ProductPrice::class);
     }
 
     /**
@@ -51,8 +50,6 @@ class Product extends Model
     {
         return [
             'purchase_price' => 'decimal:2',
-            'reseller_price' => 'decimal:2',
-            'store_price' => 'decimal:2',
         ];
     }
 }

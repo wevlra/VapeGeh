@@ -7,6 +7,7 @@ use App\Models\Sale;
 use App\Models\Stock;
 use App\Models\StockMovement;
 use BackedEnum;
+use DomainException;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Forms\Components\Radio;
@@ -73,10 +74,10 @@ class Pos extends Page implements HasTable
                         default => 'success',
                     })
                     ->getStateUsing(fn (Product $record): int => $record->stocks->first()?->qty ?? 0),
-                TextColumn::make('store_price')
+                TextColumn::make('id')
                     ->label('Price')
-                    ->formatStateUsing(fn ($state): string => 'Rp '.number_format((float) $state, 0, ',', '.'))
-                    ->sortable(),
+                    ->formatStateUsing(fn (Product $record): string => 'Rp '.number_format((float) ($record->prices->first()?->price ?? 0), 0, ',', '.'))
+                    ->sortable(false),
             ])
             ->actions([
                 Action::make('addToCart')
@@ -107,8 +108,8 @@ class Pos extends Page implements HasTable
                 return null;
             }
             $item['name'] = $product->name;
-            $item['price'] = $product->store_price;
-            $item['subtotal'] = $product->store_price * $item['qty'];
+            $item['price'] = (float) ($product->prices->first()?->price ?? 0);
+            $item['subtotal'] = $item['price'] * (int) $item['qty'];
 
             return $item;
         })->filter()->values()->toArray();
@@ -116,7 +117,7 @@ class Pos extends Page implements HasTable
 
     public function getCartTotal(): float
     {
-        return collect($this->getCartItems())->sum('subtotal');
+        return (float) collect($this->getCartItems())->sum('subtotal');
     }
 
     public function addToCart(int $productId): void
@@ -124,8 +125,19 @@ class Pos extends Page implements HasTable
         $existingIndex = collect($this->cart)->search(fn ($item) => $item['product_id'] === $productId);
 
         if ($existingIndex !== false) {
-            $this->cart[$existingIndex]['qty']++;
+            $currentQty = (int) $this->cart[$existingIndex]['qty'] + 1;
+            if (! $this->isStockAvailable($productId, $currentQty)) {
+                $this->dispatchBrowserEvent('notify', ['type' => 'warning', 'message' => 'Cannot exceed available stock.']);
+
+                return;
+            }
+            $this->cart[$existingIndex]['qty'] = $currentQty;
         } else {
+            if (! $this->isStockAvailable($productId, 1)) {
+                $this->dispatchBrowserEvent('notify', ['type' => 'warning', 'message' => 'Out of stock.']);
+
+                return;
+            }
             $this->cart[] = [
                 'product_id' => $productId,
                 'qty' => 1,
@@ -135,9 +147,21 @@ class Pos extends Page implements HasTable
 
     public function updateQty(int $index, int $qty): void
     {
+        $qty = max(0, (int) $qty);
+
         if ($qty < 1) {
             unset($this->cart[$index]);
             $this->cart = array_values($this->cart);
+
+            return;
+        }
+
+        if (! isset($this->cart[$index])) {
+            return;
+        }
+
+        if (! $this->isStockAvailable($this->cart[$index]['product_id'], $qty)) {
+            $this->dispatchBrowserEvent('notify', ['type' => 'warning', 'message' => 'Cannot exceed available stock.']);
 
             return;
         }
@@ -156,6 +180,16 @@ class Pos extends Page implements HasTable
         $this->cart = [];
     }
 
+    protected function isStockAvailable(int $productId, int $qty): bool
+    {
+        $locationId = auth()->user()->location_id;
+        $stock = Stock::where('product_id', $productId)
+            ->where('location_id', $locationId)
+            ->first();
+
+        return $stock !== null && $stock->qty >= $qty;
+    }
+
     public function checkoutAction(): Action
     {
         return Action::make('checkout')
@@ -165,7 +199,7 @@ class Pos extends Page implements HasTable
             ->modalContent(view('filament.staff.pages.checkout-summary'))
             ->form([
                 Radio::make('payment_method')
-                    ->label('Metode Pembayaran')
+                    ->label('Payment Method')
                     ->options([
                         'cash' => 'Cash',
                         'transfer' => 'Transfer',
@@ -175,7 +209,7 @@ class Pos extends Page implements HasTable
                     ->default('cash')
                     ->live(),
                 TextInput::make('paid_amount')
-                    ->label('Bayar')
+                    ->label('Pay')
                     ->numeric()
                     ->prefix('Rp')
                     ->default(fn (): float => $this->getCartTotal())
@@ -187,8 +221,9 @@ class Pos extends Page implements HasTable
                     ->hint(fn (callable $get): ?string => $this->getPaymentHint((float) ($get('paid_amount') ?? 0)))
                     ->hintColor(fn (callable $get): ?string => $this->getPaymentHintColor((float) ($get('paid_amount') ?? 0))),
                 Textarea::make('notes')
-                    ->label('Catatan (opsional)')
-                    ->placeholder('Catatan untuk transaksi ini...'),
+                    ->label('Notes (optional)')
+                    ->placeholder('Notes for this transaction...')
+                    ->maxLength(1000),
             ])
             ->action(function (array $data) {
                 $this->processSale($data);
@@ -201,11 +236,11 @@ class Pos extends Page implements HasTable
         $total = $this->getCartTotal();
 
         if ($paidAmount < $total) {
-            return 'Kurang: Rp '.number_format($total - $paidAmount, 0, ',', '.');
+            return 'Short: Rp '.number_format($total - $paidAmount, 0, ',', '.');
         }
 
         if ($paidAmount > $total) {
-            return 'Kembalian: Rp '.number_format($paidAmount - $total, 0, ',', '.');
+            return 'Change: Rp '.number_format($paidAmount - $total, 0, ',', '.');
         }
 
         return null;
@@ -228,56 +263,87 @@ class Pos extends Page implements HasTable
 
     public function processSale(array $data): void
     {
-        $total = $this->getCartTotal();
         $locationId = auth()->user()->location_id;
         $paidAmount = (float) ($data['paid_amount'] ?? 0);
+        $paymentMethod = $data['payment_method'] ?? 'cash';
 
-        $sale = DB::transaction(function () use ($total, $locationId, $data, $paidAmount) {
-            $sale = Sale::create([
-                'user_id' => auth()->id(),
-                'location_id' => $locationId,
-                'total' => $total,
-                'paid_amount' => $paidAmount,
-                'payment_method' => $data['payment_method'],
-                'notes' => $data['notes'] ?? null,
-            ]);
+        try {
+            $sale = DB::transaction(function () use ($locationId, $paidAmount, $paymentMethod, $data) {
+                $total = 0;
+                $saleItems = [];
 
-            $cartItems = $this->getCartItems();
+                foreach ($this->cart as $cartItem) {
+                    $product = Product::findOrFail($cartItem['product_id']);
+                    $qty = (int) $cartItem['qty'];
 
-            foreach ($cartItems as $item) {
-                $stock = Stock::where('product_id', $item['product_id'])
-                    ->where('location_id', $locationId)
-                    ->first();
+                    $stock = Stock::where('product_id', $product->id)
+                        ->where('location_id', $locationId)
+                        ->lockForUpdate()
+                        ->first();
 
-                if (! $stock || $stock->qty < $item['qty']) {
-                    throw new \DomainException(
-                        "Insufficient stock for product \"{$item['name']}\"."
-                    );
+                    if (! $stock || $stock->qty < $qty) {
+                        throw new DomainException(
+                            "Insufficient stock for product \"{$product->name}\"."
+                        );
+                    }
+
+                    $price = (float) ($product->prices->first()?->price ?? 0);
+                    $subtotal = $price * $qty;
+                    $total += $subtotal;
+
+                    $saleItems[] = [
+                        'product_id' => $product->id,
+                        'product_name' => $product->name,
+                        'qty' => $qty,
+                        'price' => $price,
+                        'subtotal' => $subtotal,
+                        'stock_id' => $stock->id,
+                    ];
                 }
 
-                $sale->items()->create([
-                    'product_id' => $item['product_id'],
-                    'qty' => $item['qty'],
-                    'price' => $item['price'],
-                    'subtotal' => $item['subtotal'],
-                ]);
-
-                $stock->decrement('qty', $item['qty']);
-
-                StockMovement::create([
-                    'product_id' => $item['product_id'],
+                $sale = Sale::create([
+                    'user_id' => auth()->id(),
                     'location_id' => $locationId,
-                    'type' => 'out',
-                    'quantity' => $item['qty'],
-                    'related_type' => Sale::class,
-                    'related_id' => $sale->id,
-                    'notes' => "Sale {$sale->invoice_number}",
-                    'created_by' => auth()->id(),
+                    'total' => $total,
+                    'paid_amount' => $paidAmount,
+                    'payment_method' => $paymentMethod,
+                    'notes' => $data['notes'] ?? null,
                 ]);
-            }
 
-            return $sale;
-        });
+                foreach ($saleItems as $saleItem) {
+                    $sale->items()->create([
+                        'product_id' => $saleItem['product_id'],
+                        'qty' => $saleItem['qty'],
+                        'price' => $saleItem['price'],
+                        'subtotal' => $saleItem['subtotal'],
+                    ]);
+
+                    Stock::where('id', $saleItem['stock_id'])
+                        ->decrement('qty', $saleItem['qty']);
+
+                    StockMovement::create([
+                        'product_id' => $saleItem['product_id'],
+                        'location_id' => $locationId,
+                        'type' => 'out',
+                        'quantity' => -$saleItem['qty'],
+                        'related_type' => Sale::class,
+                        'related_id' => $sale->id,
+                        'notes' => "Sale {$sale->invoice_number}",
+                        'created_by' => auth()->id(),
+                    ]);
+                }
+
+                return $sale;
+            });
+        } catch (DomainException $e) {
+            Notification::make()
+                ->title('Sale failed')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+
+            return;
+        }
 
         $this->cart = [];
 

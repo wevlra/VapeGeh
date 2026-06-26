@@ -9,7 +9,6 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class VendorsTable
@@ -28,23 +27,8 @@ class VendorsTable
                     ->searchable(),
                 TextColumn::make('email')
                     ->searchable(),
-                TextColumn::make('products_count')
-                    ->counts('products')
-                    ->label('Products'),
             ])
-            ->filters([
-                SelectFilter::make('products')
-                    ->label('Products')
-                    ->options([
-                        'with' => 'With Products',
-                        'without' => 'No Products',
-                    ])
-                    ->query(fn ($query, $state) => match ($state) {
-                        'with' => $query->has('products'),
-                        'without' => $query->doesntHave('products'),
-                        default => $query,
-                    }),
-            ])
+            ->filters([])
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),

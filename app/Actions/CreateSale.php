@@ -32,6 +32,7 @@ class CreateSale
                 $product = Product::findOrFail($item['product_id']);
                 $stock = Stock::where('product_id', $product->id)
                     ->where('location_id', $locationId)
+                    ->lockForUpdate()
                     ->first();
 
                 if (! $stock || $stock->qty < $item['qty']) {
@@ -40,14 +41,17 @@ class CreateSale
                     );
                 }
 
-                $subtotal = $product->store_price * $item['qty'];
+                $defaultPrice = $product->prices->first()?->price ?? 0;
+                $subtotal = $defaultPrice * $item['qty'];
                 $total += $subtotal;
 
                 $saleItems[] = [
                     'product_id' => $product->id,
+                    'product_name' => $product->name,
                     'qty' => $item['qty'],
-                    'price' => $product->store_price,
+                    'price' => $defaultPrice,
                     'subtotal' => $subtotal,
+                    'stock_id' => $stock->id,
                 ];
             }
 
@@ -63,13 +67,14 @@ class CreateSale
             foreach ($saleItems as $saleItem) {
                 SaleItem::create([
                     'sale_id' => $sale->id,
-                    ...$saleItem,
+                    'product_id' => $saleItem['product_id'],
+                    'qty' => $saleItem['qty'],
+                    'price' => $saleItem['price'],
+                    'subtotal' => $saleItem['subtotal'],
                 ]);
 
-                $stock = Stock::where('product_id', $saleItem['product_id'])
-                    ->where('location_id', $locationId)
-                    ->first();
-                $stock->decrement('qty', $saleItem['qty']);
+                Stock::where('id', $saleItem['stock_id'])
+                    ->decrement('qty', $saleItem['qty']);
 
                 StockMovement::create([
                     'product_id' => $saleItem['product_id'],

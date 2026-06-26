@@ -46,7 +46,7 @@ class SaleInfolist
                     ->columnSpanFull()
                     ->schema([
                         RepeatableEntry::make('items')
-                            ->hiddenLabel()`
+                            ->hiddenLabel()
                             ->table([
                                 TableColumn::make('Product'),
                                 TableColumn::make('Qty')

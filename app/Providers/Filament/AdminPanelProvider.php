@@ -2,15 +2,19 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Admin\Pages\Dashboard;
+use App\Filament\Admin\Pages\StockIn;
+use App\Filament\Admin\Pages\StockOut;
 use App\Filament\Admin\Widgets\AdminExpenseCategoryChart;
 use App\Filament\Admin\Widgets\AdminPaymentMethodChart;
 use App\Filament\Admin\Widgets\AdminSalesChart;
 use App\Filament\Admin\Widgets\AdminStatsOverview;
+use App\Filament\Admin\Widgets\OperationalQuickActionsWidget;
+use App\Filament\Admin\Widgets\StockQuickActionsWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -32,8 +36,12 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
             ->profile()
+            ->brandLogo(asset('assets/images/logo-wordmark-light-tr.png'))
+            ->darkModeBrandLogo(asset('assets/images/logo-wordmark-dark-tr.png'))
+            ->brandLogoHeight('4rem')
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -63,9 +71,13 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\Filament\Admin\Pages')
             ->pages([
                 Dashboard::class,
+                StockIn::class,
+                StockOut::class,
             ])
             ->widgets([
                 AdminStatsOverview::class,
+                StockQuickActionsWidget::class,
+                OperationalQuickActionsWidget::class,
                 AdminSalesChart::class,
                 AdminPaymentMethodChart::class,
                 AdminExpenseCategoryChart::class,

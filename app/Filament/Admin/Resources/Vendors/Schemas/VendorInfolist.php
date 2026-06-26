@@ -27,9 +27,6 @@ class VendorInfolist
                         TextEntry::make('address')
                             ->placeholder('—')
                             ->columnSpanFull(),
-                        TextEntry::make('products_count')
-                            ->counts('products')
-                            ->label('Products'),
                     ]),
             ]);
     }

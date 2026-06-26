@@ -20,7 +20,7 @@ class IncomeResource extends Resource
 {
     protected static ?string $model = Income::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
+    protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedArrowDownTray;
 
     protected static \UnitEnum|string|null $navigationGroup = 'Bookkeeping';
 

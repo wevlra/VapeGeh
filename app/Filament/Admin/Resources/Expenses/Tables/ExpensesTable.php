@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Expenses\Tables;
 use App\Filament\Admin\Resources\Expenses\ExpenseResource;
 use App\Models\Expense;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -61,6 +62,7 @@ class ExpensesTable
             ])
             ->recordActions([
                 EditAction::make(),
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
