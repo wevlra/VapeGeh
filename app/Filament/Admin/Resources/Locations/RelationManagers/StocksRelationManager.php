@@ -4,11 +4,11 @@ namespace App\Filament\Admin\Resources\Locations\RelationManagers;
 
 use App\Actions\AdjustStock;
 use App\Models\Stock;
+use Filament\Actions\EditAction as TableEditAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Actions\EditAction as TableEditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 

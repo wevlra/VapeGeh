@@ -1,5 +1,5 @@
 <x-filament-widgets::widget>
-    <x-filament::section heading="Opeational">
+    <x-filament::section heading="Operational">
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <x-filament::button
                 tag="a"
