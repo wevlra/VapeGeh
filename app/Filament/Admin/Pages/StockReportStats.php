@@ -12,7 +12,7 @@ class StockReportStats extends StatsOverviewWidget
     protected function getStats(): array
     {
         $totalStock = Stock::sum('qty');
-        $totalLocations = Location::where('is_active', true)->count();
+        $totalLocations = Location::where('status', 'active')->count();
         $lowStock = Stock::where('qty', '<', 10)->where('qty', '>', 0)->count();
 
         return [
