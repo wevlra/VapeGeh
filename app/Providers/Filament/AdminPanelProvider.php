@@ -66,6 +66,11 @@ class AdminPanelProvider extends PanelProvider
                             ->activeIcon('heroicon-s-banknotes')
                             ->url('/admin/sales')
                             ->isActive(fn () => request()->is('admin/sales*')),
+                        MobileBottomNavItem::make('History')
+                            ->icon('heroicon-o-clock')
+                            ->activeIcon('heroicon-s-clock')
+                            ->url('/admin/history/stock-movements')
+                            ->isActive(fn () => request()->is('admin/history*')),
                     ]),
             ])
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\Filament\Admin\Resources')
