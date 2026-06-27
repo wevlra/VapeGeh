@@ -4,10 +4,12 @@ namespace App\Filament\Admin\Resources\History;
 
 use App\Filament\Admin\Resources\History\Pages\ListStockMovements;
 use App\Filament\Admin\Resources\History\Pages\ViewStockMovement;
+use App\Filament\Admin\Resources\History\Schemas\StockMovementInfolist;
 use App\Filament\Admin\Resources\History\Tables\StockMovementsTable;
 use App\Models\StockMovement;
 use BackedEnum;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
@@ -26,6 +28,11 @@ class StockMovementResource extends Resource
     public static function table(Table $table): Table
     {
         return StockMovementsTable::configure($table);
+    }
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return StockMovementInfolist::configure($schema);
     }
 
     public static function getPages(): array
