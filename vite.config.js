@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import laravel from "laravel-vite-plugin";
 import { bunny } from "laravel-vite-plugin/fonts";
 import tailwindcss from "@tailwindcss/vite";
+import { nativephpMobile } from "./vendor/nativephp/mobile/resources/js/vite-plugin.js";
 
 export default defineConfig({
     plugins: [
@@ -14,7 +15,8 @@ export default defineConfig({
                 })
             ]
         }),
-        tailwindcss()
+        tailwindcss(),
+        nativephpMobile()
     ],
     server: {
         watch: {

@@ -162,4 +162,79 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Run tests: `php artisan test --compact` or filter: `php artisan test --compact --filter=testName`.
 - Do NOT delete tests without approval.
 
+=== nativephp mobile ===
+
+# NativePHP Mobile
+
+This project is integrated with [NativePHP Mobile v3](https://nativephp.com/docs/mobile/3/getting-started/quick-start) for Android/iOS builds.
+
+## Configuration
+
+All settings in `config/nativephp.php`. Related env vars:
+- `NATIVEPHP_APP_ID` — Bundle ID (`com.wevlra.vapegeh`)
+- `NATIVEPHP_APP_VERSION` — Human-readable version
+- `NATIVEPHP_APP_VERSION_CODE` — Internal numeric version code (increment per release)
+- `NATIVEPHP_START_URL` — Start path when app opens (`/`)
+
+## Pre-Build Checklist
+
+Before building native, run:
+
+```bash
+# 1. Cache Filament components & icons (prevents broken icons)
+php artisan filament:optimize
+
+# 2. Verify viewport has user-scalable=no
+# Check resources/views/layouts/app.blade.php
+
+# 3. Build frontend assets
+npm run build
+
+# 4. Build native (only on laptop with Xcode/Android Studio)
+php artisan native:run
+```
+
+## Viewport & Zoom
+
+Zoom is disabled via viewport meta tag in `resources/views/layouts/app.blade.php`:
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+```
+
+## Splash Screen
+
+- Light: `public/splash.png` — stacked light logo (transparent) on white background
+- Dark: `public/splash-dark.png` — stacked dark logo (transparent) on dark background (#121212)
+- Minimum resolution: 1080×1920 PNG
+
+To replace splash screens, just overwrite the PNG files in `public/` with the same names.
+
+## Filament Icon Cache
+
+Filament icons are cached via `php artisan filament:optimize`. This runs automatically in the `post-autoload-dump` composer script, so every `composer install` / `composer update` re-caches them.
+
+If Filament icons appear broken/missing in the WebView, run:
+```bash
+php artisan filament:optimize
+php artisan view:clear
+```
+
+## Build Native
+
+⚠️ **Do NOT build native in this dev environment** — implementation and config only.
+Build only on the developer's laptop with Android Studio (Android) or Xcode (iOS).
+
+Build commands on target laptop:
+```bash
+# Development run (hot reload)
+php artisan native:run
+
+# Production build
+php artisan native:build
+```
+
+## Vite Config
+
+`vite.config.js` includes the `nativephpMobile()` plugin from vendor for hot file replacement.
+
 </laravel-boost-guidelines>
