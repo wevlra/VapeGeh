@@ -36,6 +36,10 @@ class LocationInfolist
                         TextEntry::make('users_count')
                             ->counts('users')
                             ->label('Staff'),
+                        TextEntry::make('total_asset')
+                            ->label('Total Asset')
+                            ->formatStateUsing(fn ($state): string => 'Rp '.number_format((float) $state, 0, ',', '.'))
+                            ->color('primary'),
                     ]),
             ]);
     }

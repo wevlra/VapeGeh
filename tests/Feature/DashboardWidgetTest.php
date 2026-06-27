@@ -23,9 +23,12 @@ it('renders admin stats overview widget with global data', function () {
     Filament::setCurrentPanel(Filament::getPanel('admin'));
 
     Livewire::test(AdminStatsOverview::class)
-        ->assertSee('Active Products')
-        ->assertSee('Locations')
-        ->assertSee('Total Sales')
+        ->assertSee('Total Assets')
+        ->assertSee('Stock In')
+        ->assertSee('Stock Out')
+        ->assertSee('Total Stock')
+        ->assertSee('Revenue')
+        ->assertSee('Profit')
         ->assertSuccessful();
 });
 

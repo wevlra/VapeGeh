@@ -73,3 +73,19 @@ it('relates stock to product and location', function () {
     expect($stock->product->is($product))->toBeTrue()
         ->and($stock->location->is($location))->toBeTrue();
 });
+
+it('computes total asset per location and globally', function () {
+    $warehouse = Location::factory()->warehouse()->create();
+    $store = Location::factory()->create();
+    $product = Product::factory()->create();
+
+    $warehousePrice = $product->prices()->create(['label' => 'Store', 'price' => 100000]);
+    $product->prices()->create(['label' => 'Wholesale', 'price' => 80000]);
+
+    Stock::create(['product_id' => $product->id, 'location_id' => $warehouse->id, 'qty' => 5]);
+    Stock::create(['product_id' => $product->id, 'location_id' => $store->id, 'qty' => 3]);
+
+    expect((float) $warehouse->total_asset)->toBe(500000.0)
+        ->and((float) $store->total_asset)->toBe(300000.0)
+        ->and(Location::getTotalAssetOfAll())->toBe(800000.0);
+});

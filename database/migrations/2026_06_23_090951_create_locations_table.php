@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->enum('type', ['warehouse', 'store']);
             $table->text('address')->nullable();
-            $table->string('status')->default('active')->after('type');
+            $table->string('status')->default('active');
             $table->timestamps();
         });
     }

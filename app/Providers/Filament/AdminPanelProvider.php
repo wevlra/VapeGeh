@@ -9,6 +9,7 @@ use App\Filament\Admin\Widgets\AdminExpenseCategoryChart;
 use App\Filament\Admin\Widgets\AdminPaymentMethodChart;
 use App\Filament\Admin\Widgets\AdminSalesChart;
 use App\Filament\Admin\Widgets\AdminStatsOverview;
+use App\Filament\Admin\Widgets\AdminStatsOverviewMobile;
 use App\Filament\Admin\Widgets\OperationalQuickActionsWidget;
 use App\Filament\Admin\Widgets\StockQuickActionsWidget;
 use Filament\Http\Middleware\Authenticate;
@@ -76,6 +77,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->widgets([
                 AdminStatsOverview::class,
+                AdminStatsOverviewMobile::class,
                 StockQuickActionsWidget::class,
                 OperationalQuickActionsWidget::class,
                 AdminSalesChart::class,

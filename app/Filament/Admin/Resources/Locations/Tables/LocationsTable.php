@@ -2,10 +2,10 @@
 
 namespace App\Filament\Admin\Resources\Locations\Tables;
 
+use App\Actions\DeleteLocation;
 use App\Filament\Admin\Resources\Locations\LocationResource;
 use App\Models\Location;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -27,6 +27,10 @@ class LocationsTable
                 TextColumn::make('users_count')
                     ->counts('users')
                     ->label('Staff'),
+                TextColumn::make('total_asset')
+                    ->label('Total Asset')
+                    ->getStateUsing(fn (Location $record): string => 'Rp '.number_format((float) $record->total_asset, 0, ',', '.'))
+                    ->alignEnd(),
                 TextColumn::make('status')
                     ->badge()
                     ->icon(fn (string $state): string => match ($state) {
@@ -50,7 +54,7 @@ class LocationsTable
             ])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make(),
+                DeleteLocation::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
