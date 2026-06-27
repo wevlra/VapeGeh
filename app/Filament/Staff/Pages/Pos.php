@@ -17,6 +17,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -43,6 +44,11 @@ class Pos extends Page implements HasTable
 
     public array $cart = [];
 
+    public function getMaxContentWidth(): Width|string|null
+    {
+        return Width::Full;
+    }
+
     public function table(Table $table): Table
     {
         $locationId = auth()->user()->location_id;
@@ -50,7 +56,7 @@ class Pos extends Page implements HasTable
         return $table
             ->query(
                 Product::query()
-                    ->whereHas('vendor')
+                    ->whereHas('prices')
                     ->whereHas('stocks', fn ($q) => $q
                         ->where('location_id', $locationId)
                         ->where('qty', '>', 0),

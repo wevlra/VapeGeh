@@ -1,4 +1,9 @@
 <x-filament-panels::page>
+    <div x-init="
+        if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch(() => {});
+        }
+    "></div>
     @vite(['resources/css/app.css'])
 
     @php
@@ -31,14 +36,15 @@
                                 @endif
                             </div>
                             @if (count($cartItems) > 0)
-                                <button
+                                <x-filament::button
                                     wire:click="clearCart"
                                     wire:confirm="Remove all items from cart?"
-                                    type="button"
-                                    class="text-xs text-gray-400 hover:text-danger-500 transition-colors"
+                                    color="danger"
+                                    variant="text"
+                                    size="sm"
                                 >
                                     Clear All
-                                </button>
+                                </x-filament::button>
                             @endif
                         </div>
                     </x-slot>
@@ -58,32 +64,24 @@
 
                                 {{-- Qty Controls --}}
                                 <div class="flex items-center gap-1">
-                                    <button
+                                    <x-filament::icon-button
                                         wire:click="updateQty({{ $index }}, {{ $item['qty'] - 1 }})"
-                                        type="button"
-                                        class="shrink-0 w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                         @if($item['qty'] <= 1) wire:confirm="Remove this item?" @endif
-                                        aria-label="Decrease quantity"
-                                    >
-                                        <x-filament::icon
-                                            name="heroicon-m-minus"
-                                            class="w-3.5 h-3.5"
-                                        />
-                                    </button>
+                                        icon="heroicon-m-minus"
+                                        color="gray"
+                                        size="sm"
+                                        tooltip="Decrease quantity"
+                                    />
                                     <span class="w-8 text-center text-sm font-semibold text-gray-900 dark:text-white tabular-nums">
                                         {{ $item['qty'] }}
                                     </span>
-                                    <button
+                                    <x-filament::icon-button
                                         wire:click="addToCart({{ $item['product_id'] }})"
-                                        type="button"
-                                        class="shrink-0 w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                        aria-label="Increase quantity"
-                                    >
-                                        <x-filament::icon
-                                            name="heroicon-m-plus"
-                                            class="w-3.5 h-3.5"
-                                        />
-                                    </button>
+                                        icon="heroicon-m-plus"
+                                        color="gray"
+                                        size="sm"
+                                        tooltip="Increase quantity"
+                                    />
                                 </div>
 
                                 {{-- Subtotal & Remove --}}
@@ -91,13 +89,14 @@
                                     <p class="text-sm font-semibold text-gray-900 dark:text-white tabular-nums">
                                         Rp {{ number_format($item['subtotal'], 0, ',', '.') }}
                                     </p>
-                                    <button
+                                    <x-filament::link
                                         wire:click="removeCartItem({{ $index }})"
-                                        type="button"
-                                        class="text-xs text-gray-400 hover:text-danger-500 transition-colors mt-0.5"
+                                        color="danger"
+                                        size="sm"
+                                        class="mt-0.5"
                                     >
                                         Remove
-                                    </button>
+                                    </x-filament::link>
                                 </div>
                             </div>
                         @empty
