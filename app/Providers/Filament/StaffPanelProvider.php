@@ -30,6 +30,7 @@ class StaffPanelProvider extends PanelProvider
         return $panel
             ->id('staff')
             ->path('staff')
+            ->viteTheme('resources/css/filament/staff/theme.css')
             ->login()
             ->profile()
             ->brandLogo(asset('assets/images/logo-wordmark-light-tr.png'))

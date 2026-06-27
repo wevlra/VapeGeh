@@ -1,0 +1,4 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/Staff/**/*';
+@source '../../../../resources/views/filament/staff/**/*';
