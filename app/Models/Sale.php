@@ -64,6 +64,15 @@ class Sale extends Model
         return $this->hasMany(SaleItem::class);
     }
 
+    /**
+     * @return HasMany<StockMovement, $this>
+     */
+    public function stockMovements(): HasMany
+    {
+        return $this->hasMany(StockMovement::class, 'related_id')
+            ->where('related_type', Sale::class);
+    }
+
     protected function casts(): array
     {
         return [

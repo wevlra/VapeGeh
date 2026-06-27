@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Sale;
 use App\Models\StockMovement;
 use Illuminate\Support\Facades\Route;
 
@@ -11,4 +12,14 @@ Route::middleware(['web', 'auth'])->group(function () {
 
         return view('receipts.receipt', ['movement' => $stockMovement]);
     })->name('admin.stock-movements.receipt');
+
+    Route::get('/admin/sales/{sale}/receipt', function (Sale $sale) {
+        $movement = $sale->stockMovements()->first();
+        if (! $movement) {
+            abort(404);
+        }
+        $movement->load(['product', 'location', 'creator', 'buyer', 'related']);
+
+        return view('receipts.receipt', ['movement' => $movement]);
+    })->name('admin.sales.receipt');
 });

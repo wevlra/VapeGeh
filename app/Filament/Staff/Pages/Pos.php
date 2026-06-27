@@ -347,9 +347,18 @@ class Pos extends Page implements HasTable
 
         $this->cart = [];
 
+        $printUrl = route('admin.sales.receipt', $sale);
+
         Notification::make()
             ->title("Sale {$sale->invoice_number} created")
+            ->body('Click to print receipt')
             ->success()
+            ->actions([
+                \Filament\Notifications\Actions\Action::make('print')
+                    ->label('Print Receipt')
+                    ->icon('heroicon-o-printer')
+                    ->url($printUrl, shouldOpenInNewTab: true),
+            ])
             ->send();
     }
 }
