@@ -15,7 +15,6 @@ new class extends Component {};
         <div class="rounded-3xl border border-zinc-800 bg-zinc-900 p-2">
             <a
                 href="/admin/login"
-                wire:navigate
                 class="group flex items-center gap-4 rounded-2xl p-4 transition hover:border-amber-500/30 hover:bg-white/5"
             >
                 <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 ring-1 ring-amber-500/20">
@@ -45,7 +44,6 @@ new class extends Component {};
 
             <a
                 href="/staff/login"
-                wire:navigate
                 class="group flex items-center gap-4 rounded-2xl p-4 transition hover:border-amber-500/30 hover:bg-white/5"
             >
                 <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 ring-1 ring-amber-500/20">
