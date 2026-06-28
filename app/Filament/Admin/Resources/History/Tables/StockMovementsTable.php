@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\History\Tables;
 use App\Filament\Actions\PrintInvoiceAction;
 use App\Filament\Actions\PrintReceiptAction;
 use App\Filament\Admin\Resources\History\StockMovementResource;
+use App\Models\Sale;
 use App\Models\StockMovement;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
@@ -42,7 +43,10 @@ class StockMovementsTable
                 TextColumn::make('product.name')
                     ->label('Product')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->formatStateUsing(fn (StockMovement $record): string => $record->related instanceof Sale
+                        ? 'Sale ('.$record->related->invoice_number.')'
+                        : ($record->product?->name ?? '-')),
                 TextColumn::make('location.name')
                     ->label('Location')
                     ->sortable(),
