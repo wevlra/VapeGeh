@@ -17,6 +17,14 @@ class LocationForm
                     ->required()
                     ->maxLength(255),
                 Textarea::make('address'),
+                Select::make('type')
+                    ->required()
+                    ->options([
+                        'store' => 'Store',
+                        'warehouse' => 'Warehouse',
+                    ])
+                    ->default('store')
+                    ->visible(fn ($record) => ! $record),
                 Select::make('status')
                     ->required()
                     ->options([
