@@ -36,12 +36,12 @@ class AdminStatsOverview extends StatsOverviewWidget
                 Section::make()
                     ->schema([
                         Select::make('period')
-                            ->label('Period')
+                            ->label('Periode')
                             ->options([
-                                'all' => 'All time',
-                                'today' => 'Today',
-                                '7days' => 'Last 7 days',
-                                '30days' => 'Last 30 days',
+                                'all' => 'Semua waktu',
+                                'today' => 'Hari ini',
+                                '7days' => '7 hari terakhir',
+                                '30days' => '30 hari terakhir',
                             ])
                             ->default(fn () => $this->period)
                             ->native(false)
@@ -68,10 +68,10 @@ class AdminStatsOverview extends StatsOverviewWidget
     protected function periodLabel(): string
     {
         return match ($this->period) {
-            'today' => 'Today',
-            '7days' => 'Last 7 days',
-            '30days' => 'Last 30 days',
-            default => 'All time',
+            'today' => 'Hari ini',
+            '7days' => '7 hari terakhir',
+            '30days' => '30 hari terakhir',
+            default => 'Semua waktu',
         };
     }
 
@@ -114,25 +114,25 @@ class AdminStatsOverview extends StatsOverviewWidget
         })->toArray();
 
         return [
-            Stat::make('Revenue', 'Rp '.number_format($revenue, 0, ',', '.'))
+            Stat::make('Pendapatan', 'Rp '.number_format($revenue, 0, ',', '.'))
                 ->description($this->periodLabel())
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->chart($chartValues)
                 ->color('success'),
-            Stat::make('Profit', 'Rp '.number_format($profit, 0, ',', '.'))
-                ->description('Total earnings')
+            Stat::make('Laba', 'Rp '.number_format($profit, 0, ',', '.'))
+                ->description('Total pendapatan')
                 ->color($profit >= 0 ? 'success' : 'danger'),
-            Stat::make('Stock In', number_format($stockIn))
-                ->description('Units received')
+            Stat::make('Stok Masuk', number_format($stockIn))
+                ->description('Unit diterima')
                 ->color('success'),
-            Stat::make('Stock Out', number_format($stockOut))
-                ->description('Units sold/shipped')
+            Stat::make('Stok Keluar', number_format($stockOut))
+                ->description('Unit terjual/dikirim')
                 ->color('danger'),
-            Stat::make('Total Stock', number_format((int) Stock::sum('qty')))
-                ->description('Units across all locations')
+            Stat::make('Total Stok', number_format((int) Stock::sum('qty')))
+                ->description('Unit di semua lokasi')
                 ->color('warning'),
-            Stat::make('Total Assets', 'Rp '.number_format((float) Location::getTotalAssetOfAll(), 0, ',', '.'))
-                ->description('Inventory value')
+            Stat::make('Total Aset', 'Rp '.number_format((float) Location::getTotalAssetOfAll(), 0, ',', '.'))
+                ->description('Nilai inventaris')
                 ->color('primary'),
         ];
     }

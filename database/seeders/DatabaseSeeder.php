@@ -204,16 +204,16 @@ class DatabaseSeeder extends Seeder
 
         // ── Income entries (spread over last 30 days) ──────────────
         $incomeData = [
-            ['category' => 'sale', 'description' => 'Daily retail sales', 'amount' => 275000],
-            ['category' => 'sale', 'description' => 'Bundle package sales', 'amount' => 450000],
-            ['category' => 'sale', 'description' => 'Online purchase via QRIS', 'amount' => 180000],
-            ['category' => 'debt_payment', 'description' => 'Customer debt payment', 'amount' => 500000],
-            ['category' => 'debt_payment', 'description' => 'Stock installment settlement', 'amount' => 350000],
-            ['category' => 'other', 'description' => 'Supplier refund', 'amount' => 120000],
-            ['category' => 'sale', 'description' => 'Restock selling fee', 'amount' => 200000],
-            ['category' => 'sale', 'description' => 'Weekly POD sales', 'amount' => 320000],
-            ['category' => 'other', 'description' => 'Distributor bonus', 'amount' => 150000],
-            ['category' => 'sale', 'description' => 'Coil and cartridge sales', 'amount' => 285000],
+            ['category' => 'sale', 'description' => 'Penjualan ritel harian', 'amount' => 275000],
+            ['category' => 'sale', 'description' => 'Penjualan paket bundle', 'amount' => 450000],
+            ['category' => 'sale', 'description' => 'Pembelian online via QRIS', 'amount' => 180000],
+            ['category' => 'debt_payment', 'description' => 'Pembayaran hutang pelanggan', 'amount' => 500000],
+            ['category' => 'debt_payment', 'description' => 'Pelunasan cicilan stok', 'amount' => 350000],
+            ['category' => 'other', 'description' => 'Refund dari pemasok', 'amount' => 120000],
+            ['category' => 'sale', 'description' => 'Biaya penjualan restock', 'amount' => 200000],
+            ['category' => 'sale', 'description' => 'Penjualan POD mingguan', 'amount' => 320000],
+            ['category' => 'other', 'description' => 'Bonus distributor', 'amount' => 150000],
+            ['category' => 'sale', 'description' => 'Penjualan coil dan cartridge', 'amount' => 285000],
         ];
 
         foreach ($allStores as $store) {
@@ -233,18 +233,18 @@ class DatabaseSeeder extends Seeder
 
         // ── Expense entries (spread over last 30 days) ─────────────
         $expenseData = [
-            ['category' => 'purchase', 'description' => 'Restock Nasty Juice 30ml liquid', 'amount' => 350000],
-            ['category' => 'purchase', 'description' => 'Restock Voopoo PnP coils', 'amount' => 400000],
-            ['category' => 'salary', 'description' => 'Monthly employee salary', 'amount' => 4500000],
-            ['category' => 'utilities', 'description' => 'Monthly electricity and water', 'amount' => 750000],
-            ['category' => 'utilities', 'description' => 'Internet and WiFi', 'amount' => 350000],
-            ['category' => 'transport', 'description' => 'Branch delivery fee', 'amount' => 150000],
-            ['category' => 'transport', 'description' => 'Gas for supplier pickup', 'amount' => 85000],
-            ['category' => 'purchase', 'description' => 'Restock Uwell Caliburn device', 'amount' => 660000],
-            ['category' => 'purchase', 'description' => 'Cases and accessories purchase', 'amount' => 200000],
-            ['category' => 'other', 'description' => 'Monthly store cleaning', 'amount' => 100000],
-            ['category' => 'purchase', 'description' => 'Restock Pachamama liquid', 'amount' => 400000],
-            ['category' => 'utilities', 'description' => 'Employee parking fee', 'amount' => 120000],
+            ['category' => 'purchase', 'description' => 'Restock liquid Nasty Juice 30ml', 'amount' => 350000],
+            ['category' => 'purchase', 'description' => 'Restock coil Voopoo PnP', 'amount' => 400000],
+            ['category' => 'salary', 'description' => 'Gaji karyawan bulanan', 'amount' => 4500000],
+            ['category' => 'utilities', 'description' => 'Listrik dan air bulanan', 'amount' => 750000],
+            ['category' => 'utilities', 'description' => 'Internet dan WiFi', 'amount' => 350000],
+            ['category' => 'transport', 'description' => 'Ongkos kirim ke cabang', 'amount' => 150000],
+            ['category' => 'transport', 'description' => 'Bensin jemput barang', 'amount' => 85000],
+            ['category' => 'purchase', 'description' => 'Restock device Uwell Caliburn', 'amount' => 660000],
+            ['category' => 'purchase', 'description' => 'Pembelian casing dan aksesoris', 'amount' => 200000],
+            ['category' => 'other', 'description' => 'Kebersihan toko bulanan', 'amount' => 100000],
+            ['category' => 'purchase', 'description' => 'Restock liquid Pachamama', 'amount' => 400000],
+            ['category' => 'utilities', 'description' => 'Biaya parkir karyawan', 'amount' => 120000],
         ];
 
         foreach ($allStores as $store) {

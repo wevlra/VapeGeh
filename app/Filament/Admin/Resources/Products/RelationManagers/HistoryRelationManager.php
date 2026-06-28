@@ -17,7 +17,7 @@ class HistoryRelationManager extends RelationManager
 {
     protected static string $relationship = 'movements';
 
-    protected static ?string $title = 'History';
+    protected static ?string $title = 'Riwayat';
 
     public function isReadOnly(): bool
     {
@@ -30,15 +30,17 @@ class HistoryRelationManager extends RelationManager
             ->columns([
                 TextColumn::make('created_at')
                     ->dateTime()
+                    ->label('Tanggal')
                     ->sortable(),
                 TextColumn::make('type')
+                    ->label('Tipe')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'in' => 'Stock In',
-                        'out' => 'Stock Out',
-                        'transfer_in' => 'Transfer In',
-                        'transfer_out' => 'Transfer Out',
-                        'adjustment' => 'Adjustment',
+                        'in' => 'Stok Masuk',
+                        'out' => 'Stok Keluar',
+                        'transfer_in' => 'Transfer Masuk',
+                        'transfer_out' => 'Transfer Keluar',
+                        'adjustment' => 'Penyesuaian',
                         default => ucfirst($state),
                     })
                     ->color(fn (string $state): string => match ($state) {
@@ -57,30 +59,33 @@ class HistoryRelationManager extends RelationManager
                         'adjustment' => 'heroicon-o-pencil',
                         default => null,
                     }),
-                TextColumn::make('location.name'),
+                TextColumn::make('location.name')
+                    ->label('Lokasi'),
                 TextColumn::make('quantity')
+                    ->label('Jumlah')
                     ->formatStateUsing(fn (StockMovement $record): string => $record->quantity > 0 ? '+'.$record->quantity : (string) $record->quantity)
                     ->color(fn (StockMovement $record): string => $record->quantity > 0 ? 'success' : 'danger'),
                 TextColumn::make('notes')
+                    ->label('Catatan')
                     ->limit(30)
                     ->placeholder('—'),
                 TextColumn::make('creator.name')
-                    ->label('By'),
+                    ->label('Oleh'),
             ])
             ->recordActions([
                 EditAction::make()
                     ->hidden(fn (StockMovement $record): bool => ! in_array($record->type, ['in', 'out'], true))
-                    ->modalHeading(fn (StockMovement $record): string => $record->type === 'in' ? 'Edit Stock In' : 'Edit Stock Out')
+                    ->modalHeading(fn (StockMovement $record): string => $record->type === 'in' ? 'Edit Stok Masuk' : 'Edit Stok Keluar')
                     ->form([
                         TextInput::make('quantity')
-                            ->label('Quantity')
+                            ->label('Jumlah')
                             ->required()
                             ->integer()
                             ->minValue(1)
                             ->formatStateUsing(fn (StockMovement $record): int => abs((int) $record->quantity))
                             ->dehydrateStateUsing(fn (?int $state): int => $state ?? 0),
                         Textarea::make('notes')
-                            ->label('Notes')
+                            ->label('Catatan')
                             ->rows(2)
                             ->formatStateUsing(fn (StockMovement $record): ?string => $record->notes),
                     ])
@@ -92,8 +97,8 @@ class HistoryRelationManager extends RelationManager
                             $record->update(['notes' => $data['notes'] ?? null]);
 
                             Notification::make()
-                                ->title('Notes updated')
-                                ->body('Notes for this movement record have been updated successfully.')
+                                ->title('Catatan diperbarui')
+                                ->body('Catatan untuk pergerakan ini berhasil diperbarui.')
                                 ->success()
                                 ->send();
 
@@ -132,10 +137,10 @@ class HistoryRelationManager extends RelationManager
                         });
 
                         Notification::make()
-                            ->title($record->type === 'in' ? 'Stock in updated' : 'Stock out updated')
+                            ->title($record->type === 'in' ? 'Stok masuk diperbarui' : 'Stok keluar diperbarui')
                             ->body($record->type === 'in'
-                                ? 'Stock in record has been updated to '.$newQty.' units.'
-                                : 'Stock out record has been updated to '.$newQty.' units.')
+                                ? 'Catatan stok masuk telah diperbarui menjadi '.$newQty.' unit.'
+                                : 'Catatan stok keluar telah diperbarui menjadi '.$newQty.' unit.')
                             ->success()
                             ->send();
                     }),

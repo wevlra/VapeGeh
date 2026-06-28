@@ -31,17 +31,17 @@ class SalesReportStats extends StatsOverviewWidget
         $totalRevenue = $query->sum('total');
 
         $periodLabel = match ($this->period) {
-            'today' => 'Today',
-            'week' => 'Last 7 Days',
-            'month' => 'Last 30 Days',
-            default => 'All Time',
+            'today' => 'Hari Ini',
+            'week' => '7 Hari Terakhir',
+            'month' => '30 Hari Terakhir',
+            default => 'Semua Waktu',
         };
 
         return [
-            Stat::make('Total Sales', number_format($totalSales))
+            Stat::make('Total Penjualan', number_format($totalSales))
                 ->description($periodLabel)
                 ->color('success'),
-            Stat::make('Total Revenue', 'Rp '.number_format($totalRevenue, 0, ',', '.'))
+            Stat::make('Total Pendapatan', 'Rp '.number_format($totalRevenue, 0, ',', '.'))
                 ->description($periodLabel)
                 ->color('success'),
         ];

@@ -15,29 +15,33 @@ class ExpenseForm
         return $schema
             ->components([
                 Select::make('location_id')
-                    ->label('Location')
+                    ->label('Lokasi')
                     ->relationship('location', 'name')
                     ->required()
                     ->searchable()
                     ->preload(),
                 Select::make('category')
+                    ->label('Kategori')
                     ->required()
                     ->options([
-                        'purchase' => 'Purchase',
-                        'salary' => 'Salary',
-                        'utilities' => 'Utilities',
-                        'transport' => 'Transport',
-                        'other' => 'Other',
+                        'purchase' => 'Pembelian',
+                        'salary' => 'Gaji',
+                        'utilities' => 'Utilitas',
+                        'transport' => 'Transportasi',
+                        'other' => 'Lainnya',
                     ]),
                 TextInput::make('amount')
+                    ->label('Jumlah')
                     ->required()
                     ->numeric()
                     ->minValue(0)
-                    ->prefix('IDR'),
+                    ->prefix('Rp'),
                 DatePicker::make('date')
+                    ->label('Tanggal')
                     ->required()
                     ->default(now()),
                 Textarea::make('description')
+                    ->label('Deskripsi')
                     ->columnSpanFull()
                     ->rows(2),
             ]);

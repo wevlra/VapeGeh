@@ -8,10 +8,10 @@
                 href="{{ \App\Filament\Admin\Pages\Dashboard::getUrl() }}"
                 color="gray"
             >
-                Cancel
+                Batal
             </x-filament::button>
             <x-filament::button type="submit">
-                Save
+                Simpan
             </x-filament::button>
         </div>
     </form>

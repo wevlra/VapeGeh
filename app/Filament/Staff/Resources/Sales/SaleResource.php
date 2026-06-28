@@ -22,11 +22,22 @@ class SaleResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingCart;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Sales';
+    protected static \UnitEnum|string|null $navigationGroup = 'Penjualan';
+
+    public static function getModelLabel(): string
+    {
+        return 'Penjualan';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Penjualan';
+    }
 
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
+            ->with(['items.product'])
             ->where('location_id', auth()->user()->location_id);
     }
 

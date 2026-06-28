@@ -16,12 +16,12 @@ class StockReportStats extends StatsOverviewWidget
         $lowStock = Stock::where('qty', '<', 10)->where('qty', '>', 0)->count();
 
         return [
-            Stat::make('Total Stock Units', number_format($totalStock))
+            Stat::make('Total Unit Stok', number_format($totalStock))
                 ->color('primary'),
-            Stat::make('Active Locations', $totalLocations)
+            Stat::make('Lokasi Aktif', $totalLocations)
                 ->color('primary'),
-            Stat::make('Low Stock Items', $lowStock)
-                ->description('Less than 10 units')
+            Stat::make('Item Stok Rendah', $lowStock)
+                ->description('Kurang dari 10 unit')
                 ->color($lowStock > 0 ? 'danger' : 'success'),
         ];
     }

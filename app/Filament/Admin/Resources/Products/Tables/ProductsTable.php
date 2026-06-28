@@ -20,12 +20,19 @@ class ProductsTable
             ->recordUrl(fn (Product $record): string => ProductResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('sku')
+                    ->label('SKU')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('name')
+                    ->label('Nama')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('purchase_price')
+                    ->label('Harga Beli')
+                    ->money('IDR')
+                    ->sortable(),
+                TextColumn::make('selling_price')
+                    ->label('Harga Jual')
                     ->money('IDR')
                     ->sortable(),
             ])
@@ -35,8 +42,8 @@ class ProductsTable
                 DeleteAction::make()
                     ->successNotification(
                         Notification::make()
-                            ->title('Product deleted')
-                            ->body('The product has been permanently removed.')
+                            ->title('Produk dihapus')
+                            ->body('Produk telah dihapus permanen.')
                             ->danger()
                     ),
             ])

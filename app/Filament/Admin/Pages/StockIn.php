@@ -25,17 +25,17 @@ class StockIn extends Page implements HasForms
 
     protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedArrowUpTray;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Inventory';
+    protected static \UnitEnum|string|null $navigationGroup = 'Inventaris';
 
-    protected static ?string $navigationLabel = 'Stock In';
+    protected static ?string $navigationLabel = 'Stok Masuk';
 
     protected static ?string $slug = 'stock-in';
 
-    protected static ?string $title = 'Stock In';
+    protected static ?string $title = 'Stok Masuk';
 
     protected static bool $shouldRegisterNavigation = false;
 
-    protected ?string $heading = 'Stock In';
+    protected ?string $heading = 'Stok Masuk';
 
     protected string $view = 'filament.admin.pages.stock-in';
 
@@ -53,7 +53,7 @@ class StockIn extends Page implements HasForms
             ->columns(2)
             ->components([
                 Select::make('product_id')
-                    ->label('Product')
+                    ->label('Produk')
                     ->options(fn () => Product::orderBy('name')->get()
                         ->mapWithKeys(fn (Product $p): array => [$p->id => "{$p->sku} — {$p->name}"])
                         ->toArray())
@@ -63,47 +63,52 @@ class StockIn extends Page implements HasForms
                     ->afterStateUpdated(fn ($state, callable $set) => $set('price', Product::find($state)?->purchase_price ?? 0))
                     ->columnSpanFull(),
                 Select::make('vendor_id')
-                    ->label('Vendor')
+                    ->label('Pemasok')
                     ->options(fn () => Vendor::pluck('name', 'id'))
                     ->searchable()
                     ->required()
                     ->createOptionForm([
                         TextInput::make('name')
+                            ->label('Nama')
                             ->required()
                             ->maxLength(255),
                         TextInput::make('contact_person')
+                            ->label('Kontak Person')
                             ->maxLength(255),
                         TextInput::make('phone')
+                            ->label('Telepon')
                             ->tel()
                             ->maxLength(50),
                         TextInput::make('email')
+                            ->label('Email')
                             ->email()
                             ->maxLength(255),
                         TextInput::make('address')
+                            ->label('Alamat')
                             ->maxLength(255),
                     ])
                     ->createOptionUsing(function (array $data): int {
                         return Vendor::create($data)->getKey();
                     }),
                 Select::make('location_id')
-                    ->label('Location')
+                    ->label('Lokasi')
                     ->options(fn () => Location::pluck('name', 'id'))
                     ->searchable()
                     ->default(fn () => Location::where('type', 'warehouse')->value('id'))
                     ->required(),
                 TextInput::make('qty')
-                    ->label('Quantity')
+                    ->label('Jumlah')
                     ->required()
                     ->integer()
                     ->minValue(1),
                 TextInput::make('price')
-                    ->label('Purchase Price')
+                    ->label('Harga Beli')
                     ->required()
                     ->numeric()
                     ->minValue(0)
                     ->prefix('Rp'),
                 Textarea::make('notes')
-                    ->label('Notes (optional)')
+                    ->label('Catatan (opsional)')
                     ->rows(2)
                     ->maxLength(1000)
                     ->columnSpanFull(),
@@ -163,8 +168,8 @@ class StockIn extends Page implements HasForms
             report($e);
 
             Notification::make()
-                ->title('Stock in failed')
-                ->body($e->getMessage() ?: 'An unexpected error occurred.')
+                ->title('Stok masuk gagal')
+                ->body($e->getMessage() ?: 'Terjadi kesalahan tak terduga.')
                 ->danger()
                 ->send();
 
@@ -174,8 +179,8 @@ class StockIn extends Page implements HasForms
         $this->form->fill();
 
         Notification::make()
-            ->title('Stock added')
-            ->body("{$product->name} — {$newQty} units added to stock at ".($product->stocks->first()?->location?->name ?? 'the selected location').'.')
+            ->title('Stok ditambahkan')
+            ->body("{$product->name} — {$newQty} unit ditambahkan ke stok di ".($product->stocks->first()?->location?->name ?? 'lokasi yang dipilih').'.')
             ->success()
             ->send();
     }

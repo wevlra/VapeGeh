@@ -14,14 +14,16 @@ class ProductInfolist
 
         return $schema
             ->schema([
-                Section::make('Product Details')
+                Section::make('Detail Produk')
                     ->columnSpanFull()
                     ->columns(3)
                     ->schema([
-                        TextEntry::make('sku'),
-                        TextEntry::make('name'),
+                        TextEntry::make('sku')
+                            ->label('SKU'),
+                        TextEntry::make('name')
+                            ->label('Nama'),
                         TextEntry::make('stocks')
-                            ->label('Stock')
+                            ->label('Stok')
                             ->getStateUsing(fn ($record): int => $record->stocks->firstWhere('location_id', $locationId)?->qty ?? 0)
                             ->badge()
                             ->color(fn ($record): string => match (true) {

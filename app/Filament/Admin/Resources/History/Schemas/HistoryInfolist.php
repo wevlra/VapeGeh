@@ -16,21 +16,22 @@ class HistoryInfolist
     {
         return $schema
             ->schema([
-                Section::make('Details')
+                Section::make('Detail')
                     ->columnSpanFull()
                     ->columns(2)
                     ->schema([
                         TextEntry::make('created_at')
-                            ->label('Date')
+                            ->label('Tanggal')
                             ->dateTime(),
                         TextEntry::make('type')
+                            ->label('Tipe')
                             ->badge()
                             ->formatStateUsing(fn (string $state): string => match ($state) {
-                                'in' => 'Stock In',
-                                'out' => 'Stock Out',
-                                'transfer_in' => 'Transfer In',
-                                'transfer_out' => 'Transfer Out',
-                                'adjustment' => 'Adjustment',
+                                'in' => 'Stok Masuk',
+                                'out' => 'Stok Keluar',
+                                'transfer_in' => 'Transfer Masuk',
+                                'transfer_out' => 'Transfer Keluar',
+                                'adjustment' => 'Penyesuaian',
                                 default => ucfirst($state),
                             })
                             ->color(fn (string $state): string => match ($state) {
@@ -48,50 +49,62 @@ class HistoryInfolist
                                 default => null,
                             }),
                         TextEntry::make('location.name')
-                            ->label('Location'),
+                            ->label('Lokasi'),
                         TextEntry::make('unit_price')
-                            ->label('Unit Price')
+                            ->label('Harga Satuan')
                             ->money('IDR')
                             ->hidden(fn ($state): bool => is_null($state)),
                         TextEntry::make('creator.name')
-                            ->label('Staff'),
+                            ->label('Staf'),
                         TextEntry::make('buyer.name')
-                            ->label('Buyer')
+                            ->label('Pembeli')
                             ->hidden(fn ($state): bool => is_null($state)),
                         TextEntry::make('notes')
+                            ->label('Catatan')
                             ->columnSpanFull()
                             ->hidden(fn ($state): bool => blank($state)),
                     ]),
 
-                Section::make('Related Transaction')
+                Section::make('Transaksi Terkait')
                     ->columnSpanFull()
                     ->schema(function ($record) {
                         if ($record->related instanceof Sale) {
                             return [
                                 TextEntry::make('related.invoice_number')
-                                    ->label('Invoice #'),
+                                    ->label('No. Invoice'),
                                 TextEntry::make('related.total')
                                     ->label('Total')
                                     ->money('IDR'),
                                 TextEntry::make('related.payment_method')
-                                    ->label('Payment')
-                                    ->formatStateUsing(fn ($state) => ucfirst($state)),
+                                    ->label('Pembayaran')
+                                    ->formatStateUsing(fn ($state) => match ($state) {
+                                        'qris' => 'QRIS',
+                                        'cash' => 'Tunai',
+                                        default => ucfirst($state),
+                                    }),
                                 RepeatableEntry::make('related.items')
                                     ->hiddenLabel()
                                     ->table([
-                                        TableColumn::make('Product'),
-                                        TableColumn::make('Qty')
+                                        TableColumn::make('Produk')
+                                            ->width(180),
+                                        TableColumn::make('Jumlah')
                                             ->width(80),
-                                        TableColumn::make('Price')
+                                        TableColumn::make('Harga')
                                             ->width(180),
                                         TableColumn::make('Subtotal')
                                             ->width(180),
                                     ])
                                     ->schema([
-                                        TextEntry::make('product.name'),
-                                        TextEntry::make('qty'),
-                                        TextEntry::make('price')->money('IDR'),
-                                        TextEntry::make('subtotal')->money('IDR'),
+                                        TextEntry::make('product.name')
+                                            ->label('Produk'),
+                                        TextEntry::make('qty')
+                                            ->label('Jumlah'),
+                                        TextEntry::make('price')
+                                            ->label('Harga')
+                                            ->money('IDR'),
+                                        TextEntry::make('subtotal')
+                                            ->label('Subtotal')
+                                            ->money('IDR'),
                                     ]),
                             ];
                         }
@@ -99,14 +112,20 @@ class HistoryInfolist
                         if ($record->related instanceof StockTransfer) {
                             return [
                                 TextEntry::make('related.transfer_number')
-                                    ->label('Transfer #'),
+                                    ->label('No. Transfer'),
                                 TextEntry::make('related.fromLocation.name')
-                                    ->label('From'),
+                                    ->label('Dari'),
                                 TextEntry::make('related.toLocation.name')
-                                    ->label('To'),
+                                    ->label('Ke'),
                                 TextEntry::make('related.status')
+                                    ->label('Status')
                                     ->badge()
-                                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                                        'pending' => 'Tertunda',
+                                        'completed' => 'Selesai',
+                                        'cancelled' => 'Dibatalkan',
+                                        default => ucfirst($state),
+                                    })
                                     ->color(fn (string $state): string => match ($state) {
                                         'pending' => 'warning',
                                         'completed' => 'success',
@@ -116,13 +135,15 @@ class HistoryInfolist
                                 RepeatableEntry::make('related.items')
                                     ->hiddenLabel()
                                     ->table([
-                                        TableColumn::make('Product'),
-                                        TableColumn::make('Quantity')
+                                        TableColumn::make('Produk'),
+                                        TableColumn::make('Jumlah')
                                             ->width(100),
                                     ])
                                     ->schema([
-                                        TextEntry::make('product.name'),
-                                        TextEntry::make('qty'),
+                                        TextEntry::make('product.name')
+                                            ->label('Produk'),
+                                        TextEntry::make('qty')
+                                            ->label('Jumlah'),
                                     ]),
                             ];
                         }

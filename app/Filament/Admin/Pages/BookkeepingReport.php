@@ -25,9 +25,9 @@ class BookkeepingReport extends Page implements Tables\Contracts\HasTable
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Reports';
+    protected static \UnitEnum|string|null $navigationGroup = 'Laporan';
 
-    protected static ?string $title = 'Bookkeeping Report';
+    protected static ?string $title = 'Laporan Pembukuan';
 
     protected string $view = 'filament.admin.pages.bookkeeping-report';
 
@@ -51,14 +51,14 @@ class BookkeepingReport extends Page implements Tables\Contracts\HasTable
     {
         return $schema
             ->components([
-                Tabs::make('Bookkeeping Type')
+                Tabs::make('Tipe Pembukuan')
                     ->tabs([
-                        'income' => Tab::make('Income')
+                        'income' => Tab::make('Pendapatan')
                             ->icon(Heroicon::OutlinedArrowDownTray)
                             ->schema([
                                 View::make('filament-responsive-table::responsive-table'),
                             ]),
-                        'expenses' => Tab::make('Expenses')
+                        'expenses' => Tab::make('Pengeluaran')
                             ->icon(Heroicon::OutlinedArrowUpTray)
                             ->schema([
                                 View::make('filament-responsive-table::responsive-table'),
@@ -90,16 +90,24 @@ class BookkeepingReport extends Page implements Tables\Contracts\HasTable
             ->query($query)
             ->columns([
                 TextColumn::make('date')
+                    ->label('Tanggal')
                     ->date()
                     ->sortable(),
                 TextColumn::make('location.name')
-                    ->label('Location')
+                    ->label('Lokasi')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('category')
+                    ->label('Kategori')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'debt_payment' => 'Debt Payment',
+                        'sale' => 'Penjualan',
+                        'debt_payment' => 'Pembayaran Hutang',
+                        'purchase' => 'Pembelian',
+                        'salary' => 'Gaji',
+                        'utilities' => 'Utilitas',
+                        'transport' => 'Transportasi',
+                        'other' => 'Lainnya',
                         default => ucfirst($state),
                     })
                     ->color(fn (string $state): string => match ($state) {
@@ -124,23 +132,25 @@ class BookkeepingReport extends Page implements Tables\Contracts\HasTable
                     })
                     ->sortable(),
                 TextColumn::make('description')
+                    ->label('Deskripsi')
                     ->searchable()
                     ->limit(40),
                 TextColumn::make('amount')
+                    ->label('Jumlah')
                     ->money('IDR')
                     ->sortable(),
                 TextColumn::make('creator.name')
-                    ->label('Created by'),
+                    ->label('Dibuat oleh'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('location_id')
                     ->relationship('location', 'name')
-                    ->label('Location')
+                    ->label('Lokasi')
                     ->preload(),
                 Tables\Filters\SelectFilter::make('category')
                     ->options(fn () => $this->activeTab === 'expenses'
-                        ? ['purchase' => 'Purchase', 'salary' => 'Salary', 'utilities' => 'Utilities', 'transport' => 'Transport', 'other' => 'Other']
-                        : ['sale' => 'Sale', 'debt_payment' => 'Debt Payment', 'other' => 'Other']
+                        ? ['purchase' => 'Pembelian', 'salary' => 'Gaji', 'utilities' => 'Utilitas', 'transport' => 'Transportasi', 'other' => 'Lainnya']
+                        : ['sale' => 'Penjualan', 'debt_payment' => 'Pembayaran Hutang', 'other' => 'Lainnya']
                     ),
             ])
             ->defaultSort('date', 'desc');

@@ -20,15 +20,22 @@ class StockTransfersTable
             ->recordUrl(fn (StockTransfer $record): string => StockTransferResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('transfer_number')
+                    ->label('No. Transfer')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('fromLocation.name')
-                    ->label('From'),
+                    ->label('Dari'),
                 TextColumn::make('toLocation.name')
-                    ->label('To'),
+                    ->label('Ke'),
                 TextColumn::make('status')
+                    ->label('Status')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'pending' => 'Tertunda',
+                        'completed' => 'Selesai',
+                        'cancelled' => 'Dibatalkan',
+                        default => ucfirst($state),
+                    })
                     ->icon(fn (string $state): string => match ($state) {
                         'pending' => 'heroicon-o-clock',
                         'completed' => 'heroicon-o-check-circle',
@@ -43,29 +50,30 @@ class StockTransfersTable
                     })
                     ->sortable(),
                 TextColumn::make('creator.name')
-                    ->label('Created by'),
+                    ->label('Dibuat oleh'),
                 TextColumn::make('created_at')
+                    ->label('Tanggal')
                     ->dateTime()
                     ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('status')
                     ->options([
-                        'pending' => 'Pending',
-                        'completed' => 'Completed',
-                        'cancelled' => 'Cancelled',
+                        'pending' => 'Tertunda',
+                        'completed' => 'Selesai',
+                        'cancelled' => 'Dibatalkan',
                     ]),
             ])
             ->recordActions([
                 EditAction::make()
                     ->hidden(fn (StockTransfer $record): bool => $record->status !== 'pending'),
                 Action::make('complete')
-                    ->label('Complete')
+                    ->label('Selesai')
                     ->color('success')
                     ->icon('heroicon-o-check')
                     ->requiresConfirmation()
-                    ->modalHeading('Complete Stock Transfer')
-                    ->modalDescription(fn (StockTransfer $record): string => "Are you sure you want to complete transfer {$record->transfer_number}? Stock will be deducted from the source and added to the destination.")
+                    ->modalHeading('Selesaikan Transfer Stok')
+                    ->modalDescription(fn (StockTransfer $record): string => "Yakin ingin menyelesaikan transfer {$record->transfer_number}? Stok akan dikurangi dari sumber dan ditambahkan ke tujuan.")
                     ->hidden(fn (StockTransfer $record): bool => $record->status !== 'pending')
                     ->action(function (StockTransfer $record): void {
                         try {
@@ -75,13 +83,13 @@ class StockTransfersTable
                             );
 
                             Notification::make()
-                                ->title('Transfer completed')
-                                ->body("Transfer \"{$record->transfer_number}\" has been completed. Stock has been moved between locations.")
+                                ->title('Transfer selesai')
+                                ->body("Transfer \"{$record->transfer_number}\" telah selesai. Stok telah dipindahkan antar lokasi.")
                                 ->success()
                                 ->send();
                         } catch (\DomainException $e) {
                             Notification::make()
-                                ->title('Transfer failed')
+                                ->title('Transfer gagal')
                                 ->body($e->getMessage())
                                 ->danger()
                                 ->send();

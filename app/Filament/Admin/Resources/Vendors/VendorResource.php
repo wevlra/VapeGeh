@@ -22,7 +22,19 @@ class VendorResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTruck;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Inventory';
+    protected static ?string $navigationLabel = 'Vendor';
+
+    protected static \UnitEnum|string|null $navigationGroup = 'Inventaris';
+
+    public static function getModelLabel(): string
+    {
+        return 'Vendor';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Vendor';
+    }
 
     public static function form(Schema $schema): Schema
     {

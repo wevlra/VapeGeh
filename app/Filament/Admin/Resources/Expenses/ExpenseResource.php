@@ -23,7 +23,19 @@ class ExpenseResource extends Resource
 
     protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedArrowUpTray;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Bookkeeping';
+    protected static ?string $navigationLabel = 'Pengeluaran';
+
+    protected static \UnitEnum|string|null $navigationGroup = 'Pembukuan';
+
+    public static function getModelLabel(): string
+    {
+        return 'Pengeluaran';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Pengeluaran';
+    }
 
     public static function form(Schema $schema): Schema
     {

@@ -17,13 +17,15 @@ class ProductsTable
             ->recordUrl(fn (Product $record): string => ProductResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('sku')
+                    ->label('SKU')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('name')
+                    ->label('Nama')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('stock_qty')
-                    ->label('Stock')
+                    ->label('Stok')
                     ->getStateUsing(fn (Product $record): int => $record->stocks->firstWhere('location_id', $locationId)?->qty ?? 0)
                     ->badge()
                     ->color(fn (int $state): string => match (true) {
@@ -31,7 +33,8 @@ class ProductsTable
                         $state < 10 => 'warning',
                         default => 'success',
                     }),
-                TextColumn::make('purchase_price')
+                TextColumn::make('selling_price')
+                    ->label('Harga Jual')
                     ->money('IDR')
                     ->sortable(),
             ])

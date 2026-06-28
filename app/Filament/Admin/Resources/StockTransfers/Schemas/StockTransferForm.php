@@ -22,20 +22,20 @@ class StockTransferForm
                 Wizard::make()
                     ->columnSpanFull()
                     ->steps([
-                        Step::make('Location')
-                            ->description('Select source and destination')
+                        Step::make('Lokasi')
+                            ->description('Pilih sumber dan tujuan')
                             ->icon(Heroicon::OutlinedMapPin)
                             ->schema([
                                 Grid::make(2)
                                     ->schema([
                                         Select::make('from_location_id')
-                                            ->label('From Location')
+                                            ->label('Dari Lokasi')
                                             ->relationship('fromLocation', 'name')
                                             ->required()
                                             ->searchable()
                                             ->preload(),
                                         Select::make('to_location_id')
-                                            ->label('To Location')
+                                            ->label('Ke Lokasi')
                                             ->relationship('toLocation', 'name')
                                             ->required()
                                             ->searchable()
@@ -43,32 +43,34 @@ class StockTransferForm
                                             ->different('from_location_id'),
                                     ]),
                                 Textarea::make('notes')
+                                    ->label('Catatan')
                                     ->rows(2),
                             ]),
-                        Step::make('Line Items')
-                            ->description('Select products and quantities')
+                        Step::make('Daftar Item')
+                            ->description('Pilih produk dan jumlah')
                             ->icon(Heroicon::OutlinedCube)
                             ->schema([
                                 Repeater::make('items')
                                     ->relationship()
                                     ->defaultItems(1)
                                     ->minItems(1)
-                                    ->addActionLabel('Add Product')
+                                    ->addActionLabel('Tambah Produk')
                                     ->table([
-                                        TableColumn::make('Product')
+                                        TableColumn::make('Produk')
                                             ->width('65%'),
-                                        TableColumn::make('Quantity')
+                                        TableColumn::make('Jumlah')
                                             ->width('30%'),
                                     ])
                                     ->schema([
                                         Select::make('product_id')
+                                            ->label('Produk')
                                             ->relationship('product', 'name')
                                             ->required()
                                             ->searchable()
                                             ->preload(),
 
                                         TextInput::make('qty')
-                                            ->label('Quantity')
+                                            ->label('Jumlah')
                                             ->integer()
                                             ->minValue(1)
                                             ->maxValue(2147483647)

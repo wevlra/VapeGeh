@@ -1,5 +1,5 @@
 <x-filament-widgets::widget>
-    <x-filament::section heading="Stock">
+    <x-filament::section heading="Stok">
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <x-filament::button
                 tag="a"
@@ -8,7 +8,7 @@
                 icon="heroicon-o-archive-box-arrow-down"
                 class="w-full justify-center"
             >
-                Stock In
+                Stok Masuk
             </x-filament::button>
             <x-filament::button
                 tag="a"
@@ -17,7 +17,7 @@
                 icon="heroicon-o-arrow-up-tray"
                 class="w-full justify-center"
             >
-                Stock Out
+                Stok Keluar
             </x-filament::button>
             <x-filament::button
                 tag="a"

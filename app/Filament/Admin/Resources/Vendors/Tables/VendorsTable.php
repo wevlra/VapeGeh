@@ -20,13 +20,17 @@ class VendorsTable
             ->recordUrl(fn (Vendor $record): string => VendorResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('name')
+                    ->label('Nama')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('contact_person')
+                    ->label('Kontak Person')
                     ->searchable(),
                 TextColumn::make('phone')
+                    ->label('Telepon')
                     ->searchable(),
                 TextColumn::make('email')
+                    ->label('Email')
                     ->searchable(),
             ])
             ->filters([])
@@ -35,8 +39,8 @@ class VendorsTable
                 DeleteAction::make()
                     ->successNotification(
                         Notification::make()
-                            ->title('Vendor deleted')
-                            ->body('The vendor has been permanently removed.')
+                            ->title('Vendor dihapus')
+                            ->body('Vendor telah dihapus permanen.')
                             ->danger()
                     ),
             ])

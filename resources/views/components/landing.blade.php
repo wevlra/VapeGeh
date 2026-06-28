@@ -36,7 +36,7 @@ new class extends Component {};
                     </h2>
 
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Manage inventory, users, reports, and system settings.
+                        Kelola inventaris, pengguna, laporan, dan pengaturan sistem.
                     </p>
                 </div>
 
@@ -65,7 +65,7 @@ new class extends Component {};
                     </h2>
 
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Access POS, sales, stock movement, and daily operations.
+                        Akses POS, penjualan, pergerakan stok, dan operasi harian.
                     </p>
                 </div>
 

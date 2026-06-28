@@ -20,15 +20,18 @@ class SalesTable
             ->recordUrl(fn (Sale $record): string => SaleResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('invoice_number')
+                    ->label('No. Invoice')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('user.name')
-                    ->label('Cashier')
+                    ->label('Kasir')
                     ->searchable(),
                 TextColumn::make('total')
+                    ->label('Total')
                     ->money('IDR')
                     ->sortable(),
                 TextColumn::make('payment_method')
+                    ->label('Pembayaran')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'qris' => 'QRIS',
@@ -42,13 +45,14 @@ class SalesTable
                         default => 'gray',
                     }),
                 TextColumn::make('created_at')
+                    ->label('Tanggal')
                     ->dateTime()
                     ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('payment_method')
                     ->options([
-                        'cash' => 'Cash',
+                        'cash' => 'Tunai',
                         'transfer' => 'Transfer',
                         'qris' => 'QRIS',
                     ]),
@@ -59,8 +63,8 @@ class SalesTable
                     ->action(fn (Sale $record) => app(DeleteSale::class)->execute($record))
                     ->successNotification(
                         Notification::make()
-                            ->title('Sale deleted')
-                            ->body('The sale has been permanently removed.')
+                            ->title('Penjualan dihapus')
+                            ->body('Penjualan telah dihapus secara permanen.')
                             ->danger()
                     ),
             ])

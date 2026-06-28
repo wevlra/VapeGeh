@@ -53,7 +53,10 @@ class StockMovement extends Model
 
     public function related(): MorphTo
     {
-        return $this->morphTo();
+        return $this->morphTo()->morphWith([
+            Sale::class => ['items.product'],
+            StockTransfer::class => ['items.product'],
+        ]);
     }
 
     protected function casts(): array

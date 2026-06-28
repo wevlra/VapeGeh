@@ -23,12 +23,12 @@ it('renders admin stats overview widget with global data', function () {
     Filament::setCurrentPanel(Filament::getPanel('admin'));
 
     Livewire::test(AdminStatsOverview::class)
-        ->assertSee('Total Assets')
-        ->assertSee('Stock In')
-        ->assertSee('Stock Out')
-        ->assertSee('Total Stock')
-        ->assertSee('Revenue')
-        ->assertSee('Profit')
+        ->assertSee('Total Aset')
+        ->assertSee('Stok Masuk')
+        ->assertSee('Stok Keluar')
+        ->assertSee('Total Stok')
+        ->assertSee('Pendapatan')
+        ->assertSee('Laba')
         ->assertSuccessful();
 });
 
@@ -50,8 +50,8 @@ it('renders staff stats overview widget with scoped data', function () {
     Filament::setCurrentPanel(Filament::getPanel('staff'));
 
     Livewire::test(StaffStatsOverview::class)
-        ->assertSee('Total Sales')
-        ->assertSee('Stock Units')
+        ->assertSee('Total Penjualan')
+        ->assertSee('Unit Stok')
         ->assertSuccessful();
 });
 
@@ -62,7 +62,7 @@ it('renders admin sales chart widget', function () {
     Filament::setCurrentPanel(Filament::getPanel('admin'));
 
     Livewire::test(AdminSalesChart::class)
-        ->assertSee('Sales Trend')
+        ->assertSee('Tren Penjualan')
         ->assertSuccessful();
 });
 
@@ -77,6 +77,6 @@ it('renders staff sales chart widget with scoped data', function () {
     Filament::setCurrentPanel(Filament::getPanel('staff'));
 
     Livewire::test(StaffSalesChart::class)
-        ->assertSee('Sales Trend')
+        ->assertSee('Tren Penjualan')
         ->assertSuccessful();
 });

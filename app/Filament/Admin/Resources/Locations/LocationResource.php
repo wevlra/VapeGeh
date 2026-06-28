@@ -23,7 +23,19 @@ class LocationResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingStorefront;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Management';
+    protected static ?string $navigationLabel = 'Lokasi';
+
+    protected static \UnitEnum|string|null $navigationGroup = 'Manajemen';
+
+    public static function getModelLabel(): string
+    {
+        return 'Lokasi';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Lokasi';
+    }
 
     public static function getEloquentQuery(): Builder
     {

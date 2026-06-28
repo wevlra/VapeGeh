@@ -14,16 +14,19 @@ class SaleInfolist
     {
         return $schema
             ->schema([
-                Section::make('Sale Details')
+                Section::make('Detail Penjualan')
                     ->columnSpanFull()
                     ->columns(2)
                     ->schema([
-                        TextEntry::make('invoice_number'),
+                        TextEntry::make('invoice_number')
+                            ->label('No. Invoice'),
                         TextEntry::make('total')
+                            ->label('Total')
                             ->money('IDR'),
                         TextEntry::make('user.name')
-                            ->label('Cashier'),
+                            ->label('Kasir'),
                         TextEntry::make('payment_method')
+                            ->label('Pembayaran')
                             ->badge()
                             ->formatStateUsing(fn (string $state): string => match ($state) {
                                 'qris' => 'QRIS',
@@ -37,33 +40,36 @@ class SaleInfolist
                                 default => 'gray',
                             }),
                         TextEntry::make('created_at')
+                            ->label('Tanggal')
                             ->dateTime(),
                         TextEntry::make('paid_amount')
+                            ->label('Jumlah Dibayar')
                             ->money('IDR'),
-                        TextEntry::make('notes'),
+                        TextEntry::make('notes')
+                            ->label('Catatan'),
                     ]),
 
-                Section::make('Items')
+                Section::make('Item')
                     ->columnSpanFull()
                     ->schema([
                         RepeatableEntry::make('items')
                             ->hiddenLabel()
                             ->table([
-                                TableColumn::make('Product'),
-                                TableColumn::make('Qty')
+                                TableColumn::make('Produk'),
+                                TableColumn::make('Jumlah')
                                     ->width(80),
-                                TableColumn::make('Price')
+                                TableColumn::make('Harga')
                                     ->width(180),
                                 TableColumn::make('Subtotal')
                                     ->width(180),
                             ])
                             ->schema([
                                 TextEntry::make('product.name')
-                                    ->label('Product'),
+                                    ->label('Produk'),
                                 TextEntry::make('qty')
-                                    ->label('Qty'),
+                                    ->label('Jumlah'),
                                 TextEntry::make('price')
-                                    ->label('Price')
+                                    ->label('Harga')
                                     ->money('IDR'),
                                 TextEntry::make('subtotal')
                                     ->label('Subtotal')

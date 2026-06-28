@@ -33,20 +33,20 @@ class BookkeepingReportStats extends StatsOverviewWidget
         $netIncome = $totalIncome - $totalExpense;
 
         $periodLabel = match ($this->period) {
-            'today' => 'Today',
-            'week' => 'Last 7 Days',
-            'month' => 'Last 30 Days',
-            default => 'All Time',
+            'today' => 'Hari Ini',
+            'week' => '7 Hari Terakhir',
+            'month' => '30 Hari Terakhir',
+            default => 'Semua Waktu',
         };
 
         return [
-            Stat::make('Total Income', 'Rp '.number_format($totalIncome, 0, ',', '.'))
+            Stat::make('Total Pendapatan', 'Rp '.number_format($totalIncome, 0, ',', '.'))
                 ->description($periodLabel)
                 ->color('success'),
-            Stat::make('Total Expenses', 'Rp '.number_format($totalExpense, 0, ',', '.'))
+            Stat::make('Total Pengeluaran', 'Rp '.number_format($totalExpense, 0, ',', '.'))
                 ->description($periodLabel)
                 ->color('danger'),
-            Stat::make('Net Income', 'Rp '.number_format($netIncome, 0, ',', '.'))
+            Stat::make('Laba Bersih', 'Rp '.number_format($netIncome, 0, ',', '.'))
                 ->description($periodLabel)
                 ->color($netIncome >= 0 ? 'success' : 'danger'),
         ];

@@ -12,13 +12,16 @@ class UserInfolist
     {
         return $schema
             ->schema([
-                Section::make('User Details')
+                Section::make('Detail Pengguna')
                     ->columnSpanFull()
                     ->columns(2)
                     ->schema([
-                        TextEntry::make('name'),
-                        TextEntry::make('email'),
+                        TextEntry::make('name')
+                            ->label('Nama'),
+                        TextEntry::make('email')
+                            ->label('Email'),
                         TextEntry::make('role')
+                            ->label('Peran')
                             ->badge()
                             ->icon(fn (string $state): string => match ($state) {
                                 'admin' => 'heroicon-o-shield-check',
@@ -30,8 +33,13 @@ class UserInfolist
                                 'staff' => 'info',
                                 default => 'gray',
                             })
-                            ->formatStateUsing(fn (string $state): string => ucfirst($state)),
+                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                'admin' => 'Admin',
+                                'staff' => 'Staf',
+                                default => ucfirst($state),
+                            }),
                         TextEntry::make('status')
+                            ->label('Status')
                             ->badge()
                             ->icon(fn (string $state): string => match ($state) {
                                 'active' => 'heroicon-o-check-circle',
@@ -43,9 +51,13 @@ class UserInfolist
                                 'inactive' => 'danger',
                                 default => 'gray',
                             })
-                            ->formatStateUsing(fn (string $state): string => ucfirst($state)),
+                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                'active' => 'Aktif',
+                                'inactive' => 'Nonaktif',
+                                default => ucfirst($state),
+                            }),
                         TextEntry::make('location.name')
-                            ->label('Location')
+                            ->label('Lokasi')
                             ->placeholder('—'),
                     ]),
             ]);

@@ -20,20 +20,25 @@ class SalesTable
             ->recordUrl(fn (Sale $record): string => SaleResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('invoice_number')
+                    ->label('No. Invoice')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('user.name')
-                    ->label('Cashier')
+                    ->label('Kasir')
                     ->searchable(),
                 TextColumn::make('location.name')
+                    ->label('Lokasi')
                     ->searchable(),
                 TextColumn::make('total')
+                    ->label('Total')
                     ->money('IDR')
                     ->sortable(),
                 TextColumn::make('payment_method')
+                    ->label('Pembayaran')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'qris' => 'QRIS',
+                        'cash' => 'Tunai',
                         default => ucfirst($state),
                     })
                     ->color(fn (string $state): string => match ($state) {
@@ -44,21 +49,22 @@ class SalesTable
                         default => 'gray',
                     }),
                 TextColumn::make('created_at')
+                    ->label('Tanggal')
                     ->dateTime()
                     ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('user_id')
-                    ->label('Staff')
+                    ->label('Staf')
                     ->relationship('user', 'name')
                     ->searchable()
                     ->preload(),
                 SelectFilter::make('location_id')
-                    ->label('Location')
+                    ->label('Lokasi')
                     ->relationship('location', 'name'),
                 SelectFilter::make('payment_method')
                     ->options([
-                        'cash' => 'Cash',
+                        'cash' => 'Tunai',
                         'transfer' => 'Transfer',
                         'qris' => 'QRIS',
                     ]),
@@ -69,8 +75,8 @@ class SalesTable
                     ->action(fn (Sale $record) => app(DeleteSale::class)->execute($record))
                     ->successNotification(
                         Notification::make()
-                            ->title('Sale deleted')
-                            ->body('The sale has been permanently removed.')
+                            ->title('Penjualan dihapus')
+                            ->body('Penjualan telah dihapus permanen.')
                             ->danger()
                     ),
             ])

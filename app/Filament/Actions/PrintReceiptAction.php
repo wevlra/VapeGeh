@@ -11,7 +11,7 @@ class PrintReceiptAction extends Action
     {
         parent::setUp();
 
-        $this->label('Print Receipt')
+        $this->label('Cetak Nota')
             ->icon('heroicon-o-printer')
             ->color('gray')
             ->url(fn (StockMovement $record): string => route('admin.history.receipt', $record))

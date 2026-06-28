@@ -30,11 +30,11 @@ class StocksRelationManager extends RelationManager
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('product.name')
-                    ->label('Product')
+                    ->label('Produk')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('qty')
-                    ->label('Quantity')
+                    ->label('Jumlah')
                     ->badge()
                     ->color(fn (int $state): string => match (true) {
                         $state <= 0 => 'danger',
@@ -46,16 +46,16 @@ class StocksRelationManager extends RelationManager
             ->defaultSort('product.name')
             ->recordActions([
                 TableEditAction::make()
-                    ->modalHeading('Adjust Stock')
+                    ->modalHeading('Sesuaikan Stok')
                     ->form([
                         TextInput::make('qty')
-                            ->label('Quantity')
+                            ->label('Jumlah')
                             ->required()
                             ->integer()
                             ->minValue(0)
                             ->default(fn (Stock $record): int => $record->qty),
                         Textarea::make('notes')
-                            ->label('Notes')
+                            ->label('Catatan')
                             ->rows(2)
                             ->maxLength(1000),
                     ])
@@ -67,8 +67,8 @@ class StocksRelationManager extends RelationManager
                         );
 
                         Notification::make()
-                            ->title('Stock adjusted')
-                            ->body('Quantity for '.$record->product->name.' has been set to '.$data['qty'].' units.')
+                            ->title('Stok disesuaikan')
+                            ->body('Jumlah untuk '.$record->product->name.' telah disetel menjadi '.$data['qty'].' unit.')
                             ->success()
                             ->send();
                     }),

@@ -7,7 +7,7 @@ use Filament\Widgets\ChartWidget;
 
 class AdminPaymentMethodChart extends ChartWidget
 {
-    protected ?string $heading = 'Sales by Payment Method';
+    protected ?string $heading = 'Penjualan per Metode Bayar';
 
     protected ?string $pollingInterval = null;
 
@@ -26,12 +26,17 @@ class AdminPaymentMethodChart extends ChartWidget
             'qris' => 'rgba(168, 85, 247, 0.8)',
         ];
 
-        $labels = array_map(fn ($m) => ucfirst($m), array_keys($data->toArray()));
+        $labels = array_map(fn ($m) => match ($m) {
+            'cash' => 'Tunai',
+            'transfer' => 'Transfer',
+            'qris' => 'QRIS',
+            default => ucfirst($m),
+        }, array_keys($data->toArray()));
 
         return [
             'datasets' => [
                 [
-                    'label' => 'Transactions',
+                    'label' => 'Transaksi',
                     'data' => $data->values()->toArray(),
                     'backgroundColor' => array_values($colors),
                 ],

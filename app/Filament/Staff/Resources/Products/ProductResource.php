@@ -20,13 +20,24 @@ class ProductResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCube;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Inventory';
+    protected static \UnitEnum|string|null $navigationGroup = 'Inventaris';
+
+    public static function getModelLabel(): string
+    {
+        return 'Produk';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Produk';
+    }
 
     public static function getEloquentQuery(): Builder
     {
         $locationId = auth()->user()?->location_id;
 
         return parent::getEloquentQuery()
+            ->with(['stocks' => fn ($q) => $q->where('location_id', $locationId)])
             ->whereHas('stocks', fn (Builder $q) => $q->where('location_id', $locationId));
     }
 

@@ -23,7 +23,19 @@ class IncomeResource extends Resource
 
     protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedArrowDownTray;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Bookkeeping';
+    protected static ?string $navigationLabel = 'Pendapatan';
+
+    protected static \UnitEnum|string|null $navigationGroup = 'Pembukuan';
+
+    public static function getModelLabel(): string
+    {
+        return 'Pendapatan';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Pendapatan';
+    }
 
     public static function form(Schema $schema): Schema
     {

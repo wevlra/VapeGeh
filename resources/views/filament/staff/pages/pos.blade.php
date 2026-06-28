@@ -23,7 +23,7 @@
                                     name="heroicon-o-shopping-cart"
                                     class="w-5 h-5 text-gray-500 dark:text-gray-400"
                                 />
-                                <span>Cart</span>
+                                <span>Keranjang</span>
                                 @if (count($cartItems) > 0)
                                     <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary-100 dark:bg-primary-900/30 text-xs font-medium text-primary-700 dark:text-primary-400">
                                         {{ collect($cartItems)->sum('qty') }}
@@ -36,7 +36,7 @@
                                     type="button"
                                     class="text-xs text-gray-400 hover:text-danger-500 transition-colors"
                                 >
-                                    Clear All
+                                    Kosongkan
                                 </button>
                             @endif
                         </div>
@@ -62,7 +62,7 @@
                                         size="xs"
                                         color="gray"
                                         class="border border-gray-200 dark:border-gray-600"
-                                        label="Decrease quantity"
+                                        label="Kurangi jumlah"
                                         wire:click="updateQty({{ $index }}, {{ $item['qty'] - 1 }})"
                                     />
                                     <span class="w-8 text-center text-sm font-semibold text-gray-900 dark:text-white tabular-nums">
@@ -73,7 +73,7 @@
                                         size="xs"
                                         color="gray"
                                         class="border border-gray-200 dark:border-gray-600"
-                                        label="Increase quantity"
+                                        label="Tambah jumlah"
                                         wire:click="updateQty({{ $index }}, {{ $item['qty'] + 1 }})"
                                     />
                                 </div>
@@ -88,7 +88,7 @@
                                         type="button"
                                         class="text-xs text-gray-400 hover:text-danger-500 transition-colors mt-0.5"
                                     >
-                                        Remove
+                                        Hapus
                                     </button>
                                 </div>
                             </div>
@@ -99,10 +99,10 @@
                                     class="w-12 h-12 mb-3 text-gray-300 dark:text-gray-600"
                                 />
                                 <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                    Cart is empty
+                                    Keranjang kosong
                                 </p>
                                 <p class="text-xs mt-1">
-                                    Click a product to add
+                                    Klik produk untuk menambahkan
                                 </p>
                             </div>
                         @endforelse
@@ -123,7 +123,7 @@
                                     size="lg"
                                     icon="heroicon-m-credit-card"
                                 >
-                                    Checkout
+                                    Bayar
                                 </x-filament::button>
                             </div>
                         @endif

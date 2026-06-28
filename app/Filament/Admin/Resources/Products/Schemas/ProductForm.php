@@ -14,10 +14,17 @@ class ProductForm
         return $schema
             ->components([
                 TextInput::make('name')
+                    ->label('Nama')
                     ->required()
                     ->maxLength(255),
                 TextInput::make('purchase_price')
-                    ->label('Purchase Price')
+                    ->label('Harga Beli')
+                    ->required()
+                    ->numeric()
+                    ->minValue(0)
+                    ->prefix('Rp'),
+                TextInput::make('selling_price')
+                    ->label('Harga Jual (Default)')
                     ->required()
                     ->numeric()
                     ->minValue(0)
@@ -25,9 +32,9 @@ class ProductForm
                 Repeater::make('prices')
                     ->relationship()
                     ->columnSpanFull()
-                    ->label('Selling Prices')
+                    ->label('Harga Jual')
                     ->defaultItems(1)
-                    ->addActionLabel('Add Price')
+                    ->addActionLabel('Tambah Harga')
                     ->table([
                         TableColumn::make('Label'),
                         TableColumn::make('Price'),
@@ -37,9 +44,9 @@ class ProductForm
                             ->label('Label')
                             ->required()
                             ->maxLength(50)
-                            ->placeholder('e.g. Reseller, Store, Wholesale'),
+                            ->placeholder('Misal: Reseller, Toko, Grosir'),
                         TextInput::make('price')
-                            ->label('Price')
+                            ->label('Harga')
                             ->required()
                             ->numeric()
                             ->minValue(0)

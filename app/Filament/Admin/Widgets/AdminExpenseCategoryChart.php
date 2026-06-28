@@ -7,7 +7,7 @@ use Filament\Widgets\ChartWidget;
 
 class AdminExpenseCategoryChart extends ChartWidget
 {
-    protected ?string $heading = 'Expenses by Category';
+    protected ?string $heading = 'Pengeluaran per Kategori';
 
     protected ?string $pollingInterval = null;
 
@@ -29,12 +29,19 @@ class AdminExpenseCategoryChart extends ChartWidget
             'other' => 'rgba(168, 85, 247, 0.8)',
         ];
 
-        $labels = array_map(fn ($c) => ucfirst($c), array_keys($data->toArray()));
+        $labels = array_map(fn ($c) => match ($c) {
+            'purchase' => 'Pembelian',
+            'salary' => 'Gaji',
+            'utilities' => 'Utilitas',
+            'transport' => 'Transportasi',
+            'other' => 'Lainnya',
+            default => ucfirst($c),
+        }, array_keys($data->toArray()));
 
         return [
             'datasets' => [
                 [
-                    'label' => 'Total (IDR)',
+                    'label' => 'Total (Rp)',
                     'data' => $data->values()->toArray(),
                     'backgroundColor' => array_values($colors),
                     'borderColor' => '#374151',
