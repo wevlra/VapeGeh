@@ -1,0 +1,406 @@
+<?php
+
+namespace App\Filament\Admin\Pages;
+
+use App\Models\Location;
+use App\Models\Product;
+use App\Models\Sale;
+use App\Models\Stock;
+use App\Models\StockMovement;
+use BackedEnum;
+use DomainException;
+use Filament\Actions\Action;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Notifications\Notification;
+use Filament\Pages\Page;
+use Filament\Schemas\Components\EmbeddedTable;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Table;
+use Illuminate\Support\Facades\DB;
+
+class Pos extends Page implements HasForms, HasTable
+{
+    use InteractsWithActions;
+    use InteractsWithForms;
+    use InteractsWithTable;
+
+    protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedShoppingBag;
+
+    protected static \UnitEnum|string|null $navigationGroup = 'Operations';
+
+    protected static ?string $navigationLabel = 'Cashier';
+
+    protected static ?string $slug = 'pos';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $title = 'Cashier';
+
+    protected string $view = 'filament.admin.pages.pos';
+
+    public ?int $selectedLocationId = null;
+
+    public array $cart = [];
+
+    public function mount(): void
+    {
+        $this->selectedLocationId = Location::where('type', 'store')->first()?->id;
+        $this->form->fill();
+    }
+
+    public function form(Schema $schema): Schema
+    {
+        return $schema
+            ->statePath('data')
+            ->components([
+                Select::make('location_id')
+                    ->label('Location')
+                    ->options(fn () => Location::where('type', 'store')
+                        ->pluck('name', 'id')
+                        ->toArray())
+                    ->searchable()
+                    ->required()
+                    ->live()
+                    ->afterStateUpdated(fn ($state) => $this->updateLocation((int) $state))
+                    ->default(fn () => $this->selectedLocationId),
+            ]);
+    }
+
+    public function updateLocation(int $locationId): void
+    {
+        $this->selectedLocationId = $locationId;
+        $this->cart = [];
+    }
+
+    public function table(Table $table): Table
+    {
+        $locationId = $this->selectedLocationId;
+
+        if (! $locationId) {
+            return $table->query(Product::query()->whereRaw('0 = 1'));
+        }
+
+        return $table
+            ->query(
+                Product::query()
+                    ->whereHas('stocks', fn ($q) => $q
+                        ->where('location_id', $locationId)
+                        ->where('qty', '>', 0),
+                    )
+                    ->with(['stocks' => fn ($q) => $q->where('location_id', $locationId)])
+            )
+            ->columns([
+                TextColumn::make('name')
+                    ->label('Product')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('sku')
+                    ->label('SKU')
+                    ->searchable(),
+                TextColumn::make('stock_qty')
+                    ->label('Stock')
+                    ->badge()
+                    ->color(fn (int $state): string => match (true) {
+                        $state <= 0 => 'danger',
+                        $state < 10 => 'warning',
+                        default => 'success',
+                    })
+                    ->getStateUsing(fn (Product $record): int => $record->stocks->first()?->qty ?? 0),
+                TextColumn::make('id')
+                    ->label('Price')
+                    ->formatStateUsing(fn (Product $record): string => 'Rp '.number_format((float) ($record->prices->first()?->price ?? 0), 0, ',', '.'))
+                    ->sortable(false),
+            ])
+            ->actions([
+                Action::make('addToCart')
+                    ->label('Add')
+                    ->icon('heroicon-m-plus')
+                    ->color('primary')
+                    ->action(fn (Product $record) => $this->addToCart($record->id)),
+            ])
+            ->defaultSort('name');
+    }
+
+    public function content(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                EmbeddedTable::make(),
+            ]);
+    }
+
+    public function getCartItems(): array
+    {
+        $productIds = collect($this->cart)->pluck('product_id');
+        $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
+
+        return collect($this->cart)->map(function ($item) use ($products) {
+            $product = $products->get($item['product_id']);
+            if (! $product) {
+                return null;
+            }
+            $item['name'] = $product->name;
+            $item['price'] = (float) ($product->prices->first()?->price ?? 0);
+            $item['subtotal'] = $item['price'] * (int) $item['qty'];
+
+            return $item;
+        })->filter()->values()->toArray();
+    }
+
+    public function getCartTotal(): float
+    {
+        return (float) collect($this->getCartItems())->sum('subtotal');
+    }
+
+    public function addToCart(int $productId): void
+    {
+        $existingIndex = collect($this->cart)->search(fn ($item) => $item['product_id'] === $productId);
+
+        if ($existingIndex !== false) {
+            $currentQty = (int) $this->cart[$existingIndex]['qty'] + 1;
+            if (! $this->isStockAvailable($productId, $currentQty)) {
+                $this->dispatchBrowserEvent('notify', ['type' => 'warning', 'message' => 'Cannot exceed available stock.']);
+
+                return;
+            }
+            $this->cart[$existingIndex]['qty'] = $currentQty;
+        } else {
+            if (! $this->isStockAvailable($productId, 1)) {
+                $this->dispatchBrowserEvent('notify', ['type' => 'warning', 'message' => 'Out of stock.']);
+
+                return;
+            }
+            $this->cart[] = [
+                'product_id' => $productId,
+                'qty' => 1,
+            ];
+        }
+    }
+
+    public function updateQty(int $index, int $qty): void
+    {
+        $qty = max(0, (int) $qty);
+
+        if ($qty < 1) {
+            unset($this->cart[$index]);
+            $this->cart = array_values($this->cart);
+
+            return;
+        }
+
+        if (! isset($this->cart[$index])) {
+            return;
+        }
+
+        if (! $this->isStockAvailable($this->cart[$index]['product_id'], $qty)) {
+            $this->dispatchBrowserEvent('notify', ['type' => 'warning', 'message' => 'Cannot exceed available stock.']);
+
+            return;
+        }
+
+        $this->cart[$index]['qty'] = $qty;
+    }
+
+    public function removeCartItem(int $index): void
+    {
+        unset($this->cart[$index]);
+        $this->cart = array_values($this->cart);
+    }
+
+    public function clearCart(): void
+    {
+        $this->cart = [];
+    }
+
+    protected function isStockAvailable(int $productId, int $qty): bool
+    {
+        $locationId = $this->selectedLocationId;
+        $stock = Stock::where('product_id', $productId)
+            ->where('location_id', $locationId)
+            ->first();
+
+        return $stock !== null && $stock->qty >= $qty;
+    }
+
+    public function checkoutAction(): Action
+    {
+        return Action::make('checkout')
+            ->label('Checkout')
+            ->icon('heroicon-m-credit-card')
+            ->modalHeading('Checkout')
+            ->modalContent(view('filament.admin.pages.checkout-summary'))
+            ->form([
+                Radio::make('payment_method')
+                    ->label('Payment Method')
+                    ->options([
+                        'cash' => 'Cash',
+                        'transfer' => 'Transfer',
+                        'qris' => 'QRIS',
+                    ])
+                    ->inline()
+                    ->default('cash')
+                    ->live(),
+                TextInput::make('paid_amount')
+                    ->label('Pay')
+                    ->numeric()
+                    ->prefix('Rp')
+                    ->default(fn (): float => $this->getCartTotal())
+                    ->visible(fn (callable $get): bool => $get('payment_method') === 'cash')
+                    ->rules(fn (callable $get): array => $get('payment_method') === 'cash'
+                        ? ['numeric', 'min:'.$this->getCartTotal()]
+                        : ['numeric'])
+                    ->live()
+                    ->hint(fn (callable $get): ?string => $this->getPaymentHint((float) ($get('paid_amount') ?? 0)))
+                    ->hintColor(fn (callable $get): ?string => $this->getPaymentHintColor((float) ($get('paid_amount') ?? 0))),
+                Textarea::make('notes')
+                    ->label('Notes (optional)')
+                    ->placeholder('Notes for this transaction...')
+                    ->maxLength(1000),
+            ])
+            ->action(function (array $data) {
+                $this->processSale($data);
+            })
+            ->hidden(fn (): bool => empty($this->cart));
+    }
+
+    public function getPaymentHint(float $paidAmount): ?string
+    {
+        $total = $this->getCartTotal();
+
+        if ($paidAmount < $total) {
+            return 'Short: Rp '.number_format($total - $paidAmount, 0, ',', '.');
+        }
+
+        if ($paidAmount > $total) {
+            return 'Change: Rp '.number_format($paidAmount - $total, 0, ',', '.');
+        }
+
+        return null;
+    }
+
+    public function getPaymentHintColor(float $paidAmount): ?string
+    {
+        $total = $this->getCartTotal();
+
+        if ($paidAmount < $total) {
+            return 'danger';
+        }
+
+        if ($paidAmount > $total) {
+            return 'success';
+        }
+
+        return null;
+    }
+
+    public function processSale(array $data): void
+    {
+        $locationId = $this->selectedLocationId;
+        $paidAmount = (float) ($data['paid_amount'] ?? 0);
+        $paymentMethod = $data['payment_method'] ?? 'cash';
+
+        try {
+            $sale = DB::transaction(function () use ($locationId, $paidAmount, $paymentMethod, $data) {
+                $total = 0;
+                $saleItems = [];
+
+                foreach ($this->cart as $cartItem) {
+                    $product = Product::findOrFail($cartItem['product_id']);
+                    $qty = (int) $cartItem['qty'];
+
+                    $stock = Stock::where('product_id', $product->id)
+                        ->where('location_id', $locationId)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (! $stock || $stock->qty < $qty) {
+                        throw new DomainException(
+                            "Insufficient stock for product \"{$product->name}\"."
+                        );
+                    }
+
+                    $price = (float) ($product->prices->first()?->price ?? 0);
+                    $subtotal = $price * $qty;
+                    $total += $subtotal;
+
+                    $saleItems[] = [
+                        'product_id' => $product->id,
+                        'product_name' => $product->name,
+                        'qty' => $qty,
+                        'price' => $price,
+                        'subtotal' => $subtotal,
+                        'stock_id' => $stock->id,
+                    ];
+                }
+
+                $sale = Sale::create([
+                    'user_id' => auth()->id(),
+                    'location_id' => $locationId,
+                    'total' => $total,
+                    'paid_amount' => $paidAmount,
+                    'payment_method' => $paymentMethod,
+                    'notes' => $data['notes'] ?? null,
+                ]);
+
+                foreach ($saleItems as $saleItem) {
+                    $sale->items()->create([
+                        'product_id' => $saleItem['product_id'],
+                        'qty' => $saleItem['qty'],
+                        'price' => $saleItem['price'],
+                        'subtotal' => $saleItem['subtotal'],
+                    ]);
+
+                    Stock::where('id', $saleItem['stock_id'])
+                        ->decrement('qty', $saleItem['qty']);
+
+                    StockMovement::create([
+                        'product_id' => $saleItem['product_id'],
+                        'location_id' => $locationId,
+                        'type' => 'out',
+                        'quantity' => -$saleItem['qty'],
+                        'related_type' => Sale::class,
+                        'related_id' => $sale->id,
+                        'notes' => "Sale {$sale->invoice_number}",
+                        'created_by' => auth()->id(),
+                    ]);
+                }
+
+                return $sale;
+            });
+        } catch (DomainException $e) {
+            Notification::make()
+                ->title('Sale failed')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        $this->cart = [];
+
+        $printUrl = route('admin.sales.receipt', $sale);
+
+        Notification::make()
+            ->title('Sale completed')
+            ->body("Invoice \"{$sale->invoice_number}\" has been created successfully. Total: Rp ".number_format($sale->total, 0, ',', '.'))
+            ->success()
+            ->actions([
+                Action::make('print')
+                    ->label('Print Receipt')
+                    ->icon('heroicon-o-printer')
+                    ->url($printUrl, shouldOpenInNewTab: true),
+            ])
+            ->send();
+    }
+}

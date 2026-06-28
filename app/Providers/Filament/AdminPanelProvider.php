@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Admin\Pages\Dashboard;
+use App\Filament\Admin\Pages\Pos;
 use App\Filament\Admin\Pages\StockIn;
 use App\Filament\Admin\Pages\StockOut;
 use App\Filament\Admin\Widgets\AdminExpenseCategoryChart;
@@ -77,6 +78,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\Filament\Admin\Pages')
             ->pages([
                 Dashboard::class,
+                Pos::class,
                 StockIn::class,
                 StockOut::class,
             ])
