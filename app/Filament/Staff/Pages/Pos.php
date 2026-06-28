@@ -50,7 +50,6 @@ class Pos extends Page implements HasTable
         return $table
             ->query(
                 Product::query()
-                    ->whereHas('vendor')
                     ->whereHas('stocks', fn ($q) => $q
                         ->where('location_id', $locationId)
                         ->where('qty', '>', 0),
