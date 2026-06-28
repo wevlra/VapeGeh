@@ -15,6 +15,7 @@
         "hammadzafar05/mobile-bottom-nav": "^1.2",
         "laravel/framework": "^13.8",
         "laravel/tinker": "^3.0",
+        "laraveldaily/laravel-invoices": "^4.2",
         "nativephp/mobile": "^3.3",
         "spatie/laravel-pdf": "^2.12",
         "wezlo/filament-responsive-table": "^1.0"
