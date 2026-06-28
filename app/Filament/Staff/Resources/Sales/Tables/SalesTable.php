@@ -2,9 +2,12 @@
 
 namespace App\Filament\Staff\Resources\Sales\Tables;
 
+use App\Actions\DeleteSale;
 use App\Filament\Staff\Resources\Sales\SaleResource;
 use App\Models\Sale;
-use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -51,12 +54,15 @@ class SalesTable
                     ]),
             ])
             ->recordActions([
-                Action::make('print_receipt')
-                    ->label('Print Receipt')
-                    ->icon('heroicon-o-printer')
-                    ->color('gray')
-                    ->url(fn (Sale $record): string => route('admin.sales.receipt', $record))
-                    ->openUrlInNewTab(),
+                EditAction::make(),
+                DeleteAction::make()
+                    ->action(fn (Sale $record) => app(DeleteSale::class)->execute($record))
+                    ->successNotification(
+                        Notification::make()
+                            ->title('Sale deleted')
+                            ->body('The sale has been permanently removed.')
+                            ->danger()
+                    ),
             ])
             ->defaultSort('created_at', 'desc');
     }

@@ -38,6 +38,9 @@ class SaleInfolist
                             }),
                         TextEntry::make('created_at')
                             ->dateTime(),
+                        TextEntry::make('paid_amount')
+                            ->money('IDR'),
+                        TextEntry::make('notes'),
                     ]),
 
                 Section::make('Items')
@@ -50,9 +53,9 @@ class SaleInfolist
                                 TableColumn::make('Qty')
                                     ->width(80),
                                 TableColumn::make('Price')
-                                    ->width(120),
+                                    ->width(180),
                                 TableColumn::make('Subtotal')
-                                    ->width(120),
+                                    ->width(180),
                             ])
                             ->schema([
                                 TextEntry::make('product.name')

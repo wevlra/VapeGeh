@@ -33,7 +33,6 @@
                             @if (count($cartItems) > 0)
                                 <button
                                     wire:click="clearCart"
-                                    wire:confirm="Remove all items from cart?"
                                     type="button"
                                     class="text-xs text-gray-400 hover:text-danger-500 transition-colors"
                                 >
@@ -58,32 +57,25 @@
 
                                 {{-- Qty Controls --}}
                                 <div class="flex items-center gap-1">
-                                    <button
+                                    <x-filament::icon-button
+                                        icon="heroicon-m-minus"
+                                        size="xs"
+                                        color="gray"
+                                        class="border border-gray-200 dark:border-gray-600"
+                                        label="Decrease quantity"
                                         wire:click="updateQty({{ $index }}, {{ $item['qty'] - 1 }})"
-                                        type="button"
-                                        class="shrink-0 w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                        @if($item['qty'] <= 1) wire:confirm="Remove this item?" @endif
-                                        aria-label="Decrease quantity"
-                                    >
-                                        <x-filament::icon
-                                            name="heroicon-m-minus"
-                                            class="w-3.5 h-3.5"
-                                        />
-                                    </button>
+                                    />
                                     <span class="w-8 text-center text-sm font-semibold text-gray-900 dark:text-white tabular-nums">
                                         {{ $item['qty'] }}
                                     </span>
-                                    <button
-                                        wire:click="addToCart({{ $item['product_id'] }})"
-                                        type="button"
-                                        class="shrink-0 w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                        aria-label="Increase quantity"
-                                    >
-                                        <x-filament::icon
-                                            name="heroicon-m-plus"
-                                            class="w-3.5 h-3.5"
-                                        />
-                                    </button>
+                                    <x-filament::icon-button
+                                        icon="heroicon-m-plus"
+                                        size="xs"
+                                        color="gray"
+                                        class="border border-gray-200 dark:border-gray-600"
+                                        label="Increase quantity"
+                                        wire:click="updateQty({{ $index }}, {{ $item['qty'] + 1 }})"
+                                    />
                                 </div>
 
                                 {{-- Subtotal & Remove --}}

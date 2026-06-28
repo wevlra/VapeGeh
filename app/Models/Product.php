@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-#[Fillable(['name', 'purchase_price'])]
+#[Fillable(['name', 'purchase_price', 'selling_price'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
@@ -46,10 +46,21 @@ class Product extends Model
         return $this->hasMany(StockMovement::class);
     }
 
+    /**
+     * Get the default selling price — falls back to first ProductPrice if selling_price is 0.
+     */
+    public function getDefaultPriceAttribute(): float
+    {
+        $sellingPrice = (float) $this->selling_price;
+
+        return $sellingPrice > 0 ? $sellingPrice : (float) ($this->prices->first()?->price ?? 0);
+    }
+
     protected function casts(): array
     {
         return [
             'purchase_price' => 'decimal:2',
+            'selling_price' => 'decimal:2',
         ];
     }
 }

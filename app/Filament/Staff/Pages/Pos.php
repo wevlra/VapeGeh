@@ -33,7 +33,7 @@ class Pos extends Page implements HasTable
 
     protected static ?string $navigationLabel = 'Cashier';
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Operations';
+    protected static \UnitEnum|string|null $navigationGroup = 'Sales';
 
     protected static ?int $navigationSort = 1;
 
@@ -75,7 +75,7 @@ class Pos extends Page implements HasTable
                     ->getStateUsing(fn (Product $record): int => $record->stocks->first()?->qty ?? 0),
                 TextColumn::make('id')
                     ->label('Price')
-                    ->formatStateUsing(fn (Product $record): string => 'Rp '.number_format((float) ($record->prices->first()?->price ?? 0), 0, ',', '.'))
+                    ->formatStateUsing(fn (Product $record): string => 'Rp '.number_format((float) $record->default_price, 0, ',', '.'))
                     ->sortable(false),
             ])
             ->actions([
@@ -107,7 +107,7 @@ class Pos extends Page implements HasTable
                 return null;
             }
             $item['name'] = $product->name;
-            $item['price'] = (float) ($product->prices->first()?->price ?? 0);
+            $item['price'] = (float) $product->default_price;
             $item['subtotal'] = $item['price'] * (int) $item['qty'];
 
             return $item;
@@ -286,7 +286,7 @@ class Pos extends Page implements HasTable
                         );
                     }
 
-                    $price = (float) ($product->prices->first()?->price ?? 0);
+                    $price = (float) $product->default_price;
                     $subtotal = $price * $qty;
                     $total += $subtotal;
 
@@ -356,6 +356,7 @@ class Pos extends Page implements HasTable
         }
 
         $this->cart = [];
+        $this->dispatch('$refresh');
 
         $printUrl = route('admin.sales.receipt', $sale);
 

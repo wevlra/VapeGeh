@@ -2,8 +2,6 @@
 
 namespace App\Filament\Staff\Resources\Products\Schemas;
 
-use Filament\Infolists\Components\RepeatableEntry;
-use Filament\Infolists\Components\RepeatableEntry\TableColumn;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -12,32 +10,25 @@ class ProductInfolist
 {
     public static function configure(Schema $schema): Schema
     {
+        $locationId = auth()->user()?->location_id;
+
         return $schema
             ->schema([
                 Section::make('Product Details')
                     ->columnSpanFull()
-                    ->columns(2)
+                    ->columns(3)
                     ->schema([
                         TextEntry::make('sku'),
                         TextEntry::make('name'),
-                    ]),
-
-                Section::make('Prices')
-                    ->columnSpanFull()
-                    ->schema([
-                        RepeatableEntry::make('prices')
-                            ->hiddenLabel()
-                            ->table([
-                                TableColumn::make('Label'),
-                                TableColumn::make('Price'),
-                            ])
-                            ->schema([
-                                TextEntry::make('label')
-                                    ->label('Label'),
-                                TextEntry::make('price')
-                                    ->label('Price')
-                                    ->money('IDR'),
-                            ]),
+                        TextEntry::make('stocks')
+                            ->label('Stock')
+                            ->getStateUsing(fn ($record): int => $record->stocks->firstWhere('location_id', $locationId)?->qty ?? 0)
+                            ->badge()
+                            ->color(fn ($record): string => match (true) {
+                                ($record->stocks->firstWhere('location_id', $locationId)?->qty ?? 0) <= 0 => 'danger',
+                                ($record->stocks->firstWhere('location_id', $locationId)?->qty ?? 0) < 10 => 'warning',
+                                default => 'success',
+                            }),
                     ]),
             ]);
     }

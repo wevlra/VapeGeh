@@ -41,7 +41,7 @@ class CreateSale
                     );
                 }
 
-                $defaultPrice = $product->prices->first()?->price ?? 0;
+                $defaultPrice = (float) $product->default_price;
                 $subtotal = $defaultPrice * $item['qty'];
                 $total += $subtotal;
 

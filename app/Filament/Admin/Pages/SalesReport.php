@@ -5,7 +5,7 @@ namespace App\Filament\Admin\Pages;
 use App\Models\Sale;
 use BackedEnum;
 use Filament\Pages\Page;
-use Filament\Schemas\Components\EmbeddedTable;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
@@ -13,9 +13,12 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Url;
+use Wezlo\FilamentResponsiveTable\Concerns\HasResponsiveTable;
+use Wezlo\FilamentResponsiveTable\ResponsiveTableConfiguration;
 
 class SalesReport extends Page implements Tables\Contracts\HasTable
 {
+    use HasResponsiveTable;
     use Tables\Concerns\InteractsWithTable;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingCart;
@@ -38,8 +41,15 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
     {
         return $schema
             ->components([
-                EmbeddedTable::make(),
+                View::make('filament-responsive-table::responsive-table'),
             ]);
+    }
+
+    public function responsiveTable(ResponsiveTableConfiguration $config): ResponsiveTableConfiguration
+    {
+        return $config
+            ->only(['location.name', 'total', 'payment_method'])
+            ->cardTitle(fn ($record) => $record->invoice_number);
     }
 
     public function table(Table $table): Table

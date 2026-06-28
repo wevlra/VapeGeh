@@ -6,18 +6,21 @@ use App\Models\Expense;
 use App\Models\Income;
 use BackedEnum;
 use Filament\Pages\Page;
-use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Livewire\Attributes\Url;
+use Wezlo\FilamentResponsiveTable\Concerns\HasResponsiveTable;
+use Wezlo\FilamentResponsiveTable\ResponsiveTableConfiguration;
 
 class BookkeepingReport extends Page implements Tables\Contracts\HasTable
 {
+    use HasResponsiveTable;
     use Tables\Concerns\InteractsWithTable;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
@@ -53,17 +56,24 @@ class BookkeepingReport extends Page implements Tables\Contracts\HasTable
                         'income' => Tab::make('Income')
                             ->icon(Heroicon::OutlinedArrowDownTray)
                             ->schema([
-                                EmbeddedTable::make(),
+                                View::make('filament-responsive-table::responsive-table'),
                             ]),
                         'expenses' => Tab::make('Expenses')
                             ->icon(Heroicon::OutlinedArrowUpTray)
                             ->schema([
-                                EmbeddedTable::make(),
+                                View::make('filament-responsive-table::responsive-table'),
                             ]),
                     ])
                     ->livewireProperty('activeTab')
                     ->columnSpanFull(),
             ]);
+    }
+
+    public function responsiveTable(ResponsiveTableConfiguration $config): ResponsiveTableConfiguration
+    {
+        return $config
+            ->only(['date', 'location.name', 'category', 'amount'])
+            ->cardTitle(fn ($record) => $record->description ?? ucfirst($record->category));
     }
 
     public function table(Table $table): Table

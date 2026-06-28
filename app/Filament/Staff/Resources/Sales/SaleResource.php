@@ -2,8 +2,10 @@
 
 namespace App\Filament\Staff\Resources\Sales;
 
+use App\Filament\Staff\Resources\Sales\Pages\EditSale;
 use App\Filament\Staff\Resources\Sales\Pages\ListSales;
 use App\Filament\Staff\Resources\Sales\Pages\ViewSale;
+use App\Filament\Staff\Resources\Sales\Schemas\SaleForm;
 use App\Filament\Staff\Resources\Sales\Schemas\SaleInfolist;
 use App\Filament\Staff\Resources\Sales\Tables\SalesTable;
 use App\Models\Sale;
@@ -38,11 +40,17 @@ class SaleResource extends Resource
         return SaleInfolist::configure($schema);
     }
 
+    public static function form(Schema $schema): Schema
+    {
+        return SaleForm::configure($schema);
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => ListSales::route('/'),
             'view' => ViewSale::route('/{record}'),
+            'edit' => EditSale::route('/{record}/edit'),
         ];
     }
 

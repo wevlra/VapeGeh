@@ -136,7 +136,7 @@ class StockIn extends Page implements HasForms
                 if ($stock) {
                     $stock->increment('qty', $newQty);
                 } else {
-                    Stock::create([
+                    $stock = Stock::create([
                         'product_id' => $data['product_id'],
                         'location_id' => $data['location_id'],
                         'qty' => $newQty,
@@ -150,7 +150,7 @@ class StockIn extends Page implements HasForms
                     'quantity' => $newQty,
                     'notes' => $data['notes'] ?? null,
                     'related_type' => Stock::class,
-                    'related_id' => $stock?->id,
+                    'related_id' => $stock->id,
                     'created_by' => auth()->id(),
                 ]);
             });

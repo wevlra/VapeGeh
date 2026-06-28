@@ -2,8 +2,12 @@
 
 namespace App\Filament\Admin\Resources\Sales\Tables;
 
+use App\Actions\DeleteSale;
 use App\Filament\Admin\Resources\Sales\SaleResource;
 use App\Models\Sale;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -60,7 +64,15 @@ class SalesTable
                     ]),
             ])
             ->recordActions([
-                //
+                EditAction::make(),
+                DeleteAction::make()
+                    ->action(fn (Sale $record) => app(DeleteSale::class)->execute($record))
+                    ->successNotification(
+                        Notification::make()
+                            ->title('Sale deleted')
+                            ->body('The sale has been permanently removed.')
+                            ->danger()
+                    ),
             ])
             ->defaultSort('created_at', 'desc');
     }

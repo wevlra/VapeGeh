@@ -4,7 +4,6 @@ namespace App\Filament\Staff\Resources\Products;
 
 use App\Filament\Staff\Resources\Products\Pages\ListProducts;
 use App\Filament\Staff\Resources\Products\Pages\ViewProduct;
-use App\Filament\Staff\Resources\Products\RelationManagers\StockRelationManager;
 use App\Filament\Staff\Resources\Products\Schemas\ProductInfolist;
 use App\Filament\Staff\Resources\Products\Tables\ProductsTable;
 use App\Models\Product;
@@ -41,11 +40,14 @@ class ProductResource extends Resource
         return ProductInfolist::configure($schema);
     }
 
+    public static function getNavigationBadge(): string
+    {
+        return (string) static::getEloquentQuery()->count();
+    }
+
     public static function getRelations(): array
     {
-        return [
-            StockRelationManager::class,
-        ];
+        return [];
     }
 
     public static function getPages(): array

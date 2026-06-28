@@ -72,7 +72,7 @@ trait NotifiesWithDetail
 
     protected function getRecordIdentifier(): string
     {
-        $record = $this->getRecord();
+        $record = $this->record ?? null;
 
         if (! $record instanceof Model) {
             return 'The record';

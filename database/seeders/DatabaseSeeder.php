@@ -87,19 +87,19 @@ class DatabaseSeeder extends Seeder
 
         // ── Products ───────────────────────────────────────────────
         $products = collect([
-            ['name' => 'Nasty Juice Fruity 30ml', 'purchase_price' => 35000],
-            ['name' => 'Nasty Juice Grape 30ml', 'purchase_price' => 35000],
-            ['name' => 'Crush Frozen Mint 30ml', 'purchase_price' => 35000],
-            ['name' => 'Zap Juice Tobacco Gold 60ml', 'purchase_price' => 60000],
-            ['name' => 'Pachamama Strawberry 30ml', 'purchase_price' => 40000],
-            ['name' => 'Voopoo PnP Coils 0.4ohm', 'purchase_price' => 40000],
-            ['name' => 'Voopoo PnP Coils 0.8ohm', 'purchase_price' => 40000],
-            ['name' => 'Uwell Caliburn Coils', 'purchase_price' => 35000],
-            ['name' => 'Voopoo Drag Nano 2', 'purchase_price' => 180000],
-            ['name' => 'Uwell Caliburn G2', 'purchase_price' => 220000],
-            ['name' => 'Xros 3 Mini', 'purchase_price' => 150000],
-            ['name' => 'USB-C Charging Cable', 'purchase_price' => 15000],
-            ['name' => 'Carrying Case (Small)', 'purchase_price' => 20000],
+            ['name' => 'Nasty Juice Fruity 30ml', 'purchase_price' => 35000, 'selling_price' => 55000],
+            ['name' => 'Nasty Juice Grape 30ml', 'purchase_price' => 35000, 'selling_price' => 55000],
+            ['name' => 'Crush Frozen Mint 30ml', 'purchase_price' => 35000, 'selling_price' => 55000],
+            ['name' => 'Zap Juice Tobacco Gold 60ml', 'purchase_price' => 60000, 'selling_price' => 95000],
+            ['name' => 'Pachamama Strawberry 30ml', 'purchase_price' => 40000, 'selling_price' => 65000],
+            ['name' => 'Voopoo PnP Coils 0.4ohm', 'purchase_price' => 40000, 'selling_price' => 65000],
+            ['name' => 'Voopoo PnP Coils 0.8ohm', 'purchase_price' => 40000, 'selling_price' => 65000],
+            ['name' => 'Uwell Caliburn Coils', 'purchase_price' => 35000, 'selling_price' => 55000],
+            ['name' => 'Voopoo Drag Nano 2', 'purchase_price' => 180000, 'selling_price' => 275000],
+            ['name' => 'Uwell Caliburn G2', 'purchase_price' => 220000, 'selling_price' => 340000],
+            ['name' => 'Xros 3 Mini', 'purchase_price' => 150000, 'selling_price' => 235000],
+            ['name' => 'USB-C Charging Cable', 'purchase_price' => 15000, 'selling_price' => 25000],
+            ['name' => 'Carrying Case (Small)', 'purchase_price' => 20000, 'selling_price' => 35000],
         ])->map(fn ($data) => Product::create($data));
 
         // ── Product prices ──────────────────────────────────────────────

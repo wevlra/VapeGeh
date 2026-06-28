@@ -11,6 +11,7 @@ use App\Models\StockMovement;
 use BackedEnum;
 use DomainException;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -24,7 +25,7 @@ class Pos extends StaffPos
 
     protected static ?string $navigationLabel = 'Cashier';
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Operations';
+    protected static \UnitEnum|string|null $navigationGroup = 'Sales';
 
     protected static ?int $navigationSort = 1;
 
@@ -38,7 +39,7 @@ class Pos extends StaffPos
 
         $query = Stock::query()
             ->where('qty', '>', 0)
-            ->with('product.prices');
+            ->with('product');
 
         if ($locationId) {
             $query->where('location_id', $locationId);
@@ -67,7 +68,7 @@ class Pos extends StaffPos
                         $state < 10 => 'warning',
                         default => 'success',
                     }),
-                TextColumn::make('product.prices.first.price')
+                TextColumn::make('product.selling_price')
                     ->label('Price')
                     ->formatStateUsing(fn ($state): string => 'Rp '.number_format((float) ($state ?? 0), 0, ',', '.'))
                     ->sortable(false),
@@ -79,13 +80,104 @@ class Pos extends StaffPos
                     ->visible(! $locationId),
             ])
             ->actions([
-                Action::make('addToCart')
-                    ->label('Add')
-                    ->icon('heroicon-m-plus')
-                    ->color('primary')
-                    ->action(fn (Stock $record) => $this->addToCart($record->product_id)),
+                $this->addToCartAction(),
             ])
             ->defaultSort('product.name');
+    }
+
+    /**
+     * Add to cart action with modal for price selection (admin only).
+     */
+    protected function addToCartAction(): Action
+    {
+        return Action::make('addToCart')
+            ->label('Add')
+            ->icon('heroicon-m-plus')
+            ->color('primary')
+            ->form([
+                Select::make('selected_price')
+                    ->label('Harga')
+                    ->options(function (Stock $record): array {
+                        $product = $record->product;
+                        $options = [];
+
+                        if ((float) $product->selling_price > 0) {
+                            $options['default'] = 'Default: Rp '.number_format((float) $product->selling_price, 0, ',', '.');
+                        }
+
+                        foreach ($product->prices as $price) {
+                            $options['pp_'.$price->id] = "{$price->label}: Rp ".number_format((float) $price->price, 0, ',', '.');
+                        }
+
+                        if (empty($options)) {
+                            $options['default'] = 'Rp 0';
+                        }
+
+                        return $options;
+                    })
+                    ->default('default')
+                    ->required(),
+            ])
+            ->action(function (array $data, Stock $record): void {
+                $product = $record->product;
+                $selected = $data['selected_price'];
+
+                if ($selected === 'default') {
+                    $price = (float) $product->default_price;
+                    $label = 'Default';
+                } else {
+                    $priceId = (int) str_replace('pp_', '', $selected);
+                    $priceModel = $product->prices()->find($priceId);
+                    $price = (float) ($priceModel->price ?? 0);
+                    $label = $priceModel->label ?? 'Unknown';
+                }
+
+                $this->addToCart($product->id, $price, $label);
+            });
+    }
+
+    public function addToCart(int $productId, ?float $price = null, ?string $priceLabel = null): void
+    {
+        $existingIndex = collect($this->cart)->search(fn ($item) => $item['product_id'] === $productId);
+
+        if ($existingIndex !== false) {
+            $currentQty = (int) $this->cart[$existingIndex]['qty'] + 1;
+            if (! $this->isStockAvailable($productId, $currentQty)) {
+                $this->dispatchBrowserEvent('notify', ['type' => 'warning', 'message' => 'Cannot exceed available stock.']);
+
+                return;
+            }
+            $this->cart[$existingIndex]['qty'] = $currentQty;
+        } else {
+            if (! $this->isStockAvailable($productId, 1)) {
+                $this->dispatchBrowserEvent('notify', ['type' => 'warning', 'message' => 'Out of stock.']);
+
+                return;
+            }
+            $this->cart[] = [
+                'product_id' => $productId,
+                'qty' => 1,
+                'price' => $price ?? 0,
+                'price_label' => $priceLabel ?? 'Default',
+            ];
+        }
+    }
+
+    public function getCartItems(): array
+    {
+        $productIds = collect($this->cart)->pluck('product_id');
+        $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
+
+        return collect($this->cart)->map(function ($item) use ($products) {
+            $product = $products->get($item['product_id']);
+            if (! $product) {
+                return null;
+            }
+            $item['name'] = $product->name;
+            $item['subtotal'] = $item['price'] * (int) $item['qty'];
+
+            return $item;
+        })->filter()->values()->toArray();
     }
 
     protected function isStockAvailable(int $productId, int $qty): bool
@@ -156,7 +248,7 @@ class Pos extends StaffPos
                             );
                         }
 
-                        $price = (float) ($product->prices->first()?->price ?? 0);
+                        $price = (float) $cartItem['price'];
                         $subtotal = $price * $qty;
                         $total += $subtotal;
 
@@ -171,7 +263,7 @@ class Pos extends StaffPos
                         continue;
                     }
 
-                    $price = (float) ($product->prices->first()?->price ?? 0);
+                    $price = (float) $cartItem['price'];
                     $subtotal = $price * $qty;
                     $total += $subtotal;
 
@@ -241,6 +333,7 @@ class Pos extends StaffPos
         }
 
         $this->cart = [];
+        $this->dispatch('$refresh');
 
         $printUrl = route('admin.sales.receipt', $sale);
 

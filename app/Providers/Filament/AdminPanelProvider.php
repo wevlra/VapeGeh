@@ -41,6 +41,7 @@ class AdminPanelProvider extends PanelProvider
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
             ->profile()
+            ->sidebarCollapsibleOnDesktop()
             ->brandLogo(asset('assets/images/logo-wordmark-light-tr.png'))
             ->darkModeBrandLogo(asset('assets/images/logo-wordmark-dark-tr.png'))
             ->brandLogoHeight('4rem')

@@ -5,15 +5,18 @@ namespace App\Filament\Admin\Pages;
 use App\Models\Stock;
 use BackedEnum;
 use Filament\Pages\Page;
-use Filament\Schemas\Components\EmbeddedTable;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Wezlo\FilamentResponsiveTable\Concerns\HasResponsiveTable;
+use Wezlo\FilamentResponsiveTable\ResponsiveTableConfiguration;
 
 class StockReport extends Page implements Tables\Contracts\HasTable
 {
+    use HasResponsiveTable;
     use Tables\Concerns\InteractsWithTable;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
@@ -28,8 +31,15 @@ class StockReport extends Page implements Tables\Contracts\HasTable
     {
         return $schema
             ->components([
-                EmbeddedTable::make(),
+                View::make('filament-responsive-table::responsive-table'),
             ]);
+    }
+
+    public function responsiveTable(ResponsiveTableConfiguration $config): ResponsiveTableConfiguration
+    {
+        return $config
+            ->only(['product.name', 'location.name', 'qty'])
+            ->cardTitle(fn ($record) => $record->product->sku);
     }
 
     public function table(Table $table): Table
