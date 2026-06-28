@@ -262,7 +262,8 @@ class StockOut extends Page implements HasForms
                     throw new DomainException('Insufficient stock.');
                 }
 
-                $stock->decrement('qty', $qty);
+                $stock->qty -= $qty;
+                $stock->save();
 
                 $price = ProductPrice::find($priceId);
                 $unitPrice = $price ? (float) $price->price : 0;
@@ -287,6 +288,16 @@ class StockOut extends Page implements HasForms
             Notification::make()
                 ->title('Stock out failed')
                 ->body($e->getMessage())
+                ->danger()
+                ->send();
+
+            return;
+        } catch (\Throwable $e) {
+            report($e);
+
+            Notification::make()
+                ->title('Terjadi kesalahan')
+                ->body('Silakan coba lagi atau hubungi administrator.')
                 ->danger()
                 ->send();
 

@@ -42,6 +42,7 @@ class HistoryResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
+            ->with(['product', 'location', 'creator'])
             ->where(function (Builder $query) {
                 // Non-Sale movements: show all
                 $query->where('related_type', '!=', Sale::class)

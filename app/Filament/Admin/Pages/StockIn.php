@@ -124,35 +124,47 @@ class StockIn extends Page implements HasForms
             $avgPrice = $newPrice;
         }
 
-        DB::transaction(function () use ($data, $product, $avgPrice, $newQty) {
-            $product->update(['purchase_price' => round($avgPrice, 2)]);
+        try {
+            DB::transaction(function () use ($data, $product, $avgPrice, $newQty) {
+                $product->update(['purchase_price' => round($avgPrice, 2)]);
 
-            $stock = Stock::where('product_id', $data['product_id'])
-                ->where('location_id', $data['location_id'])
-                ->lockForUpdate()
-                ->first();
+                $stock = Stock::where('product_id', $data['product_id'])
+                    ->where('location_id', $data['location_id'])
+                    ->lockForUpdate()
+                    ->first();
 
-            if ($stock) {
-                $stock->increment('qty', $newQty);
-            } else {
-                Stock::create([
+                if ($stock) {
+                    $stock->increment('qty', $newQty);
+                } else {
+                    Stock::create([
+                        'product_id' => $data['product_id'],
+                        'location_id' => $data['location_id'],
+                        'qty' => $newQty,
+                    ]);
+                }
+
+                StockMovement::create([
                     'product_id' => $data['product_id'],
                     'location_id' => $data['location_id'],
-                    'qty' => $newQty,
+                    'type' => 'in',
+                    'quantity' => $newQty,
+                    'notes' => $data['notes'] ?? null,
+                    'related_type' => Stock::class,
+                    'related_id' => $stock?->id,
+                    'created_by' => auth()->id(),
                 ]);
-            }
+            });
+        } catch (\Throwable $e) {
+            report($e);
 
-            StockMovement::create([
-                'product_id' => $data['product_id'],
-                'location_id' => $data['location_id'],
-                'type' => 'in',
-                'quantity' => $newQty,
-                'notes' => $data['notes'] ?? null,
-                'related_type' => Stock::class,
-                'related_id' => $stock?->id,
-                'created_by' => auth()->id(),
-            ]);
-        });
+            Notification::make()
+                ->title('Stock in failed')
+                ->body($e->getMessage() ?: 'An unexpected error occurred.')
+                ->danger()
+                ->send();
+
+            return;
+        }
 
         $this->form->fill();
 

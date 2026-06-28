@@ -360,7 +360,7 @@
 
         @if($invoice->notes)
             <p>
-                {{ __('invoices::invoice.notes') }}: {!! $invoice->notes !!}
+                {{ __('invoices::invoice.notes') }}: {{ $invoice->notes }}
             </p>
         @endif
 

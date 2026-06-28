@@ -86,7 +86,8 @@ class EditStockTransfer extends EditRecord
                             ]);
                         }
 
-                        $record->update(['status' => 'cancelled']);
+                        $record->status = 'cancelled';
+                        $record->save();
                     });
 
                     Notification::make()

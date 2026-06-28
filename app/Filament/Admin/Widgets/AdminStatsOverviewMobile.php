@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class AdminStatsOverviewMobile extends Widget
 {
-    protected static ?string $pollingInterval = '60s';
+    protected ?string $pollingInterval = '60s';
 
     protected int|string|array $columnSpan = 'full';
 

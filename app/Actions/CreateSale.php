@@ -51,8 +51,12 @@ class CreateSale
                     'qty' => $item['qty'],
                     'price' => $defaultPrice,
                     'subtotal' => $subtotal,
-                    'stock_id' => $stock->id,
+                    'stock' => $stock,
                 ];
+            }
+
+            if ($total <= 0) {
+                throw new DomainException('Sale total must be greater than zero. Ensure the product has a price set.');
             }
 
             $sale = Sale::create([
@@ -73,8 +77,9 @@ class CreateSale
                     'subtotal' => $saleItem['subtotal'],
                 ]);
 
-                Stock::where('id', $saleItem['stock_id'])
-                    ->decrement('qty', $saleItem['qty']);
+                $stock = $saleItem['stock'];
+                $stock->qty -= $saleItem['qty'];
+                $stock->save();
 
                 StockMovement::create([
                     'product_id' => $saleItem['product_id'],

@@ -202,8 +202,8 @@ class Pos extends StaffPos
                     ]);
 
                     foreach ($saleItem['stock_locations'] as $sl) {
-                        Stock::where('id', $sl['stock']->id)
-                            ->decrement('qty', $sl['take']);
+                        $sl['stock']->qty -= $sl['take'];
+                        $sl['stock']->save();
 
                         StockMovement::create([
                             'product_id' => $saleItem['product_id'],
@@ -224,6 +224,16 @@ class Pos extends StaffPos
             Notification::make()
                 ->title('Sale failed')
                 ->body($e->getMessage())
+                ->danger()
+                ->send();
+
+            return;
+        } catch (\Throwable $e) {
+            report($e);
+
+            Notification::make()
+                ->title('Terjadi kesalahan')
+                ->body('Silakan coba lagi atau hubungi administrator.')
                 ->danger()
                 ->send();
 

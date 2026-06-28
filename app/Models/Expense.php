@@ -8,11 +8,20 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['location_id', 'category', 'description', 'amount', 'date', 'created_by'])]
+#[Fillable(['location_id', 'category', 'description', 'amount', 'date'])]
 class Expense extends Model
 {
     /** @use HasFactory<ExpenseFactory> */
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::creating(function (Expense $expense) {
+            if (is_null($expense->created_by)) {
+                $expense->created_by = auth()->id();
+            }
+        });
+    }
 
     /**
      * @return BelongsTo<Location, $this>

@@ -4,7 +4,6 @@ namespace App\Filament\Admin\Resources\Sales;
 
 use App\Filament\Admin\Resources\Sales\Pages\ListSales;
 use App\Filament\Admin\Resources\Sales\Pages\ViewSale;
-use App\Filament\Admin\Resources\Sales\Schemas\SaleForm;
 use App\Filament\Admin\Resources\Sales\Schemas\SaleInfolist;
 use App\Filament\Admin\Resources\Sales\Tables\SalesTable;
 use App\Models\Sale;
@@ -21,11 +20,6 @@ class SaleResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingCart;
 
     protected static \UnitEnum|string|null $navigationGroup = 'Sales';
-
-    public static function form(Schema $schema): Schema
-    {
-        return SaleForm::configure($schema);
-    }
 
     public static function table(Table $table): Table
     {

@@ -17,6 +17,10 @@ class CompleteStockTransfer
             throw new DomainException('Only pending transfers can be completed.');
         }
 
+        if ($transfer->from_location_id === $transfer->to_location_id) {
+            throw new DomainException('Transfer source and destination cannot be the same location.');
+        }
+
         DB::transaction(function () use ($transfer, $completedBy) {
             $transfer->load('items');
 
@@ -72,10 +76,9 @@ class CompleteStockTransfer
                 ]);
             }
 
-            $transfer->update([
-                'status' => 'completed',
-                'completed_at' => now(),
-            ]);
+            $transfer->status = 'completed';
+            $transfer->completed_at = now();
+            $transfer->save();
         });
     }
 }

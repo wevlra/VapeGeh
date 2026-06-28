@@ -258,7 +258,7 @@
     {{-- Notes --}}
     @if($invoice->notes)
     <div class="notes">
-        <strong>Notes:</strong> {!! $invoice->notes !!}
+        <strong>Notes:</strong> {{ $invoice->notes }}
     </div>
     @endif
 

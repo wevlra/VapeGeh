@@ -296,7 +296,7 @@ class Pos extends Page implements HasTable
                         'qty' => $qty,
                         'price' => $price,
                         'subtotal' => $subtotal,
-                        'stock_id' => $stock->id,
+                        'stock' => $stock,
                     ];
                 }
 
@@ -317,8 +317,9 @@ class Pos extends Page implements HasTable
                         'subtotal' => $saleItem['subtotal'],
                     ]);
 
-                    Stock::where('id', $saleItem['stock_id'])
-                        ->decrement('qty', $saleItem['qty']);
+                    $stock = $saleItem['stock'];
+                    $stock->qty -= $saleItem['qty'];
+                    $stock->save();
 
                     StockMovement::create([
                         'product_id' => $saleItem['product_id'],
@@ -338,6 +339,16 @@ class Pos extends Page implements HasTable
             Notification::make()
                 ->title('Sale failed')
                 ->body($e->getMessage())
+                ->danger()
+                ->send();
+
+            return;
+        } catch (\Throwable $e) {
+            report($e);
+
+            Notification::make()
+                ->title('Terjadi kesalahan')
+                ->body('Silakan coba lagi atau hubungi administrator.')
                 ->danger()
                 ->send();
 

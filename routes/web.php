@@ -11,12 +11,18 @@ Route::livewire('/', 'landing');
 
 Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/admin/history/{stockMovement}/receipt', function (StockMovement $stockMovement) {
+        if (auth()->user()->role === 'staff' && $stockMovement->location_id !== auth()->user()->location_id) {
+            abort(403);
+        }
         $stockMovement->load(['product', 'location', 'creator', 'buyer', 'related']);
 
         return view('receipts.receipt', ['movement' => $stockMovement]);
     })->name('admin.history.receipt');
 
     Route::get('/admin/history/{stockMovement}/invoice', function (StockMovement $stockMovement) {
+        if (auth()->user()->role === 'staff' && $stockMovement->location_id !== auth()->user()->location_id) {
+            abort(403);
+        }
         if ($stockMovement->type !== 'out') {
             abort(404);
         }
@@ -103,6 +109,9 @@ Route::middleware(['web', 'auth'])->group(function () {
     })->name('admin.history.invoice');
 
     Route::get('/admin/sales/{sale}/receipt', function (Sale $sale) {
+        if (auth()->user()->role === 'staff' && $sale->location_id !== auth()->user()->location_id) {
+            abort(403);
+        }
         $movement = $sale->stockMovements()->first();
         if (! $movement) {
             abort(404);
