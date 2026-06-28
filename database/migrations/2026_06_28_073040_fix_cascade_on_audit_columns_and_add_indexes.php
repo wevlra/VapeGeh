@@ -11,21 +11,25 @@ return new class extends Migration
         // Fix cascade rules: created_by should not cascade on delete
         Schema::table('stock_movements', function (Blueprint $table) {
             $table->dropForeign(['created_by']);
+            $table->unsignedBigInteger('created_by')->nullable()->change();
             $table->foreign('created_by')->references('id')->on('users')->nullOnDelete();
         });
 
         Schema::table('stock_transfers', function (Blueprint $table) {
             $table->dropForeign(['created_by']);
+            $table->unsignedBigInteger('created_by')->nullable()->change();
             $table->foreign('created_by')->references('id')->on('users')->nullOnDelete();
         });
 
         Schema::table('incomes', function (Blueprint $table) {
             $table->dropForeign(['created_by']);
+            $table->unsignedBigInteger('created_by')->nullable()->change();
             $table->foreign('created_by')->references('id')->on('users')->nullOnDelete();
         });
 
         Schema::table('expenses', function (Blueprint $table) {
             $table->dropForeign(['created_by']);
+            $table->unsignedBigInteger('created_by')->nullable()->change();
             $table->foreign('created_by')->references('id')->on('users')->nullOnDelete();
         });
 
