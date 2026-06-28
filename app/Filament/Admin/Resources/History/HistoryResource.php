@@ -23,26 +23,26 @@ class HistoryResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClock;
 
-    protected static ?string $navigationLabel = 'History';
+    protected static ?string $navigationLabel = 'Riwayat';
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Inventory';
+    protected static \UnitEnum|string|null $navigationGroup = 'Inventaris';
 
     protected static ?int $navigationSort = 5;
 
     public static function getModelLabel(): string
     {
-        return 'History';
+        return 'Riwayat';
     }
 
     public static function getPluralModelLabel(): string
     {
-        return 'History';
+        return 'Riwayat';
     }
 
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['product', 'location', 'creator'])
+            ->with(['product', 'location', 'creator', 'related'])
             ->where(function (Builder $query) {
                 // Non-Sale movements: show all
                 $query->where('related_type', '!=', Sale::class)

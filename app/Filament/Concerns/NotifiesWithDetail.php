@@ -18,12 +18,12 @@ trait NotifiesWithDetail
 
     protected function getCreatedNotificationTitle(): ?string
     {
-        return $this->resourceLabel().' created';
+        return $this->resourceLabel().' dibuat';
     }
 
     protected function getCreatedNotificationBody(): ?string
     {
-        return $this->getRecordIdentifier().' has been created successfully.';
+        return $this->getRecordIdentifier().' berhasil dibuat.';
     }
 
     protected function getCreatedNotification(): ?Notification
@@ -36,12 +36,12 @@ trait NotifiesWithDetail
 
     protected function getSavedNotificationTitle(): ?string
     {
-        return $this->resourceLabel().' updated';
+        return $this->resourceLabel().' diperbarui';
     }
 
     protected function getSavedNotificationBody(): ?string
     {
-        return $this->getRecordIdentifier().' has been updated successfully.';
+        return $this->getRecordIdentifier().' berhasil diperbarui.';
     }
 
     protected function getSavedNotification(): ?Notification
@@ -54,12 +54,12 @@ trait NotifiesWithDetail
 
     protected function getDeletedNotificationTitle(): ?string
     {
-        return $this->resourceLabel().' deleted';
+        return $this->resourceLabel().' dihapus';
     }
 
     protected function getDeletedNotificationBody(): ?string
     {
-        return $this->getRecordIdentifier().' has been permanently removed.';
+        return $this->getRecordIdentifier().' telah dihapus permanen.';
     }
 
     protected function getDeletedNotification(): ?Notification
@@ -75,7 +75,7 @@ trait NotifiesWithDetail
         $record = $this->record ?? null;
 
         if (! $record instanceof Model) {
-            return 'The record';
+            return 'Catatan ini';
         }
 
         $label = (string) ($record->getAttribute('name')

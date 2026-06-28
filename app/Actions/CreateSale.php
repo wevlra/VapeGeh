@@ -88,7 +88,8 @@ class CreateSale
                     'quantity' => -$saleItem['qty'],
                     'related_type' => Sale::class,
                     'related_id' => $sale->id,
-                    'notes' => "Sale #{$sale->invoice_number}",
+                    'created_by' => $user->id,
+                    'notes' => "Penjualan #{$sale->invoice_number}",
                 ]);
             }
 

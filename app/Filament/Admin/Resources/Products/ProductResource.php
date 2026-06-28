@@ -24,7 +24,19 @@ class ProductResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCube;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Inventory';
+    protected static ?string $navigationLabel = 'Produk';
+
+    protected static \UnitEnum|string|null $navigationGroup = 'Inventaris';
+
+    public static function getModelLabel(): string
+    {
+        return 'Produk';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Produk';
+    }
 
     public static function form(Schema $schema): Schema
     {

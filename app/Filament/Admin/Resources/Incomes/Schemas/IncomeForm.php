@@ -15,27 +15,31 @@ class IncomeForm
         return $schema
             ->components([
                 Select::make('location_id')
-                    ->label('Location')
+                    ->label('Lokasi')
                     ->relationship('location', 'name')
                     ->required()
                     ->searchable()
                     ->preload(),
                 Select::make('category')
+                    ->label('Kategori')
                     ->required()
                     ->options([
-                        'sale' => 'Sale',
-                        'debt_payment' => 'Debt Payment',
-                        'other' => 'Other',
+                        'sale' => 'Penjualan',
+                        'debt_payment' => 'Pembayaran Hutang',
+                        'other' => 'Lainnya',
                     ]),
                 TextInput::make('amount')
+                    ->label('Jumlah')
                     ->required()
                     ->numeric()
                     ->minValue(0)
-                    ->prefix('IDR'),
+                    ->prefix('Rp'),
                 DatePicker::make('date')
+                    ->label('Tanggal')
                     ->required()
                     ->default(now()),
                 Textarea::make('description')
+                    ->label('Deskripsi')
                     ->columnSpanFull()
                     ->rows(2),
             ]);

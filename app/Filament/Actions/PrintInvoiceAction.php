@@ -11,7 +11,7 @@ class PrintInvoiceAction extends Action
     {
         parent::setUp();
 
-        $this->label('Print Invoice')
+        $this->label('Cetak Invoice')
             ->icon('heroicon-o-document-text')
             ->color('primary')
             ->url(fn (StockMovement $record): string => route('admin.history.invoice', $record))

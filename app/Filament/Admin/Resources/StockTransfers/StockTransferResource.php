@@ -23,7 +23,19 @@ class StockTransferResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowsRightLeft;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Inventory';
+    protected static ?string $navigationLabel = 'Transfer Stok';
+
+    protected static \UnitEnum|string|null $navigationGroup = 'Inventaris';
+
+    public static function getModelLabel(): string
+    {
+        return 'Transfer Stok';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Transfer Stok';
+    }
 
     public static function form(Schema $schema): Schema
     {

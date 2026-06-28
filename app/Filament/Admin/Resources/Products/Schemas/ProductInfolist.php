@@ -14,31 +14,36 @@ class ProductInfolist
     {
         return $schema
             ->schema([
-                Section::make('Product Details')
+                Section::make('Detail Produk')
                     ->columnSpanFull()
                     ->columns(2)
                     ->schema([
-                        TextEntry::make('sku'),
-                        TextEntry::make('name'),
+                        TextEntry::make('sku')
+                            ->label('SKU'),
+                        TextEntry::make('name')
+                            ->label('Nama'),
                         TextEntry::make('purchase_price')
                             ->money('IDR')
-                            ->label('Purchase Price'),
+                            ->label('Harga Beli'),
+                        TextEntry::make('selling_price')
+                            ->money('IDR')
+                            ->label('Harga Jual (Default)'),
                     ]),
 
-                Section::make('Selling Prices')
+                Section::make('Harga Jual')
                     ->columnSpanFull()
                     ->schema([
                         RepeatableEntry::make('prices')
                             ->hiddenLabel()
                             ->table([
                                 TableColumn::make('Label'),
-                                TableColumn::make('Price'),
+                                TableColumn::make('Harga'),
                             ])
                             ->schema([
                                 TextEntry::make('label')
                                     ->label('Label'),
                                 TextEntry::make('price')
-                                    ->label('Price')
+                                    ->label('Harga')
                                     ->money('IDR'),
                             ]),
                     ]),

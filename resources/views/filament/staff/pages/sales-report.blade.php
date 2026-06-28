@@ -1,6 +1,6 @@
 <x-filament-panels::page>
-    <div>
-        @foreach (['all' => 'All Time', 'today' => 'Today', 'week' => 'Last 7 Days', 'month' => 'Last 30 Days'] as $value => $label)
+    <div class="flex flex-wrap gap-1.5">
+        @foreach (['all' => 'Semua Waktu', 'today' => 'Hari Ini', 'week' => '7 Hari Terakhir', 'month' => '30 Hari Terakhir'] as $value => $label)
             <x-filament::button
                 :color="$this->period === $value ? 'primary' : 'gray'"
                 size="sm"

@@ -12,19 +12,23 @@ class VendorInfolist
     {
         return $schema
             ->schema([
-                Section::make('Vendor Details')
+                Section::make('Detail Vendor')
                     ->columnSpanFull()
                     ->columns(2)
                     ->schema([
-                        TextEntry::make('name'),
+                        TextEntry::make('name')
+                            ->label('Nama'),
                         TextEntry::make('contact_person')
-                            ->label('Contact Person')
+                            ->label('Kontak Person')
                             ->placeholder('—'),
                         TextEntry::make('phone')
+                            ->label('Telepon')
                             ->placeholder('—'),
                         TextEntry::make('email')
+                            ->label('Email')
                             ->placeholder('—'),
                         TextEntry::make('address')
+                            ->label('Alamat')
                             ->placeholder('—')
                             ->columnSpanFull(),
                     ]),

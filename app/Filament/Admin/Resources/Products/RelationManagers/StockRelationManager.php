@@ -17,6 +17,8 @@ class StockRelationManager extends RelationManager
 {
     protected static string $relationship = 'stocks';
 
+    protected static ?string $title = 'Stok';
+
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
         return true;
@@ -32,9 +34,11 @@ class StockRelationManager extends RelationManager
         return $table
             ->columns([
                 TextColumn::make('location.name')
+                    ->label('Lokasi')
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('qty')
+                    ->label('Jumlah')
                     ->sortable()
                     ->badge()
                     ->color(fn (int $state): string => match (true) {
@@ -45,16 +49,16 @@ class StockRelationManager extends RelationManager
             ])
             ->recordActions([
                 EditAction::make()
-                    ->modalHeading('Adjust Stock')
+                    ->modalHeading('Sesuaikan Stok')
                     ->form([
                         TextInput::make('qty')
-                            ->label('Quantity')
+                            ->label('Jumlah')
                             ->required()
                             ->integer()
                             ->minValue(0)
                             ->default(fn (Stock $record): int => $record->qty),
                         Textarea::make('notes')
-                            ->label('Notes')
+                            ->label('Catatan')
                             ->rows(2),
                     ])
                     ->action(function (Stock $record, array $data): void {
@@ -65,8 +69,8 @@ class StockRelationManager extends RelationManager
                         );
 
                         Notification::make()
-                            ->title('Stock adjusted')
-                            ->body('Quantity for '.$record->location->name.' has been set to '.$data['qty'].' units.')
+                            ->title('Stok disesuaikan')
+                            ->body('Jumlah untuk '.$record->location->name.' telah disetel menjadi '.$data['qty'].' unit.')
                             ->success()
                             ->send();
                     }),

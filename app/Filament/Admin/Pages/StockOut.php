@@ -28,17 +28,17 @@ class StockOut extends Page implements HasForms
 
     protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedArrowDownTray;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Inventory';
+    protected static \UnitEnum|string|null $navigationGroup = 'Inventaris';
 
-    protected static ?string $navigationLabel = 'Stock Out';
+    protected static ?string $navigationLabel = 'Stok Keluar';
 
     protected static ?string $slug = 'stock-out';
 
-    protected static ?string $title = 'Stock Out';
+    protected static ?string $title = 'Stok Keluar';
 
     protected static bool $shouldRegisterNavigation = false;
 
-    protected ?string $heading = 'Stock Out';
+    protected ?string $heading = 'Stok Keluar';
 
     protected string $view = 'filament.admin.pages.stock-out';
 
@@ -56,7 +56,7 @@ class StockOut extends Page implements HasForms
             ->columns(2)
             ->components([
                 Select::make('product_id')
-                    ->label('Product')
+                    ->label('Produk')
                     ->options(fn () => Product::orderBy('name')->get()
                         ->mapWithKeys(fn (Product $p): array => [$p->id => "{$p->sku} — {$p->name}"])
                         ->toArray())
@@ -69,7 +69,7 @@ class StockOut extends Page implements HasForms
                     })
                     ->columnSpanFull(),
                 Select::make('price_id')
-                    ->label('Price (Selling Price)')
+                    ->label('Harga (Harga Jual)')
                     ->options(fn (callable $get) => $this->getPriceOptions($get('product_id')))
                     ->helperText(fn (callable $get) => $this->getPriceHelper($get('price_id')))
                     ->searchable()
@@ -77,7 +77,7 @@ class StockOut extends Page implements HasForms
                     ->live()
                     ->columnSpanFull(),
                 Select::make('location_id')
-                    ->label('From Location')
+                    ->label('Dari Lokasi')
                     ->options(fn (callable $get) => $this->getLocationOptionsWithStock($get('product_id')))
                     ->getOptionLabelUsing(fn ($value) => $this->getLocationLabel($value))
                     ->searchable()
@@ -85,25 +85,29 @@ class StockOut extends Page implements HasForms
                     ->live()
                     ->helperText(fn (callable $get) => $this->getStockHelper($get('product_id'), $get('location_id'))),
                 TextInput::make('qty')
-                    ->label('Quantity')
+                    ->label('Jumlah')
                     ->required()
                     ->integer()
                     ->minValue(1),
                 Select::make('buyer_id')
-                    ->label('Buyer (optional)')
+                    ->label('Pembeli (opsional)')
                     ->options(fn () => Buyer::pluck('name', 'id'))
                     ->searchable()
                     ->createOptionForm([
                         TextInput::make('name')
+                            ->label('Nama')
                             ->required()
                             ->maxLength(255),
                         TextInput::make('phone')
+                            ->label('Telepon')
                             ->tel()
                             ->maxLength(50),
                         TextInput::make('email')
+                            ->label('Email')
                             ->email()
                             ->maxLength(255),
                         Textarea::make('address')
+                            ->label('Alamat')
                             ->rows(2),
                     ])
                     ->createOptionUsing(function (array $data): int {
@@ -111,15 +115,15 @@ class StockOut extends Page implements HasForms
                     })
                     ->columnSpanFull(),
                 Repeater::make('additional_costs')
-                    ->label('Additional Costs (optional)')
+                    ->label('Biaya Tambahan (opsional)')
                     ->schema([
                         TextInput::make('description')
-                            ->label('Description')
+                            ->label('Deskripsi')
                             ->required()
-                            ->placeholder('e.g. Shipping, Packaging')
+                            ->placeholder('Misal: Pengiriman, Kemasan')
                             ->columnSpan(2),
                         TextInput::make('amount')
-                            ->label('Amount')
+                            ->label('Jumlah')
                             ->required()
                             ->numeric()
                             ->minValue(0)
@@ -127,11 +131,11 @@ class StockOut extends Page implements HasForms
                             ->columnSpan(1),
                     ])
                     ->columns(3)
-                    ->addActionLabel('Add Cost')
+                    ->addActionLabel('Tambah Biaya')
                     ->defaultItems(0)
                     ->columnSpanFull(),
                 Textarea::make('notes')
-                    ->label('Notes (optional)')
+                    ->label('Catatan (opsional)')
                     ->rows(2)
                     ->maxLength(1000)
                     ->columnSpanFull(),
@@ -170,7 +174,7 @@ class StockOut extends Page implements HasForms
             return '';
         }
 
-        return 'Unit price: Rp '.number_format((float) $price->price, 0, ',', '.').' × qty = subtotal';
+        return 'Harga per unit: Rp '.number_format((float) $price->price, 0, ',', '.').' × jumlah = subtotal';
     }
 
     protected function getLocationOptionsWithStock(?int $productId): array
@@ -184,7 +188,7 @@ class StockOut extends Page implements HasForms
             ->with('location')
             ->get()
             ->mapWithKeys(fn (Stock $stock) => [
-                $stock->location_id => "{$stock->location->name} ({$stock->qty} available)",
+                $stock->location_id => "{$stock->location->name} ({$stock->qty} tersedia)",
             ])
             ->toArray();
     }
@@ -197,7 +201,7 @@ class StockOut extends Page implements HasForms
         }
         $stock = Stock::where('location_id', $value)->first();
 
-        return $stock ? "{$location->name} ({$stock->qty} available)" : $location->name;
+        return $stock ? "{$location->name} ({$stock->qty} tersedia)" : $location->name;
     }
 
     protected function getStockHelper(?int $productId, ?int $locationId): string
@@ -205,7 +209,7 @@ class StockOut extends Page implements HasForms
         $stock = $this->getStockRecord($productId, $locationId);
 
         if (! $productId) {
-            return 'Select a product first.';
+            return 'Pilih produk terlebih dahulu.';
         }
 
         if (! $locationId) {
@@ -213,10 +217,10 @@ class StockOut extends Page implements HasForms
         }
 
         if (! $stock) {
-            return 'No stock at this location.';
+            return 'Tidak ada stok di lokasi ini.';
         }
 
-        return "{$stock->qty} available.";
+        return "{$stock->qty} tersedia.";
     }
 
     protected function getStockRecord(?int $productId, ?int $locationId): ?Stock
@@ -247,7 +251,7 @@ class StockOut extends Page implements HasForms
                     ->first();
 
                 if (! $stock || $stock->qty < $qty) {
-                    throw new DomainException('Insufficient stock.');
+                    throw new DomainException('Stok tidak mencukupi.');
                 }
 
                 $stock->qty -= $qty;
@@ -277,7 +281,7 @@ class StockOut extends Page implements HasForms
             });
         } catch (DomainException $e) {
             Notification::make()
-                ->title('Stock out failed')
+                ->title('Stok keluar gagal')
                 ->body($e->getMessage())
                 ->danger()
                 ->send();
@@ -287,8 +291,8 @@ class StockOut extends Page implements HasForms
             report($e);
 
             Notification::make()
-                ->title('An error occurred')
-                ->body('Please try again or contact the administrator.')
+                ->title('Terjadi kesalahan')
+                ->body('Silakan coba lagi atau hubungi administrator.')
                 ->danger()
                 ->send();
 
@@ -297,13 +301,13 @@ class StockOut extends Page implements HasForms
 
         $this->form->fill();
 
-        $body = $qty.' units removed. Subtotal: Rp '.number_format($result['subtotal'], 0, ',', '.').' ('.$qty.' × Rp '.number_format($result['unitPrice'], 0, ',', '.').')';
+        $body = $qty.' unit dikeluarkan. Subtotal: Rp '.number_format($result['subtotal'], 0, ',', '.').' ('.$qty.' × Rp '.number_format($result['unitPrice'], 0, ',', '.').')';
         if ($result['totalCost'] > 0) {
-            $body .= ' + Additional: Rp '.number_format($result['totalCost'], 0, ',', '.');
+            $body .= ' + Biaya Tambahan: Rp '.number_format($result['totalCost'], 0, ',', '.');
         }
 
         Notification::make()
-            ->title('Stock removed')
+            ->title('Stok dikeluarkan')
             ->body($body)
             ->success()
             ->send();

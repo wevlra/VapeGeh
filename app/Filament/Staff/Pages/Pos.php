@@ -31,13 +31,13 @@ class Pos extends Page implements HasTable
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
 
-    protected static ?string $navigationLabel = 'Cashier';
+    protected static ?string $navigationLabel = 'Kasir';
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Sales';
+    protected static \UnitEnum|string|null $navigationGroup = 'Penjualan';
 
     protected static ?int $navigationSort = 1;
 
-    protected static ?string $title = 'Cashier';
+    protected static ?string $title = 'Kasir';
 
     protected string $view = 'filament.staff.pages.pos';
 
@@ -58,14 +58,14 @@ class Pos extends Page implements HasTable
             )
             ->columns([
                 TextColumn::make('name')
-                    ->label('Product')
+                    ->label('Produk')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('sku')
                     ->label('SKU')
                     ->searchable(),
                 TextColumn::make('stock_qty')
-                    ->label('Stock')
+                    ->label('Stok')
                     ->badge()
                     ->color(fn (int $state): string => match (true) {
                         $state <= 0 => 'danger',
@@ -74,13 +74,13 @@ class Pos extends Page implements HasTable
                     })
                     ->getStateUsing(fn (Product $record): int => $record->stocks->first()?->qty ?? 0),
                 TextColumn::make('id')
-                    ->label('Price')
+                    ->label('Harga')
                     ->formatStateUsing(fn (Product $record): string => 'Rp '.number_format((float) $record->default_price, 0, ',', '.'))
                     ->sortable(false),
             ])
             ->actions([
                 Action::make('addToCart')
-                    ->label('Add')
+                    ->label('Tambah')
                     ->icon('heroicon-m-plus')
                     ->color('primary')
                     ->action(fn (Product $record) => $this->addToCart($record->id)),
@@ -126,14 +126,14 @@ class Pos extends Page implements HasTable
         if ($existingIndex !== false) {
             $currentQty = (int) $this->cart[$existingIndex]['qty'] + 1;
             if (! $this->isStockAvailable($productId, $currentQty)) {
-                $this->dispatchBrowserEvent('notify', ['type' => 'warning', 'message' => 'Cannot exceed available stock.']);
+                Notification::make()->warning()->title('Stok tidak mencukupi.')->send();
 
                 return;
             }
             $this->cart[$existingIndex]['qty'] = $currentQty;
         } else {
             if (! $this->isStockAvailable($productId, 1)) {
-                $this->dispatchBrowserEvent('notify', ['type' => 'warning', 'message' => 'Out of stock.']);
+                Notification::make()->warning()->title('Stok habis.')->send();
 
                 return;
             }
@@ -160,7 +160,7 @@ class Pos extends Page implements HasTable
         }
 
         if (! $this->isStockAvailable($this->cart[$index]['product_id'], $qty)) {
-            $this->dispatchBrowserEvent('notify', ['type' => 'warning', 'message' => 'Cannot exceed available stock.']);
+            Notification::make()->warning()->title('Stok tidak mencukupi.')->send();
 
             return;
         }
@@ -192,15 +192,15 @@ class Pos extends Page implements HasTable
     public function checkoutAction(): Action
     {
         return Action::make('checkout')
-            ->label('Checkout')
+            ->label('Bayar')
             ->icon('heroicon-m-credit-card')
-            ->modalHeading('Checkout')
+            ->modalHeading('Bayar')
             ->modalContent(view('filament.staff.pages.checkout-summary'))
             ->form([
                 Radio::make('payment_method')
-                    ->label('Payment Method')
+                    ->label('Metode Pembayaran')
                     ->options([
-                        'cash' => 'Cash',
+                        'cash' => 'Tunai',
                         'transfer' => 'Transfer',
                         'qris' => 'QRIS',
                     ])
@@ -208,7 +208,7 @@ class Pos extends Page implements HasTable
                     ->default('cash')
                     ->live(),
                 TextInput::make('paid_amount')
-                    ->label('Pay')
+                    ->label('Bayar')
                     ->numeric()
                     ->prefix('Rp')
                     ->default(fn (): float => $this->getCartTotal())
@@ -220,8 +220,8 @@ class Pos extends Page implements HasTable
                     ->hint(fn (callable $get): ?string => $this->getPaymentHint((float) ($get('paid_amount') ?? 0)))
                     ->hintColor(fn (callable $get): ?string => $this->getPaymentHintColor((float) ($get('paid_amount') ?? 0))),
                 Textarea::make('notes')
-                    ->label('Notes (optional)')
-                    ->placeholder('Notes for this transaction...')
+                    ->label('Catatan (opsional)')
+                    ->placeholder('Catatan untuk transaksi ini...')
                     ->maxLength(1000),
             ])
             ->action(function (array $data) {
@@ -235,11 +235,11 @@ class Pos extends Page implements HasTable
         $total = $this->getCartTotal();
 
         if ($paidAmount < $total) {
-            return 'Short: Rp '.number_format($total - $paidAmount, 0, ',', '.');
+            return 'Kurang: Rp '.number_format($total - $paidAmount, 0, ',', '.');
         }
 
         if ($paidAmount > $total) {
-            return 'Change: Rp '.number_format($paidAmount - $total, 0, ',', '.');
+            return 'Kembali: Rp '.number_format($paidAmount - $total, 0, ',', '.');
         }
 
         return null;
@@ -282,7 +282,7 @@ class Pos extends Page implements HasTable
 
                     if (! $stock || $stock->qty < $qty) {
                         throw new DomainException(
-                            "Insufficient stock for product \"{$product->name}\"."
+                            "Stok tidak cukup untuk produk \"{$product->name}\"."
                         );
                     }
 
@@ -337,7 +337,7 @@ class Pos extends Page implements HasTable
             });
         } catch (DomainException $e) {
             Notification::make()
-                ->title('Sale failed')
+                ->title('Penjualan gagal')
                 ->body($e->getMessage())
                 ->danger()
                 ->send();
@@ -361,12 +361,12 @@ class Pos extends Page implements HasTable
         $printUrl = route('admin.sales.receipt', $sale);
 
         Notification::make()
-            ->title('Sale completed')
-            ->body("Invoice \"{$sale->invoice_number}\" has been created successfully. Total: Rp ".number_format($sale->total, 0, ',', '.'))
+            ->title('Penjualan selesai')
+            ->body("Invoice \"{$sale->invoice_number}\" berhasil dibuat. Total: Rp ".number_format($sale->total, 0, ',', '.'))
             ->success()
             ->actions([
                 Action::make('print')
-                    ->label('Print Receipt')
+                    ->label('Cetak Nota')
                     ->icon('heroicon-o-printer')
                     ->url($printUrl, shouldOpenInNewTab: true),
             ])

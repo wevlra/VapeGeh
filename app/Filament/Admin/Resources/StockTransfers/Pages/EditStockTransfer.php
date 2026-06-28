@@ -28,8 +28,8 @@ class EditStockTransfer extends EditRecord
         if ($this->record->status !== 'pending') {
             Notification::make()
                 ->warning()
-                ->title('Transfer is not editable')
-                ->body("Transfer \"{$this->record->transfer_number}\" is currently \"{$this->record->status}\". Only pending transfers can be edited.")
+                ->title('Transfer tidak dapat diedit')
+                ->body("Transfer \"{$this->record->transfer_number}\" saat ini \"{$this->record->status}\". Hanya transfer tertunda yang dapat diedit.")
                 ->send();
 
             $this->redirect(static::getResource()::getUrl('index'));
@@ -45,29 +45,29 @@ class EditStockTransfer extends EditRecord
     {
         return [
             Action::make('complete')
-                ->label('Complete')
+                ->label('Selesai')
                 ->color('success')
                 ->icon('heroicon-o-check')
                 ->requiresConfirmation()
-                ->modalHeading('Complete Stock Transfer')
-                ->modalDescription(fn (StockTransfer $record): string => "Are you sure you want to complete transfer {$record->transfer_number}?")
+                ->modalHeading('Selesaikan Transfer Stok')
+                ->modalDescription(fn (StockTransfer $record): string => "Yakin ingin menyelesaikan transfer {$record->transfer_number}?")
                 ->hidden(fn (StockTransfer $record): bool => $record->status !== 'pending')
                 ->action(function (StockTransfer $record): void {
                     app(CompleteStockTransfer::class)->execute($record, auth()->user());
 
                     Notification::make()
-                        ->title('Transfer completed')
-                        ->body("Transfer \"{$record->transfer_number}\" has been completed. Stock has been moved between locations.")
+                        ->title('Transfer selesai')
+                        ->body("Transfer \"{$record->transfer_number}\" telah selesai. Stok telah dipindahkan antar lokasi.")
                         ->success()
                         ->send();
                 }),
             Action::make('cancel')
-                ->label('Cancel')
+                ->label('Batal')
                 ->color('danger')
                 ->icon('heroicon-o-x-circle')
                 ->requiresConfirmation()
-                ->modalHeading('Cancel Stock Transfer')
-                ->modalDescription(fn (StockTransfer $record): string => "Cancel transfer {$record->transfer_number}? This will not affect stock.")
+                ->modalHeading('Batalkan Transfer Stok')
+                ->modalDescription(fn (StockTransfer $record): string => "Batalkan transfer {$record->transfer_number}? Ini tidak akan memengaruhi stok.")
                 ->hidden(fn (StockTransfer $record): bool => $record->status !== 'pending')
                 ->action(function (StockTransfer $record): void {
                     DB::transaction(function () use ($record) {
@@ -91,8 +91,8 @@ class EditStockTransfer extends EditRecord
                     });
 
                     Notification::make()
-                        ->title('Transfer cancelled')
-                        ->body("Transfer \"{$record->transfer_number}\" has been cancelled. No stock has been affected.")
+                        ->title('Transfer dibatalkan')
+                        ->body("Transfer \"{$record->transfer_number}\" telah dibatalkan. Tidak ada stok yang terpengaruh.")
                         ->warning()
                         ->send();
                 }),

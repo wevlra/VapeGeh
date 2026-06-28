@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Staff\Pages\Dashboard;
 use App\Filament\Staff\Widgets\StaffPaymentMethodChart;
 use App\Filament\Staff\Widgets\StaffSalesChart;
 use App\Filament\Staff\Widgets\StaffStatsOverview;
@@ -9,7 +10,6 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -45,17 +45,17 @@ class StaffPanelProvider extends PanelProvider
                     ->defaultBreakpoint('md'),
                 MobileBottomNav::make()
                     ->items([
-                        MobileBottomNavItem::make('Dashboard')
+                        MobileBottomNavItem::make('Beranda')
                             ->icon('heroicon-o-home')
                             ->activeIcon('heroicon-s-home')
                             ->url('/staff')
                             ->isActive(fn () => request()->is('staff')),
-                        MobileBottomNavItem::make('Products')
+                        MobileBottomNavItem::make('Produk')
                             ->icon('heroicon-o-archive-box')
                             ->activeIcon('heroicon-s-archive-box')
                             ->url('/staff/products')
                             ->isActive(fn () => request()->is('staff/products*')),
-                        MobileBottomNavItem::make('Sales')
+                        MobileBottomNavItem::make('Penjualan')
                             ->icon('heroicon-o-banknotes')
                             ->activeIcon('heroicon-s-banknotes')
                             ->url('/staff/sales')

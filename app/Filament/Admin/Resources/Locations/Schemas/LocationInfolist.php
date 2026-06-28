@@ -12,14 +12,20 @@ class LocationInfolist
     {
         return $schema
             ->schema([
-                Section::make('Location Details')
+                Section::make('Detail Lokasi')
                     ->columnSpanFull()
                     ->columns(2)
                     ->schema([
-                        TextEntry::make('name'),
+                        TextEntry::make('name')
+                            ->label('Nama'),
                         TextEntry::make('status')
+                            ->label('Status')
                             ->badge()
-                            ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                'active' => 'Aktif',
+                                'inactive' => 'Nonaktif',
+                                default => ucfirst($state),
+                            })
                             ->icon(fn (string $state): string => match ($state) {
                                 'active' => 'heroicon-o-check-circle',
                                 'inactive' => 'heroicon-o-x-circle',
@@ -31,15 +37,17 @@ class LocationInfolist
                                 default => 'gray',
                             }),
                         TextEntry::make('address')
+                            ->label('Alamat')
                             ->placeholder('—')
                             ->columnSpanFull(),
                         TextEntry::make('phone')
+                            ->label('Telepon')
                             ->placeholder('—'),
                         TextEntry::make('users_count')
                             ->counts('users')
-                            ->label('Staff'),
+                            ->label('Staf'),
                         TextEntry::make('total_asset')
-                            ->label('Total Asset')
+                            ->label('Total Aset')
                             ->formatStateUsing(fn ($state): string => 'Rp '.number_format((float) $state, 0, ',', '.'))
                             ->color('primary'),
                     ]),

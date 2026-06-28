@@ -21,9 +21,9 @@ class StockReport extends Page implements Tables\Contracts\HasTable
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Reports';
+    protected static \UnitEnum|string|null $navigationGroup = 'Laporan';
 
-    protected static ?string $title = 'Stock Report';
+    protected static ?string $title = 'Laporan Stok';
 
     protected string $view = 'filament.admin.pages.stock-report';
 
@@ -52,15 +52,15 @@ class StockReport extends Page implements Tables\Contracts\HasTable
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('product.name')
-                    ->label('Product')
+                    ->label('Produk')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('location.name')
-                    ->label('Location')
+                    ->label('Lokasi')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('qty')
-                    ->label('Quantity')
+                    ->label('Jumlah')
                     ->badge()
                     ->color(fn (int $state): string => match (true) {
                         $state <= 0 => 'danger',
@@ -72,7 +72,7 @@ class StockReport extends Page implements Tables\Contracts\HasTable
             ->filters([
                 Tables\Filters\SelectFilter::make('location_id')
                     ->relationship('location', 'name')
-                    ->label('Location')
+                    ->label('Lokasi')
                     ->preload(),
             ])
             ->defaultSort('location_id');

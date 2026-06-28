@@ -20,20 +20,24 @@ class LocationsTable
             ->recordUrl(fn (Location $record): string => LocationResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('name')
+                    ->label('Nama')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('address')
+                    ->label('Alamat')
                     ->limit(40),
                 TextColumn::make('phone')
+                    ->label('Telepon')
                     ->placeholder('—'),
                 TextColumn::make('users_count')
                     ->counts('users')
-                    ->label('Staff'),
+                    ->label('Staf'),
                 TextColumn::make('total_asset')
-                    ->label('Total Asset')
+                    ->label('Total Aset')
                     ->getStateUsing(fn (Location $record): string => 'Rp '.number_format((float) $record->total_asset, 0, ',', '.'))
                     ->alignEnd(),
                 TextColumn::make('status')
+                    ->label('Status')
                     ->badge()
                     ->icon(fn (string $state): string => match ($state) {
                         'active' => 'heroicon-o-check-circle',
@@ -50,8 +54,8 @@ class LocationsTable
             ->filters([
                 SelectFilter::make('status')
                     ->options([
-                        'active' => 'Active',
-                        'inactive' => 'Inactive',
+                        'active' => 'Aktif',
+                        'inactive' => 'Nonaktif',
                     ]),
             ])
             ->recordActions([

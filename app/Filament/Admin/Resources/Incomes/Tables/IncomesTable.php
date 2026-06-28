@@ -21,13 +21,16 @@ class IncomesTable
             ->recordUrl(fn (Income $record): string => IncomeResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('location.name')
-                    ->label('Location')
+                    ->label('Lokasi')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('category')
+                    ->label('Kategori')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'debt_payment' => 'Debt Payment',
+                        'sale' => 'Penjualan',
+                        'debt_payment' => 'Pembayaran Hutang',
+                        'other' => 'Lainnya',
                         default => ucfirst($state),
                     })
                     ->color(fn (string $state): string => match ($state) {
@@ -44,26 +47,29 @@ class IncomesTable
                     })
                     ->sortable(),
                 TextColumn::make('description')
+                    ->label('Deskripsi')
                     ->searchable()
                     ->limit(50),
                 TextColumn::make('amount')
+                    ->label('Jumlah')
                     ->money('IDR')
                     ->sortable(),
                 TextColumn::make('creator.name')
-                    ->label('Created by'),
+                    ->label('Dibuat oleh'),
                 TextColumn::make('date')
+                    ->label('Tanggal')
                     ->date()
                     ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('location_id')
-                    ->label('Location')
+                    ->label('Lokasi')
                     ->relationship('location', 'name'),
                 SelectFilter::make('category')
                     ->options([
-                        'sale' => 'Sale',
-                        'debt_payment' => 'Debt Payment',
-                        'other' => 'Other',
+                        'sale' => 'Penjualan',
+                        'debt_payment' => 'Pembayaran Hutang',
+                        'other' => 'Lainnya',
                     ]),
             ])
             ->recordActions([
@@ -71,8 +77,8 @@ class IncomesTable
                 DeleteAction::make()
                     ->successNotification(
                         Notification::make()
-                            ->title('Income deleted')
-                            ->body('The income record has been permanently removed.')
+                            ->title('Pendapatan dihapus')
+                            ->body('Catatan pendapatan telah dihapus permanen.')
                             ->danger()
                     ),
             ])

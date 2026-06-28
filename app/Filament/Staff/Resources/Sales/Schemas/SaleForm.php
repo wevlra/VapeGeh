@@ -16,10 +16,10 @@ class SaleForm
         return $schema
             ->components([
                 Repeater::make('items')
-                    ->label('Items')
+                    ->label('Item')
                     ->schema([
                         Select::make('product_id')
-                            ->label('Product')
+                            ->label('Produk')
                             ->options(fn () => Product::whereHas('stocks', fn ($q) => $q
                                 ->where('location_id', auth()->user()->location_id)
                                 ->where('qty', '>', 0),
@@ -27,36 +27,36 @@ class SaleForm
                             ->searchable()
                             ->required(),
                         TextInput::make('qty')
-                            ->label('Qty')
+                            ->label('Jumlah')
                             ->numeric()
                             ->minValue(1)
                             ->required(),
                         TextInput::make('price')
-                            ->label('Price')
+                            ->label('Harga')
                             ->numeric()
                             ->prefix('Rp')
                             ->required(),
                     ])
                     ->columns(3)
                     ->columnSpanFull()
-                    ->addActionLabel('Add item')
-                    ->deleteAction(fn ($action) => $action->label('Remove')),
+                    ->addActionLabel('Tambah item')
+                    ->deleteAction(fn ($action) => $action->label('Hapus')),
                 Select::make('payment_method')
-                    ->label('Payment Method')
+                    ->label('Metode Pembayaran')
                     ->options([
-                        'cash' => 'Cash',
+                        'cash' => 'Tunai',
                         'transfer' => 'Transfer',
                         'qris' => 'QRIS',
                     ])
                     ->default('cash')
                     ->required(),
                 TextInput::make('paid_amount')
-                    ->label('Paid Amount')
+                    ->label('Jumlah Dibayar')
                     ->numeric()
                     ->prefix('Rp'),
                 Textarea::make('notes')
-                    ->label('Notes')
-                    ->placeholder('Notes for this transaction...')
+                    ->label('Catatan')
+                    ->placeholder('Catatan untuk transaksi ini...')
                     ->maxLength(1000),
             ]);
     }

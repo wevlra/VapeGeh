@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Receipt</title>
+    <title>Nota</title>
     <style>
         @page { size: 80mm auto; margin: 0; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -46,11 +46,11 @@
             default => '#SM-'.$movement->id,
         };
         $typeLabel = match ($movement->type) {
-            'in' => 'STOCK IN',
-            'out' => 'STOCK OUT',
-            'transfer_in' => 'TRANSFER IN',
-            'transfer_out' => 'TRANSFER OUT',
-            'adjustment' => 'ADJUSTMENT',
+            'in' => 'STOK MASUK',
+            'out' => 'STOK KELUAR',
+            'transfer_in' => 'TRANSFER MASUK',
+            'transfer_out' => 'TRANSFER KELUAR',
+            'adjustment' => 'PENYESUAIAN',
             default => strtoupper($movement->type),
         };
     @endphp
@@ -58,10 +58,10 @@
     <div class="ref">#{{ $refNumber }}</div>
     <div class="meta">
         {{ $typeLabel }} &middot; {{ $movement->created_at->format('d M Y H:i') }}<br>
-        Staff: {{ $movement->creator?->name ?? '-' }}<br>
-        Location: {{ $location->name }}
+        Staf: {{ $movement->creator?->name ?? '-' }}<br>
+        Lokasi: {{ $location->name }}
         @if ($movement->buyer)
-            <br>Buyer: {{ $movement->buyer->name }}
+            <br>Pembeli: {{ $movement->buyer->name }}
         @endif
     </div>
 
@@ -69,11 +69,11 @@
 
     @if ($related instanceof \App\Models\Sale)
         <table>
-            <thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr></thead>
+            <thead><tr><th>Item</th><th>Jumlah</th><th>Harga</th><th>Subtotal</th></tr></thead>
             <tbody>
                 @foreach ($related->items as $item)
                 <tr>
-                    <td>{{ $item->product->name ?? 'Product #'.$item->product_id }}</td>
+                    <td>{{ $item->product->name ?? 'Produk #'.$item->product_id }}</td>
                     <td>{{ $item->qty }}</td>
                     <td>{{ number_format((float) $item->price, 0, ',', '.') }}</td>
                     <td>{{ number_format((float) $item->subtotal, 0, ',', '.') }}</td>
@@ -91,23 +91,23 @@
         </div>
     @elseif ($related instanceof \App\Models\StockTransfer)
         <table>
-            <thead><tr><th>Item</th><th>Qty</th></tr></thead>
+            <thead><tr><th>Item</th><th>Jumlah</th></tr></thead>
             <tbody>
                 @foreach ($related->items as $item)
                 <tr>
-                    <td>{{ $item->product->name ?? 'Product #'.$item->product_id }}</td>
+                    <td>{{ $item->product->name ?? 'Produk #'.$item->product_id }}</td>
                     <td>{{ $item->qty }}</td>
                 </tr>
                 @endforeach
             </tbody>
         </table>
         <div style="margin-top: 6px; font-size: 10px;">
-            From: {{ $related->fromLocation?->name }}<br>
-            To: {{ $related->toLocation?->name }}
+            Dari: {{ $related->fromLocation?->name }}<br>
+            Ke: {{ $related->toLocation?->name }}
         </div>
     @else
         <table>
-            <thead><tr><th>Item</th><th>Qty</th></tr></thead>
+            <thead><tr><th>Item</th><th>Jumlah</th></tr></thead>
             <tbody>
                 <tr>
                     <td>{{ $movement->product->name }}</td>
@@ -116,13 +116,13 @@
             </tbody>
         </table>
         @if ($movement->unit_price)
-            <div class="totals">Unit Price: Rp {{ number_format((float) $movement->unit_price, 0, ',', '.') }}</div>
+            <div class="totals">Harga Satuan: Rp {{ number_format((float) $movement->unit_price, 0, ',', '.') }}</div>
         @endif
     @endif
 
     @if ($movement->additional_costs && count($movement->additional_costs))
         <div class="additional">
-            <strong>Additional Costs:</strong>
+            <strong>Biaya Tambahan:</strong>
             <ul>
                 @foreach ($movement->additional_costs as $cost)
                     <li>{{ $cost['description'] ?? '' }}: Rp {{ number_format((float) ($cost['amount'] ?? 0), 0, ',', '.') }}</li>

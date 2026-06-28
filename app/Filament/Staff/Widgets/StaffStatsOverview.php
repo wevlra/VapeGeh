@@ -18,24 +18,24 @@ class StaffStatsOverview extends StatsOverviewWidget
         $totalStock = Stock::where('location_id', $locationId)->sum('qty');
 
         return [
-            Stat::make('Total Sales', $totalSales)
-                ->description('Your location sales')
+            Stat::make('Total Penjualan', $totalSales)
+                ->description('Penjualan di lokasi Anda')
                 ->chart(collect(range(6, 0))->map(fn ($i) => Sale::where('location_id', $locationId)
                     ->whereBetween('created_at', [
                         now()->subMonths($i)->startOfMonth(),
                         now()->subMonths($i)->endOfMonth(),
                     ])->count())->toArray())
                 ->color('success'),
-            Stat::make('Revenue', 'Rp '.number_format($totalRevenue, 0, ',', '.'))
-                ->description('Your location revenue')
+            Stat::make('Pendapatan', 'Rp '.number_format($totalRevenue, 0, ',', '.'))
+                ->description('Pendapatan di lokasi Anda')
                 ->chart(collect(range(6, 0))->map(fn ($i) => (int) Sale::where('location_id', $locationId)
                     ->whereBetween('created_at', [
                         now()->subMonths($i)->startOfMonth(),
                         now()->subMonths($i)->endOfMonth(),
                     ])->sum('total'))->toArray())
                 ->color('success'),
-            Stat::make('Stock Units', number_format($totalStock))
-                ->description('Units at your location')
+            Stat::make('Unit Stok', number_format($totalStock))
+                ->description('Unit di lokasi Anda')
                 ->color('warning'),
         ];
     }

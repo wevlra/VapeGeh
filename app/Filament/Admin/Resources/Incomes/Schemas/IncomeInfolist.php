@@ -12,14 +12,17 @@ class IncomeInfolist
     {
         return $schema
             ->schema([
-                Section::make('Income Details')
+                Section::make('Detail Pendapatan')
                     ->columnSpanFull()
                     ->columns(2)
                     ->schema([
                         TextEntry::make('category')
+                            ->label('Kategori')
                             ->badge()
                             ->formatStateUsing(fn (string $state): string => match ($state) {
-                                'debt_payment' => 'Debt Payment',
+                                'sale' => 'Penjualan',
+                                'debt_payment' => 'Pembayaran Hutang',
+                                'other' => 'Lainnya',
                                 default => ucfirst($state),
                             })
                             ->color(fn (string $state): string => match ($state) {
@@ -35,14 +38,17 @@ class IncomeInfolist
                                 default => null,
                             }),
                         TextEntry::make('amount')
+                            ->label('Jumlah')
                             ->money('IDR'),
                         TextEntry::make('description')
+                            ->label('Deskripsi')
                             ->columnSpanFull(),
                         TextEntry::make('location.name')
-                            ->label('Location'),
+                            ->label('Lokasi'),
                         TextEntry::make('creator.name')
-                            ->label('Created by'),
+                            ->label('Dibuat oleh'),
                         TextEntry::make('date')
+                            ->label('Tanggal')
                             ->date(),
                     ]),
             ]);

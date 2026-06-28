@@ -12,13 +12,21 @@ class ExpenseInfolist
     {
         return $schema
             ->schema([
-                Section::make('Expense Details')
+                Section::make('Detail Pengeluaran')
                     ->columnSpanFull()
                     ->columns(2)
                     ->schema([
                         TextEntry::make('category')
+                            ->label('Kategori')
                             ->badge()
-                            ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                'purchase' => 'Pembelian',
+                                'salary' => 'Gaji',
+                                'utilities' => 'Utilitas',
+                                'transport' => 'Transportasi',
+                                'other' => 'Lainnya',
+                                default => ucfirst($state),
+                            })
                             ->color(fn (string $state): string => match ($state) {
                                 'purchase' => 'warning',
                                 'salary' => 'primary',
@@ -36,14 +44,17 @@ class ExpenseInfolist
                                 default => null,
                             }),
                         TextEntry::make('amount')
+                            ->label('Jumlah')
                             ->money('IDR'),
                         TextEntry::make('description')
+                            ->label('Deskripsi')
                             ->columnSpanFull(),
                         TextEntry::make('location.name')
-                            ->label('Location'),
+                            ->label('Lokasi'),
                         TextEntry::make('creator.name')
-                            ->label('Created by'),
+                            ->label('Dibuat oleh'),
                         TextEntry::make('date')
+                            ->label('Tanggal')
                             ->date(),
                     ]),
             ]);

@@ -1,28 +1,28 @@
 <x-filament-widgets::widget class="fi-wi-stats-mobile md:hidden">
     <x-filament::section>
-        <x-slot name="heading">Today's Summary</x-slot>
+        <x-slot name="heading">Ringkasan Hari Ini</x-slot>
 
         <dl class="grid grid-cols-2 gap-3">
             <div class="rounded-md bg-gray-50 p-2.5 dark:bg-gray-900/40">
-                <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Stock In</dt>
+                <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Stok Masuk</dt>
                 <dd class="mt-0.5 text-base font-semibold text-gray-950 dark:text-white">
                     {{ number_format($stockIn) }}
                 </dd>
             </div>
             <div class="rounded-md bg-gray-50 p-2.5 dark:bg-gray-900/40">
-                <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Stock Out</dt>
+                <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Stok Keluar</dt>
                 <dd class="mt-0.5 text-base font-semibold text-gray-950 dark:text-white">
                     {{ number_format($stockOut) }}
                 </dd>
             </div>
             <div class="rounded-md bg-gray-50 p-2.5 dark:bg-gray-900/40">
-                <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Revenue</dt>
+                <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Pendapatan</dt>
                 <dd class="mt-0.5 text-base font-semibold text-success-600 dark:text-success-400">
                     Rp {{ number_format($revenue, 0, ',', '.') }}
                 </dd>
             </div>
             <div class="rounded-md bg-gray-50 p-2.5 dark:bg-gray-900/40">
-                <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Profit</dt>
+                <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Laba</dt>
                 <dd @class([
                     'mt-0.5 text-base font-semibold',
                     'text-success-600 dark:text-success-400' => $profit >= 0,
@@ -42,7 +42,7 @@
                 class="w-full justify-center"
                 icon="heroicon-o-chart-bar"
             >
-                View Report
+                Lihat Laporan
             </x-filament::button>
         </div>
     </x-filament::section>

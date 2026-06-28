@@ -18,9 +18,9 @@ class StockRelationManager extends RelationManager
             ->modifyQueryUsing(fn ($query) => $query->where('location_id', $locationId))
             ->columns([
                 TextColumn::make('location.name')
-                    ->label('Location'),
+                    ->label('Lokasi'),
                 TextColumn::make('qty')
-                    ->label('Stock')
+                    ->label('Stok')
                     ->sortable()
                     ->badge()
                     ->color(fn (int $state): string => match (true) {

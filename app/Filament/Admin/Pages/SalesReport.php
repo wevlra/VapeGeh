@@ -23,9 +23,9 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingCart;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Reports';
+    protected static \UnitEnum|string|null $navigationGroup = 'Laporan';
 
-    protected static ?string $title = 'Sales Report';
+    protected static ?string $title = 'Laporan Penjualan';
 
     protected string $view = 'filament.admin.pages.sales-report';
 
@@ -61,25 +61,31 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
             ))
             ->columns([
                 TextColumn::make('invoice_number')
+                    ->label('No. Invoice')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('location.name')
-                    ->label('Location')
+                    ->label('Lokasi')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('user.name')
-                    ->label('Cashier')
+                    ->label('Kasir')
                     ->searchable(),
                 TextColumn::make('total')
+                    ->label('Total')
                     ->money('IDR')
                     ->sortable(),
                 TextColumn::make('paid_amount')
+                    ->label('Jumlah Dibayar')
                     ->money('IDR')
                     ->sortable(),
                 TextColumn::make('payment_method')
+                    ->label('Pembayaran')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'qris' => 'QRIS',
+                        'transfer' => 'Transfer',
+                        'cash' => 'Tunai',
                         default => ucfirst($state),
                     })
                     ->color(fn (string $state): string => match ($state) {
@@ -90,20 +96,21 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
                         default => 'gray',
                     }),
                 TextColumn::make('created_at')
+                    ->label('Tanggal')
                     ->dateTime()
                     ->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('location_id')
                     ->relationship('location', 'name')
-                    ->label('Location')
+                    ->label('Lokasi')
                     ->preload(),
                 Tables\Filters\SelectFilter::make('payment_method')
                     ->options([
-                        'cash' => 'Cash',
+                        'cash' => 'Tunai',
                         'transfer' => 'Transfer',
                         'qris' => 'QRIS',
-                        'other' => 'Other',
+                        'other' => 'Lainnya',
                     ]),
             ])
             ->defaultSort('created_at', 'desc');

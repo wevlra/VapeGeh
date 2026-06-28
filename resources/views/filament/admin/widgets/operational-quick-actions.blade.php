@@ -1,5 +1,5 @@
 <x-filament-widgets::widget>
-    <x-filament::section heading="Operational">
+    <x-filament::section heading="Operasional">
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <x-filament::button
                 tag="a"
@@ -8,7 +8,7 @@
                 icon="heroicon-o-arrow-down-tray"
                 class="w-full justify-center"
             >
-                Income
+                Pendapatan
             </x-filament::button>
             <x-filament::button
                 tag="a"
@@ -17,7 +17,7 @@
                 icon="heroicon-o-arrow-up-tray"
                 class="w-full justify-center"
             >
-                Expense
+                Pengeluaran
             </x-filament::button>
             <x-filament::button
                 tag="a"
@@ -26,7 +26,7 @@
                 icon="heroicon-o-shopping-cart"
                 class="w-full justify-center"
             >
-                View Sales
+                Lihat Penjualan
             </x-filament::button>
         </div>
     </x-filament::section>

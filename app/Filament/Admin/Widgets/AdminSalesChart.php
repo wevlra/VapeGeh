@@ -8,7 +8,7 @@ use Illuminate\Support\Carbon;
 
 class AdminSalesChart extends ChartWidget
 {
-    protected ?string $heading = 'Sales Trend';
+    protected ?string $heading = 'Tren Penjualan';
 
     protected ?string $pollingInterval = null;
 
@@ -29,7 +29,7 @@ class AdminSalesChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Revenue',
+                    'label' => 'Pendapatan',
                     'data' => $data->values()->toArray(),
                     'fill' => true,
                 ],

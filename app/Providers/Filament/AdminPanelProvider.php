@@ -53,22 +53,17 @@ class AdminPanelProvider extends PanelProvider
                     ->defaultBreakpoint('md'),
                 MobileBottomNav::make()
                     ->items([
-                        MobileBottomNavItem::make('Dashboard')
+                        MobileBottomNavItem::make('Beranda')
                             ->icon('heroicon-o-home')
                             ->activeIcon('heroicon-s-home')
                             ->url('/admin')
                             ->isActive(fn () => request()->is('admin')),
-                        MobileBottomNavItem::make('Products')
+                        MobileBottomNavItem::make('Produk')
                             ->icon('heroicon-o-archive-box')
                             ->activeIcon('heroicon-s-archive-box')
                             ->url('/admin/products')
                             ->isActive(fn () => request()->is('admin/products*')),
-                        MobileBottomNavItem::make('Sales')
-                            ->icon('heroicon-o-banknotes')
-                            ->activeIcon('heroicon-s-banknotes')
-                            ->url('/admin/sales')
-                            ->isActive(fn () => request()->is('admin/sales*')),
-                        MobileBottomNavItem::make('History')
+                        MobileBottomNavItem::make('Riwayat')
                             ->icon('heroicon-o-clock')
                             ->activeIcon('heroicon-s-clock')
                             ->url('/admin/history')

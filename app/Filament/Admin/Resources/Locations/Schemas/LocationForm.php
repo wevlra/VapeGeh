@@ -14,25 +14,30 @@ class LocationForm
         return $schema
             ->components([
                 TextInput::make('name')
+                    ->label('Nama')
                     ->required()
                     ->maxLength(255),
-                Textarea::make('address'),
+                Textarea::make('address')
+                    ->label('Alamat'),
                 TextInput::make('phone')
+                    ->label('Telepon')
                     ->tel()
                     ->maxLength(50),
                 Select::make('type')
+                    ->label('Tipe')
                     ->required()
                     ->options([
-                        'store' => 'Store',
-                        'warehouse' => 'Warehouse',
+                        'store' => 'Toko',
+                        'warehouse' => 'Gudang',
                     ])
                     ->default('store')
                     ->visible(fn ($record) => ! $record),
                 Select::make('status')
+                    ->label('Status')
                     ->required()
                     ->options([
-                        'active' => 'Active',
-                        'inactive' => 'Inactive',
+                        'active' => 'Aktif',
+                        'inactive' => 'Nonaktif',
                     ])
                     ->default('active'),
             ]);

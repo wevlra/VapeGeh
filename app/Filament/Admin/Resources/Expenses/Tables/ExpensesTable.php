@@ -21,12 +21,20 @@ class ExpensesTable
             ->recordUrl(fn (Expense $record): string => ExpenseResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('location.name')
-                    ->label('Location')
+                    ->label('Lokasi')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('category')
+                    ->label('Kategori')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'purchase' => 'Pembelian',
+                        'salary' => 'Gaji',
+                        'utilities' => 'Utilitas',
+                        'transport' => 'Transportasi',
+                        'other' => 'Lainnya',
+                        default => ucfirst($state),
+                    })
                     ->color(fn (string $state): string => match ($state) {
                         'purchase' => 'warning',
                         'salary' => 'primary',
@@ -45,28 +53,31 @@ class ExpensesTable
                     })
                     ->sortable(),
                 TextColumn::make('description')
+                    ->label('Deskripsi')
                     ->searchable()
                     ->limit(50),
                 TextColumn::make('amount')
+                    ->label('Jumlah')
                     ->money('IDR')
                     ->sortable(),
                 TextColumn::make('creator.name')
-                    ->label('Created by'),
+                    ->label('Dibuat oleh'),
                 TextColumn::make('date')
+                    ->label('Tanggal')
                     ->date()
                     ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('location_id')
-                    ->label('Location')
+                    ->label('Lokasi')
                     ->relationship('location', 'name'),
                 SelectFilter::make('category')
                     ->options([
-                        'purchase' => 'Purchase',
-                        'salary' => 'Salary',
-                        'utilities' => 'Utilities',
-                        'transport' => 'Transport',
-                        'other' => 'Other',
+                        'purchase' => 'Pembelian',
+                        'salary' => 'Gaji',
+                        'utilities' => 'Utilitas',
+                        'transport' => 'Transportasi',
+                        'other' => 'Lainnya',
                     ]),
             ])
             ->recordActions([
@@ -74,8 +85,8 @@ class ExpensesTable
                 DeleteAction::make()
                     ->successNotification(
                         Notification::make()
-                            ->title('Expense deleted')
-                            ->body('The expense record has been permanently removed.')
+                            ->title('Pengeluaran dihapus')
+                            ->body('Catatan Pengeluaran telah dihapus permanen.')
                             ->danger()
                     ),
             ])

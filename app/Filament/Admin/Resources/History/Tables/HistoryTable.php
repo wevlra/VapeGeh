@@ -23,15 +23,16 @@ class HistoryTable
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
-                    ->label('Date'),
+                    ->label('Tanggal'),
                 TextColumn::make('type')
+                    ->label('Tipe')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'in' => 'Stock In',
-                        'out' => 'Stock Out',
-                        'transfer_in' => 'Transfer In',
-                        'transfer_out' => 'Transfer Out',
-                        'adjustment' => 'Adjustment',
+                        'in' => 'Stok Masuk',
+                        'out' => 'Stok Keluar',
+                        'transfer_in' => 'Transfer Masuk',
+                        'transfer_out' => 'Transfer Keluar',
+                        'adjustment' => 'Penyesuaian',
                         default => ucfirst($state),
                     })
                     ->color(fn (string $state): string => match ($state) {
@@ -49,19 +50,19 @@ class HistoryTable
                         default => null,
                     }),
                 TextColumn::make('product.name')
-                    ->label('Product')
+                    ->label('Produk')
                     ->searchable()
                     ->sortable()
                     ->formatStateUsing(fn (StockMovement $record): string => $record->related instanceof Sale
-                        ? 'Sale ('.$record->related->invoice_number.')'
+                        ? 'Penjualan ('.$record->related->invoice_number.')'
                         : ($record->product?->name ?? '-')),
                 TextColumn::make('location.name')
-                    ->label('Location')
+                    ->label('Lokasi')
                     ->sortable(),
                 TextColumn::make('quantity')
-                    ->label('Quantity')
+                    ->label('Jumlah')
                     ->getStateUsing(function (StockMovement $record): string {
-                        $total = $record->related?->items
+                        $total = $record->related instanceof Sale
                             ? $record->related->items->sum('qty')
                             : abs($record->quantity);
 
@@ -69,23 +70,26 @@ class HistoryTable
                     })
                     ->color(fn (StockMovement $record): string => $record->quantity > 0 ? 'success' : 'danger'),
                 TextColumn::make('creator.name')
-                    ->label('Staff')
+                    ->label('Staf')
                     ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('type')
                     ->options([
-                        'in' => 'Stock In',
-                        'out' => 'Stock Out',
-                        'transfer_in' => 'Transfer In',
-                        'transfer_out' => 'Transfer Out',
-                        'adjustment' => 'Adjustment',
+                        'in' => 'Stok Masuk',
+                        'out' => 'Stok Keluar',
+                        'transfer_in' => 'Transfer Masuk',
+                        'transfer_out' => 'Transfer Keluar',
+                        'adjustment' => 'Penyesuaian',
                     ]),
                 SelectFilter::make('location_id')
-                    ->label('Location')
+                    ->label('Lokasi')
                     ->relationship('location', 'name'),
                 Filter::make('created_at')
-                    ->form([DatePicker::make('from'), DatePicker::make('until')])
+                    ->form([
+                        DatePicker::make('from')->label('Dari'),
+                        DatePicker::make('until')->label('Sampai'),
+                    ])
                     ->query(function ($query, array $data) {
                         return $query
                             ->when($data['from'], fn ($q, $date) => $q->whereDate('created_at', '>=', $date))

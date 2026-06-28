@@ -23,13 +23,13 @@ class Pos extends StaffPos
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
 
-    protected static ?string $navigationLabel = 'Cashier';
+    protected static ?string $navigationLabel = 'Kasir';
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Sales';
+    protected static \UnitEnum|string|null $navigationGroup = 'Penjualan';
 
     protected static ?int $navigationSort = 1;
 
-    protected static ?string $title = 'Cashier';
+    protected static ?string $title = 'Kasir';
 
     protected string $view = 'filament.admin.pages.pos';
 
@@ -49,19 +49,19 @@ class Pos extends StaffPos
             ->query($query)
             ->columns([
                 TextColumn::make('product.name')
-                    ->label('Product')
+                    ->label('Produk')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('product.sku')
                     ->label('SKU')
                     ->searchable(),
                 TextColumn::make('location.name')
-                    ->label('Location')
+                    ->label('Lokasi')
                     ->badge()
                     ->color('info')
                     ->sortable(),
                 TextColumn::make('qty')
-                    ->label('Stock')
+                    ->label('Stok')
                     ->badge()
                     ->color(fn (int $state): string => match (true) {
                         $state <= 0 => 'danger',
@@ -69,13 +69,13 @@ class Pos extends StaffPos
                         default => 'success',
                     }),
                 TextColumn::make('product.selling_price')
-                    ->label('Price')
+                    ->label('Harga')
                     ->formatStateUsing(fn ($state): string => 'Rp '.number_format((float) ($state ?? 0), 0, ',', '.'))
                     ->sortable(false),
             ])
             ->filters([
                 SelectFilter::make('location_id')
-                    ->label('Location')
+                    ->label('Lokasi')
                     ->options(fn () => Location::pluck('name', 'id'))
                     ->visible(! $locationId),
             ])
@@ -91,7 +91,7 @@ class Pos extends StaffPos
     protected function addToCartAction(): Action
     {
         return Action::make('addToCart')
-            ->label('Add')
+            ->label('Tambah')
             ->icon('heroicon-m-plus')
             ->color('primary')
             ->form([
@@ -129,7 +129,7 @@ class Pos extends StaffPos
                     $priceId = (int) str_replace('pp_', '', $selected);
                     $priceModel = $product->prices()->find($priceId);
                     $price = (float) ($priceModel->price ?? 0);
-                    $label = $priceModel->label ?? 'Unknown';
+                    $label = $priceModel->label ?? 'Tidak Diketahui';
                 }
 
                 $this->addToCart($product->id, $price, $label);
@@ -143,14 +143,14 @@ class Pos extends StaffPos
         if ($existingIndex !== false) {
             $currentQty = (int) $this->cart[$existingIndex]['qty'] + 1;
             if (! $this->isStockAvailable($productId, $currentQty)) {
-                $this->dispatchBrowserEvent('notify', ['type' => 'warning', 'message' => 'Cannot exceed available stock.']);
+                Notification::make()->warning()->title('Stok tidak mencukupi.')->send();
 
                 return;
             }
             $this->cart[$existingIndex]['qty'] = $currentQty;
         } else {
             if (! $this->isStockAvailable($productId, 1)) {
-                $this->dispatchBrowserEvent('notify', ['type' => 'warning', 'message' => 'Out of stock.']);
+                Notification::make()->warning()->title('Stok habis.')->send();
 
                 return;
             }
@@ -219,7 +219,7 @@ class Pos extends StaffPos
 
                         if (! $stock || $stock->qty < $qty) {
                             throw new DomainException(
-                                "Insufficient stock for product \"{$product->name}\"."
+                                "Stok tidak cukup untuk produk \"{$product->name}\"."
                             );
                         }
 
@@ -244,7 +244,7 @@ class Pos extends StaffPos
 
                         if ($remaining > 0) {
                             throw new DomainException(
-                                "Insufficient stock for product \"{$product->name}\"."
+                                "Stok tidak cukup untuk produk \"{$product->name}\"."
                             );
                         }
 
@@ -314,7 +314,7 @@ class Pos extends StaffPos
             });
         } catch (DomainException $e) {
             Notification::make()
-                ->title('Sale failed')
+                ->title('Penjualan gagal')
                 ->body($e->getMessage())
                 ->danger()
                 ->send();
@@ -338,12 +338,12 @@ class Pos extends StaffPos
         $printUrl = route('admin.sales.receipt', $sale);
 
         Notification::make()
-            ->title('Sale completed')
-            ->body("Invoice \"{$sale->invoice_number}\" has been created successfully. Total: Rp ".number_format($sale->total, 0, ',', '.'))
+            ->title('Penjualan selesai')
+            ->body("Invoice \"{$sale->invoice_number}\" berhasil dibuat. Total: Rp ".number_format($sale->total, 0, ',', '.'))
             ->success()
             ->actions([
                 Action::make('print')
-                    ->label('Print Receipt')
+                    ->label('Cetak Nota')
                     ->icon('heroicon-o-printer')
                     ->url($printUrl, shouldOpenInNewTab: true),
             ])

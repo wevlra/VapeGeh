@@ -21,12 +21,15 @@ class UsersTable
             ->recordUrl(fn (User $record): string => UserResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('name')
+                    ->label('Nama')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('email')
+                    ->label('Email')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('role')
+                    ->label('Peran')
                     ->badge()
                     ->icon(fn (string $state): string => match ($state) {
                         'admin' => 'heroicon-o-shield-check',
@@ -38,12 +41,17 @@ class UsersTable
                         'staff' => 'info',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'admin' => 'Admin',
+                        'staff' => 'Staf',
+                        default => ucfirst($state),
+                    })
                     ->sortable(),
                 TextColumn::make('location.name')
-                    ->label('Location')
+                    ->label('Lokasi')
                     ->placeholder('—'),
                 TextColumn::make('status')
+                    ->label('Status')
                     ->badge()
                     ->icon(fn (string $state): string => match ($state) {
                         'active' => 'heroicon-o-check-circle',
@@ -55,18 +63,22 @@ class UsersTable
                         'inactive' => 'danger',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => ucfirst($state)),
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'active' => 'Aktif',
+                        'inactive' => 'Nonaktif',
+                        default => ucfirst($state),
+                    }),
             ])
             ->filters([
                 SelectFilter::make('role')
                     ->options([
                         'admin' => 'Admin',
-                        'staff' => 'Staff',
+                        'staff' => 'Staf',
                     ]),
                 SelectFilter::make('status')
                     ->options([
-                        'active' => 'Active',
-                        'inactive' => 'Inactive',
+                        'active' => 'Aktif',
+                        'inactive' => 'Nonaktif',
                     ]),
             ])
             ->recordActions([
@@ -74,8 +86,8 @@ class UsersTable
                 DeleteAction::make()
                     ->successNotification(
                         Notification::make()
-                            ->title('Staff deleted')
-                            ->body('The staff member has been permanently removed.')
+                            ->title('Staf dihapus')
+                            ->body('Staf telah dihapus permanen.')
                             ->danger()
                     ),
             ])

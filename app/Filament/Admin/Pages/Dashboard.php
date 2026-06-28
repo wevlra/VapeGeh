@@ -6,5 +6,5 @@ use Filament\Pages\Dashboard as BaseDashboard;
 
 class Dashboard extends BaseDashboard
 {
-    protected static ?string $title = 'Dashboard';
+    protected static ?string $title = 'Beranda';
 }
