@@ -10,13 +10,13 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
-class StockMovementInfolist
+class HistoryInfolist
 {
     public static function configure(Schema $schema): Schema
     {
         return $schema
             ->schema([
-                Section::make('Movement Details')
+                Section::make('Details')
                     ->columnSpanFull()
                     ->columns(2)
                     ->schema([
@@ -38,12 +38,17 @@ class StockMovementInfolist
                                 'out', 'transfer_out' => 'danger',
                                 'adjustment' => 'gray',
                                 default => 'gray',
+                            })
+                            ->icon(fn (string $state): ?string => match ($state) {
+                                'in' => 'heroicon-o-arrow-down-tray',
+                                'out' => 'heroicon-o-arrow-up-tray',
+                                'transfer_in' => 'heroicon-o-arrow-right',
+                                'transfer_out' => 'heroicon-o-arrow-left',
+                                'adjustment' => 'heroicon-o-pencil',
+                                default => null,
                             }),
-                        TextEntry::make('product.name')
-                            ->label('Product'),
                         TextEntry::make('location.name')
                             ->label('Location'),
-                        TextEntry::make('quantity'),
                         TextEntry::make('unit_price')
                             ->label('Unit Price')
                             ->money('IDR')
@@ -60,7 +65,6 @@ class StockMovementInfolist
 
                 Section::make('Related Transaction')
                     ->columnSpanFull()
-                    ->visible(fn ($record): bool => ! is_null($record->related))
                     ->schema(function ($record) {
                         if ($record->related instanceof Sale) {
                             return [
@@ -70,7 +74,8 @@ class StockMovementInfolist
                                     ->label('Total')
                                     ->money('IDR'),
                                 TextEntry::make('related.payment_method')
-                                    ->label('Payment'),
+                                    ->label('Payment')
+                                    ->formatStateUsing(fn ($state) => ucfirst($state)),
                                 RepeatableEntry::make('related.items')
                                     ->hiddenLabel()
                                     ->table([
@@ -100,7 +105,14 @@ class StockMovementInfolist
                                 TextEntry::make('related.toLocation.name')
                                     ->label('To'),
                                 TextEntry::make('related.status')
-                                    ->badge(),
+                                    ->badge()
+                                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                                    ->color(fn (string $state): string => match ($state) {
+                                        'pending' => 'warning',
+                                        'completed' => 'success',
+                                        'cancelled' => 'danger',
+                                        default => 'gray',
+                                    }),
                                 RepeatableEntry::make('related.items')
                                     ->hiddenLabel()
                                     ->table([

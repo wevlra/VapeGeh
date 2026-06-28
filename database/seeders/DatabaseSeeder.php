@@ -25,10 +25,26 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // ── Locations ──────────────────────────────────────────────
-        $warehouse = Location::factory()->warehouse()->create(['name' => 'Main Warehouse']);
-        $mainStore = Location::factory()->create(['name' => 'VapeGeh Central']);
-        $branch1 = Location::factory()->create(['name' => 'VapeGeh Mall']);
-        $branch2 = Location::factory()->create(['name' => 'VapeGeh Plaza']);
+        $warehouse = Location::factory()->warehouse()->create([
+            'name' => 'Main Warehouse',
+            'address' => 'Jl. Raya Bogor Km 30, RT 05/02, Cibubur, Jakarta Timur',
+            'phone' => '021-87654321',
+        ]);
+        $mainStore = Location::factory()->create([
+            'name' => 'VapeGeh Central',
+            'address' => 'Jl. Sudirman Kav 52-53, SCBD, Jakarta Selatan',
+            'phone' => '0812-3456-7890',
+        ]);
+        $branch1 = Location::factory()->create([
+            'name' => 'VapeGeh Mall',
+            'address' => 'Jl. Prof Dr Satrio, Kuningan, Jakarta Selatan',
+            'phone' => '0813-9876-5432',
+        ]);
+        $branch2 = Location::factory()->create([
+            'name' => 'VapeGeh Plaza',
+            'address' => 'Jl. M.H Thamrin, Menteng, Jakarta Pusat',
+            'phone' => '0856-1234-5678',
+        ]);
 
         // ── Users ──────────────────────────────────────────────────
         $admin = User::factory()->admin()->create([

@@ -33,6 +33,8 @@ class LocationInfolist
                         TextEntry::make('address')
                             ->placeholder('—')
                             ->columnSpanFull(),
+                        TextEntry::make('phone')
+                            ->placeholder('—'),
                         TextEntry::make('users_count')
                             ->counts('users')
                             ->label('Staff'),

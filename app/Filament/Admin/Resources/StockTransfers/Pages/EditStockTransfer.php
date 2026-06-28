@@ -28,8 +28,8 @@ class EditStockTransfer extends EditRecord
         if ($this->record->status !== 'pending') {
             Notification::make()
                 ->warning()
-                ->title('Cannot edit')
-                ->body('Only pending transfers can be edited.')
+                ->title('Transfer is not editable')
+                ->body("Transfer \"{$this->record->transfer_number}\" is currently \"{$this->record->status}\". Only pending transfers can be edited.")
                 ->send();
 
             $this->redirect(static::getResource()::getUrl('index'));
@@ -57,6 +57,7 @@ class EditStockTransfer extends EditRecord
 
                     Notification::make()
                         ->title('Transfer completed')
+                        ->body("Transfer \"{$record->transfer_number}\" has been completed. Stock has been moved between locations.")
                         ->success()
                         ->send();
                 }),
@@ -90,11 +91,12 @@ class EditStockTransfer extends EditRecord
 
                     Notification::make()
                         ->title('Transfer cancelled')
-                        ->success()
+                        ->body("Transfer \"{$record->transfer_number}\" has been cancelled. No stock has been affected.")
+                        ->warning()
                         ->send();
                 }),
             DeleteAction::make()
-                ->successNotificationTitle('Stock Transfer deleted successfully'),
+                ->successNotification(fn (Notification $notification): Notification => $this->getDeletedNotification()),
         ];
     }
 }

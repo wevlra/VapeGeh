@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Products\Pages;
 use App\Filament\Admin\Resources\Products\ProductResource;
 use App\Filament\Concerns\NotifiesWithDetail;
 use Filament\Actions\DeleteAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
 class EditProduct extends EditRecord
@@ -17,7 +18,7 @@ class EditProduct extends EditRecord
     {
         return [
             DeleteAction::make()
-                ->successNotificationTitle('Product deleted successfully'),
+                ->successNotification(fn (Notification $notification): Notification => $this->getDeletedNotification()),
         ];
     }
 }

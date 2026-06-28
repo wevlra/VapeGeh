@@ -349,8 +349,8 @@ class Pos extends Page implements HasTable
         $printUrl = route('admin.sales.receipt', $sale);
 
         Notification::make()
-            ->title("Sale {$sale->invoice_number} created")
-            ->body('Click to print receipt')
+            ->title('Sale completed')
+            ->body("Invoice \"{$sale->invoice_number}\" has been created successfully. Total: Rp ".number_format($sale->total, 0, ',', '.'))
             ->success()
             ->actions([
                 Action::make('print')

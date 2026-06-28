@@ -157,7 +157,8 @@ class StockIn extends Page implements HasForms
         $this->form->fill();
 
         Notification::make()
-            ->title('Stock added successfully')
+            ->title('Stock added')
+            ->body("{$product->name} — {$newQty} units added to stock at ".($product->stocks->first()?->location?->name ?? 'the selected location').'.')
             ->success()
             ->send();
     }

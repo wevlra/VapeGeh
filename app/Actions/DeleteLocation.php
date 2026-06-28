@@ -8,6 +8,7 @@ use App\Models\StockMovement;
 use DomainException;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\DB;
 
 class DeleteLocation
@@ -98,6 +99,12 @@ class DeleteLocation
 
                     $record->delete();
                 });
+
+                Notification::make()
+                    ->title('Location deleted')
+                    ->body("{$record->name} has been permanently removed.")
+                    ->danger()
+                    ->send();
             });
     }
 

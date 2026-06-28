@@ -21,6 +21,7 @@ class LocationFactory extends Factory
             'name' => fake()->company(),
             'type' => 'store',
             'address' => fake()->address(),
+            'phone' => fake()->phoneNumber(),
             'status' => 'active',
         ];
     }

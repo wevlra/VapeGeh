@@ -10,13 +10,13 @@ use LaravelDaily\Invoices\Invoice;
 Route::livewire('/', 'landing');
 
 Route::middleware(['web', 'auth'])->group(function () {
-    Route::get('/admin/stock-movements/{stockMovement}/receipt', function (StockMovement $stockMovement) {
+    Route::get('/admin/history/{stockMovement}/receipt', function (StockMovement $stockMovement) {
         $stockMovement->load(['product', 'location', 'creator', 'buyer', 'related']);
 
         return view('receipts.receipt', ['movement' => $stockMovement]);
-    })->name('admin.stock-movements.receipt');
+    })->name('admin.history.receipt');
 
-    Route::get('/admin/stock-movements/{stockMovement}/invoice', function (StockMovement $stockMovement) {
+    Route::get('/admin/history/{stockMovement}/invoice', function (StockMovement $stockMovement) {
         if ($stockMovement->type !== 'out') {
             abort(404);
         }
@@ -100,7 +100,7 @@ Route::middleware(['web', 'auth'])->group(function () {
         }
 
         return $invoice->stream();
-    })->name('admin.stock-movements.invoice');
+    })->name('admin.history.invoice');
 
     Route::get('/admin/sales/{sale}/receipt', function (Sale $sale) {
         $movement = $sale->stockMovements()->first();

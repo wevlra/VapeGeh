@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Incomes\Pages;
 use App\Filament\Admin\Resources\Incomes\IncomeResource;
 use App\Filament\Concerns\NotifiesWithDetail;
 use Filament\Actions\DeleteAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
 class EditIncome extends EditRecord
@@ -17,7 +18,7 @@ class EditIncome extends EditRecord
     {
         return [
             DeleteAction::make()
-                ->successNotificationTitle('Income deleted successfully'),
+                ->successNotification(fn (Notification $notification): Notification => $this->getDeletedNotification()),
         ];
     }
 }

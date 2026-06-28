@@ -24,6 +24,8 @@ class LocationsTable
                     ->sortable(),
                 TextColumn::make('address')
                     ->limit(40),
+                TextColumn::make('phone')
+                    ->placeholder('—'),
                 TextColumn::make('users_count')
                     ->counts('users')
                     ->label('Staff'),

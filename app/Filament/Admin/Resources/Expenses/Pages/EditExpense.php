@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Expenses\Pages;
 use App\Filament\Admin\Resources\Expenses\ExpenseResource;
 use App\Filament\Concerns\NotifiesWithDetail;
 use Filament\Actions\DeleteAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
 class EditExpense extends EditRecord
@@ -17,7 +18,7 @@ class EditExpense extends EditRecord
     {
         return [
             DeleteAction::make()
-                ->successNotificationTitle('Expense deleted successfully'),
+                ->successNotification(fn (Notification $notification): Notification => $this->getDeletedNotification()),
         ];
     }
 }

@@ -4,7 +4,7 @@ namespace App\Filament\Admin\Resources\History\Tables;
 
 use App\Filament\Actions\PrintInvoiceAction;
 use App\Filament\Actions\PrintReceiptAction;
-use App\Filament\Admin\Resources\History\StockMovementResource;
+use App\Filament\Admin\Resources\History\HistoryResource;
 use App\Models\Sale;
 use App\Models\StockMovement;
 use Filament\Forms\Components\DatePicker;
@@ -13,12 +13,12 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
-class StockMovementsTable
+class HistoryTable
 {
     public static function configure(Table $table): Table
     {
         return $table
-            ->recordUrl(fn (StockMovement $record): string => StockMovementResource::getUrl('view', ['record' => $record]))
+            ->recordUrl(fn (StockMovement $record): string => HistoryResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -39,6 +39,14 @@ class StockMovementsTable
                         'out', 'transfer_out' => 'danger',
                         'adjustment' => 'gray',
                         default => 'gray',
+                    })
+                    ->icon(fn (string $state): ?string => match ($state) {
+                        'in' => 'heroicon-o-arrow-down-tray',
+                        'out' => 'heroicon-o-arrow-up-tray',
+                        'transfer_in' => 'heroicon-o-arrow-right',
+                        'transfer_out' => 'heroicon-o-arrow-left',
+                        'adjustment' => 'heroicon-o-pencil',
+                        default => null,
                     }),
                 TextColumn::make('product.name')
                     ->label('Product')
@@ -51,7 +59,14 @@ class StockMovementsTable
                     ->label('Location')
                     ->sortable(),
                 TextColumn::make('quantity')
-                    ->formatStateUsing(fn (StockMovement $record): string => $record->quantity > 0 ? '+'.$record->quantity : (string) $record->quantity)
+                    ->label('Quantity')
+                    ->getStateUsing(function (StockMovement $record): string {
+                        $total = $record->related?->items
+                            ? $record->related->items->sum('qty')
+                            : abs($record->quantity);
+
+                        return $record->quantity > 0 ? '+'.$total : (string) (-$total);
+                    })
                     ->color(fn (StockMovement $record): string => $record->quantity > 0 ? 'success' : 'danger'),
                 TextColumn::make('creator.name')
                     ->label('Staff')

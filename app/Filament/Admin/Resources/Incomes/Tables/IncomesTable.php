@@ -8,6 +8,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -35,6 +36,12 @@ class IncomesTable
                         'other' => 'gray',
                         default => 'gray',
                     })
+                    ->icon(fn (string $state): ?string => match ($state) {
+                        'sale' => 'heroicon-o-banknotes',
+                        'debt_payment' => 'heroicon-o-receipt-refund',
+                        'other' => 'heroicon-o-folder',
+                        default => null,
+                    })
                     ->sortable(),
                 TextColumn::make('description')
                     ->searchable()
@@ -61,7 +68,13 @@ class IncomesTable
             ])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->successNotification(
+                        Notification::make()
+                            ->title('Income deleted')
+                            ->body('The income record has been permanently removed.')
+                            ->danger()
+                    ),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

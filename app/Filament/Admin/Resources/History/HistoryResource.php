@@ -2,10 +2,10 @@
 
 namespace App\Filament\Admin\Resources\History;
 
-use App\Filament\Admin\Resources\History\Pages\ListStockMovements;
-use App\Filament\Admin\Resources\History\Pages\ViewStockMovement;
-use App\Filament\Admin\Resources\History\Schemas\StockMovementInfolist;
-use App\Filament\Admin\Resources\History\Tables\StockMovementsTable;
+use App\Filament\Admin\Resources\History\Pages\ListHistory;
+use App\Filament\Admin\Resources\History\Pages\ViewHistory;
+use App\Filament\Admin\Resources\History\Schemas\HistoryInfolist;
+use App\Filament\Admin\Resources\History\Tables\HistoryTable;
 use App\Models\Sale;
 use App\Models\StockMovement;
 use BackedEnum;
@@ -15,9 +15,11 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class StockMovementResource extends Resource
+class HistoryResource extends Resource
 {
     protected static ?string $model = StockMovement::class;
+
+    protected static ?string $slug = 'history';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClock;
 
@@ -26,6 +28,16 @@ class StockMovementResource extends Resource
     protected static \UnitEnum|string|null $navigationGroup = 'Inventory';
 
     protected static ?int $navigationSort = 5;
+
+    public static function getModelLabel(): string
+    {
+        return 'History';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'History';
+    }
 
     public static function getEloquentQuery(): Builder
     {
@@ -48,19 +60,19 @@ class StockMovementResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return StockMovementsTable::configure($table);
+        return HistoryTable::configure($table);
     }
 
     public static function infolist(Schema $schema): Schema
     {
-        return StockMovementInfolist::configure($schema);
+        return HistoryInfolist::configure($schema);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => ListStockMovements::route('/'),
-            'view' => ViewStockMovement::route('/{record}'),
+            'index' => ListHistory::route('/'),
+            'view' => ViewHistory::route('/{record}'),
         ];
     }
 }

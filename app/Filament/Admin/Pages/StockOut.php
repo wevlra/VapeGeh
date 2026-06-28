@@ -300,13 +300,14 @@ class StockOut extends Page implements HasForms
         $additionalCosts = $data['additional_costs'] ?? [];
         $totalCost = collect($additionalCosts)->sum(fn ($cost) => (float) ($cost['amount'] ?? 0));
 
-        $message = 'Stock removed. Subtotal: Rp '.number_format($subtotal, 0, ',', '.').' ('.$qty.' × Rp '.number_format($unitPrice, 0, ',', '.').')';
+        $body = $qty.' units removed. Subtotal: Rp '.number_format($subtotal, 0, ',', '.').' ('.$qty.' × Rp '.number_format($unitPrice, 0, ',', '.').')';
         if ($totalCost > 0) {
-            $message .= ' + Additional: Rp '.number_format($totalCost, 0, ',', '.');
+            $body .= ' + Additional: Rp '.number_format($totalCost, 0, ',', '.');
         }
 
         Notification::make()
-            ->title($message)
+            ->title('Stock removed')
+            ->body($body)
             ->success()
             ->send();
     }

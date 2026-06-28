@@ -2,9 +2,10 @@
 
 namespace App\Filament\Admin\Resources\Locations\Pages;
 
+use App\Actions\DeleteLocation;
 use App\Filament\Admin\Resources\Locations\LocationResource;
 use App\Filament\Concerns\NotifiesWithDetail;
-use Filament\Actions\DeleteAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
 class EditLocation extends EditRecord
@@ -16,8 +17,8 @@ class EditLocation extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make()
-                ->successNotificationTitle('Location deleted successfully'),
+            DeleteLocation::make()
+                ->successNotification(fn (Notification $notification): Notification => $this->getDeletedNotification()),
         ];
     }
 }

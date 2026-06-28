@@ -18,12 +18,12 @@ trait NotifiesWithDetail
 
     protected function getCreatedNotificationTitle(): ?string
     {
-        return $this->resourceLabel().' created successfully';
+        return $this->resourceLabel().' created';
     }
 
     protected function getCreatedNotificationBody(): ?string
     {
-        return null;
+        return $this->getRecordIdentifier().' has been created successfully.';
     }
 
     protected function getCreatedNotification(): ?Notification
@@ -36,20 +36,12 @@ trait NotifiesWithDetail
 
     protected function getSavedNotificationTitle(): ?string
     {
-        return $this->resourceLabel().' updated successfully';
+        return $this->resourceLabel().' updated';
     }
 
     protected function getSavedNotificationBody(): ?string
     {
-        $record = $this->getRecord();
-
-        if (! $record instanceof Model) {
-            return null;
-        }
-
-        return (string) ($record->getAttribute('name')
-            ?? $record->getAttribute('sku')
-            ?? $record->getKey());
+        return $this->getRecordIdentifier().' has been updated successfully.';
     }
 
     protected function getSavedNotification(): ?Notification
@@ -62,12 +54,12 @@ trait NotifiesWithDetail
 
     protected function getDeletedNotificationTitle(): ?string
     {
-        return $this->resourceLabel().' deleted successfully';
+        return $this->resourceLabel().' deleted';
     }
 
     protected function getDeletedNotificationBody(): ?string
     {
-        return null;
+        return $this->getRecordIdentifier().' has been permanently removed.';
     }
 
     protected function getDeletedNotification(): ?Notification
@@ -76,5 +68,23 @@ trait NotifiesWithDetail
             ->title($this->getDeletedNotificationTitle())
             ->body($this->getDeletedNotificationBody())
             ->danger();
+    }
+
+    protected function getRecordIdentifier(): string
+    {
+        $record = $this->getRecord();
+
+        if (! $record instanceof Model) {
+            return 'The record';
+        }
+
+        $label = (string) ($record->getAttribute('name')
+            ?? $record->getAttribute('title')
+            ?? $record->getAttribute('invoice_number')
+            ?? $record->getAttribute('transfer_number')
+            ?? $record->getAttribute('sku')
+            ?? $record->getKey());
+
+        return Str::headline(class_basename($record)).' "'.$label.'"';
     }
 }

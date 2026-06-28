@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Users\Pages;
 use App\Filament\Admin\Resources\Users\UserResource;
 use App\Filament\Concerns\NotifiesWithDetail;
 use Filament\Actions\DeleteAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
 class EditUser extends EditRecord
@@ -17,7 +18,7 @@ class EditUser extends EditRecord
     {
         return [
             DeleteAction::make()
-                ->successNotificationTitle('Staff deleted successfully'),
+                ->successNotification(fn (Notification $notification): Notification => $this->getDeletedNotification()),
         ];
     }
 }

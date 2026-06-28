@@ -97,10 +97,20 @@ class BookkeepingReport extends Page implements Tables\Contracts\HasTable
                         'debt_payment' => 'info',
                         'purchase' => 'warning',
                         'salary' => 'primary',
-                        'utilities' => 'gray',
+                        'utilities' => 'info',
                         'transport' => 'gray',
                         'other' => 'gray',
                         default => 'gray',
+                    })
+                    ->icon(fn (string $state): ?string => match ($state) {
+                        'sale' => 'heroicon-o-banknotes',
+                        'debt_payment' => 'heroicon-o-receipt-refund',
+                        'purchase' => 'heroicon-o-shopping-cart',
+                        'salary' => 'heroicon-o-user-group',
+                        'utilities' => 'heroicon-o-bolt',
+                        'transport' => 'heroicon-o-truck',
+                        'other' => 'heroicon-o-folder',
+                        default => null,
                     })
                     ->sortable(),
                 TextColumn::make('description')

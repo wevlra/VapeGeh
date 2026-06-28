@@ -27,6 +27,12 @@ class IncomeInfolist
                                 'debt_payment' => 'info',
                                 'other' => 'gray',
                                 default => 'gray',
+                            })
+                            ->icon(fn (string $state): ?string => match ($state) {
+                                'sale' => 'heroicon-o-banknotes',
+                                'debt_payment' => 'heroicon-o-receipt-refund',
+                                'other' => 'heroicon-o-folder',
+                                default => null,
                             }),
                         TextEntry::make('amount')
                             ->money('IDR'),

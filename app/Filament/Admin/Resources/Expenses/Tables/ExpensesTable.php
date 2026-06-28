@@ -8,6 +8,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -33,6 +34,14 @@ class ExpensesTable
                         'transport' => 'gray',
                         'other' => 'gray',
                         default => 'gray',
+                    })
+                    ->icon(fn (string $state): ?string => match ($state) {
+                        'purchase' => 'heroicon-o-shopping-cart',
+                        'salary' => 'heroicon-o-user-group',
+                        'utilities' => 'heroicon-o-bolt',
+                        'transport' => 'heroicon-o-truck',
+                        'other' => 'heroicon-o-folder',
+                        default => null,
                     })
                     ->sortable(),
                 TextColumn::make('description')
@@ -62,7 +71,13 @@ class ExpensesTable
             ])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->successNotification(
+                        Notification::make()
+                            ->title('Expense deleted')
+                            ->body('The expense record has been permanently removed.')
+                            ->danger()
+                    ),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

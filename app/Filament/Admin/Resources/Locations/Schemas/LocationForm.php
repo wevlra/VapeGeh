@@ -17,6 +17,9 @@ class LocationForm
                     ->required()
                     ->maxLength(255),
                 Textarea::make('address'),
+                TextInput::make('phone')
+                    ->tel()
+                    ->maxLength(50),
                 Select::make('type')
                     ->required()
                     ->options([

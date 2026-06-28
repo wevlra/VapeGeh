@@ -6,11 +6,6 @@
         $cartTotal = $this->getCartTotal();
     @endphp
 
-    {{-- Location Selector --}}
-    <div class="mb-4">
-        {{ $this->form }}
-    </div>
-
     <div class="flex flex-col lg:flex-row gap-6">
         {{-- Product List --}}
         <div class="flex-1 min-w-0">

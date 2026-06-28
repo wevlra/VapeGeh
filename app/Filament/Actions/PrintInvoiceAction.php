@@ -14,7 +14,7 @@ class PrintInvoiceAction extends Action
         $this->label('Print Invoice')
             ->icon('heroicon-o-document-text')
             ->color('primary')
-            ->url(fn (StockMovement $record): string => route('admin.stock-movements.invoice', $record))
+            ->url(fn (StockMovement $record): string => route('admin.history.invoice', $record))
             ->openUrlInNewTab()
             ->hidden(fn (StockMovement $record): bool => $record->type !== 'out');
     }

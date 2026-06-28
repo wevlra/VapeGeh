@@ -70,7 +70,7 @@ class AdminPanelProvider extends PanelProvider
                         MobileBottomNavItem::make('History')
                             ->icon('heroicon-o-clock')
                             ->activeIcon('heroicon-s-clock')
-                            ->url('/admin/history/stock-movements')
+                            ->url('/admin/history')
                             ->isActive(fn () => request()->is('admin/history*')),
                     ]),
             ])

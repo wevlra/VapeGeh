@@ -13,9 +13,11 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
 
-class StockMovementsRelationManager extends RelationManager
+class HistoryRelationManager extends RelationManager
 {
     protected static string $relationship = 'movements';
+
+    protected static ?string $title = 'History';
 
     public function isReadOnly(): bool
     {
@@ -46,9 +48,19 @@ class StockMovementsRelationManager extends RelationManager
                         'transfer_out' => 'warning',
                         'adjustment' => 'gray',
                         default => 'gray',
+                    })
+                    ->icon(fn (string $state): ?string => match ($state) {
+                        'in' => 'heroicon-o-arrow-down-tray',
+                        'out' => 'heroicon-o-arrow-up-tray',
+                        'transfer_in' => 'heroicon-o-arrow-right',
+                        'transfer_out' => 'heroicon-o-arrow-left',
+                        'adjustment' => 'heroicon-o-pencil',
+                        default => null,
                     }),
                 TextColumn::make('location.name'),
-                TextColumn::make('quantity'),
+                TextColumn::make('quantity')
+                    ->formatStateUsing(fn (StockMovement $record): string => $record->quantity > 0 ? '+'.$record->quantity : (string) $record->quantity)
+                    ->color(fn (StockMovement $record): string => $record->quantity > 0 ? 'success' : 'danger'),
                 TextColumn::make('notes')
                     ->limit(30)
                     ->placeholder('—'),
@@ -81,6 +93,7 @@ class StockMovementsRelationManager extends RelationManager
 
                             Notification::make()
                                 ->title('Notes updated')
+                                ->body('Notes for this movement record have been updated successfully.')
                                 ->success()
                                 ->send();
 
@@ -120,6 +133,9 @@ class StockMovementsRelationManager extends RelationManager
 
                         Notification::make()
                             ->title($record->type === 'in' ? 'Stock in updated' : 'Stock out updated')
+                            ->body($record->type === 'in'
+                                ? 'Stock in record has been updated to '.$newQty.' units.'
+                                : 'Stock out record has been updated to '.$newQty.' units.')
                             ->success()
                             ->send();
                     }),

@@ -4,7 +4,7 @@ namespace App\Filament\Staff\Resources\Sales\Tables;
 
 use App\Filament\Staff\Resources\Sales\SaleResource;
 use App\Models\Sale;
-use Filament\Tables\Actions\Action;
+use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;

@@ -66,6 +66,7 @@ class StockRelationManager extends RelationManager
 
                         Notification::make()
                             ->title('Stock adjusted')
+                            ->body('Quantity for '.$record->location->name.' has been set to '.$data['qty'].' units.')
                             ->success()
                             ->send();
                     }),

@@ -6,7 +6,7 @@ use App\Filament\Admin\Resources\Products\Pages\CreateProduct;
 use App\Filament\Admin\Resources\Products\Pages\EditProduct;
 use App\Filament\Admin\Resources\Products\Pages\ListProducts;
 use App\Filament\Admin\Resources\Products\Pages\ViewProduct;
-use App\Filament\Admin\Resources\Products\RelationManagers\StockMovementsRelationManager;
+use App\Filament\Admin\Resources\Products\RelationManagers\HistoryRelationManager;
 use App\Filament\Admin\Resources\Products\RelationManagers\StockRelationManager;
 use App\Filament\Admin\Resources\Products\Schemas\ProductForm;
 use App\Filament\Admin\Resources\Products\Schemas\ProductInfolist;
@@ -40,7 +40,7 @@ class ProductResource extends Resource
     {
         return [
             StockRelationManager::class,
-            StockMovementsRelationManager::class,
+            HistoryRelationManager::class,
         ];
     }
 

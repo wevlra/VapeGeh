@@ -8,6 +8,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -31,7 +32,13 @@ class ProductsTable
             ->filters([])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->successNotification(
+                        Notification::make()
+                            ->title('Product deleted')
+                            ->body('The product has been permanently removed.')
+                            ->danger()
+                    ),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

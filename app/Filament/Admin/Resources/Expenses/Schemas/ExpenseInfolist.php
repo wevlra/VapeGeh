@@ -26,6 +26,14 @@ class ExpenseInfolist
                                 'transport' => 'gray',
                                 'other' => 'gray',
                                 default => 'gray',
+                            })
+                            ->icon(fn (string $state): ?string => match ($state) {
+                                'purchase' => 'heroicon-o-shopping-cart',
+                                'salary' => 'heroicon-o-user-group',
+                                'utilities' => 'heroicon-o-bolt',
+                                'transport' => 'heroicon-o-truck',
+                                'other' => 'heroicon-o-folder',
+                                default => null,
                             }),
                         TextEntry::make('amount')
                             ->money('IDR'),

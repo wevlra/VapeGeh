@@ -75,8 +75,8 @@ class StockTransfersTable
                             );
 
                             Notification::make()
-                                ->title('Transfer completed successfully')
-                                ->body("Transfer {$record->transfer_number} has been completed.")
+                                ->title('Transfer completed')
+                                ->body("Transfer \"{$record->transfer_number}\" has been completed. Stock has been moved between locations.")
                                 ->success()
                                 ->send();
                         } catch (\DomainException $e) {

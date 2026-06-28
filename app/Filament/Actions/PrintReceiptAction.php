@@ -14,7 +14,7 @@ class PrintReceiptAction extends Action
         $this->label('Print Receipt')
             ->icon('heroicon-o-printer')
             ->color('gray')
-            ->url(fn (StockMovement $record): string => route('admin.stock-movements.receipt', $record))
+            ->url(fn (StockMovement $record): string => route('admin.history.receipt', $record))
             ->openUrlInNewTab();
     }
 }
