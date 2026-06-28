@@ -20,7 +20,7 @@ class StaffSalesChart extends ChartWidget
 
         $salesByMonth = Sale::where('location_id', $locationId)
             ->whereBetween('created_at', [$start, $end])
-            ->selectRaw('strftime("%Y-%m", created_at) as month_key, SUM(total) as total')
+            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month_key, SUM(total) as total")
             ->groupBy('month_key')
             ->pluck('total', 'month_key');
 

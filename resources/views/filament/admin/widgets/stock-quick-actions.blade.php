@@ -5,7 +5,7 @@
                 tag="a"
                 href="{{ \App\Filament\Admin\Pages\StockIn::getUrl() }}"
                 color="success"
-                icon="heroicon-o-archive-box-arrow-down"
+                icon="heroicon-o-arrow-down-tray"
                 class="w-full justify-center"
             >
                 Stok Masuk
