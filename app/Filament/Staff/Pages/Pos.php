@@ -353,7 +353,7 @@ class Pos extends Page implements HasTable
             ->body('Click to print receipt')
             ->success()
             ->actions([
-                \Filament\Notifications\Actions\Action::make('print')
+                Action::make('print')
                     ->label('Print Receipt')
                     ->icon('heroicon-o-printer')
                     ->url($printUrl, shouldOpenInNewTab: true),
