@@ -13,6 +13,17 @@ Route::middleware(['web', 'auth'])->group(function () {
         return view('receipts.receipt', ['movement' => $stockMovement]);
     })->name('admin.stock-movements.receipt');
 
+    Route::get('/admin/stock-movements/{stockMovement}/invoice', function (StockMovement $stockMovement) {
+        if ($stockMovement->type !== 'out') {
+            abort(404);
+        }
+        $stockMovement->load(['product', 'location', 'creator', 'buyer', 'related']);
+
+        return \Spatie\LaravelPdf\Facades\Pdf::view('invoices.invoice', ['movement' => $stockMovement])
+            ->name('invoice-'.($stockMovement->related?->invoice_number ?? 'SM-'.$stockMovement->id).'.pdf')
+            ->download();
+    })->name('admin.stock-movements.invoice');
+
     Route::get('/admin/sales/{sale}/receipt', function (Sale $sale) {
         $movement = $sale->stockMovements()->first();
         if (! $movement) {

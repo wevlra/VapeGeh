@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\History\Tables;
 
+use App\Filament\Actions\PrintInvoiceAction;
 use App\Filament\Actions\PrintReceiptAction;
 use App\Filament\Admin\Resources\History\StockMovementResource;
 use App\Models\StockMovement;
@@ -74,6 +75,7 @@ class StockMovementsTable
             ])
             ->recordActions([
                 PrintReceiptAction::make('print_receipt'),
+                PrintInvoiceAction::make('print_invoice'),
             ])
             ->defaultSort('created_at', 'desc');
     }
