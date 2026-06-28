@@ -9,3 +9,10 @@
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
+/tests/ export-ignore
+/docs/ export-ignore
+phpunit.xml export-ignore
+pint.json export-ignore
+.prettierrc export-ignore
+.npmrc export-ignore
+.claude/ export-ignore

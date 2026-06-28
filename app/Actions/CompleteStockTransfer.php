@@ -21,7 +21,7 @@ class CompleteStockTransfer
             throw new DomainException('Transfer source and destination cannot be the same location.');
         }
 
-        DB::transaction(function () use ($transfer, $completedBy) {
+        DB::transaction(function () use ($transfer) {
             $transfer->load('items');
 
             foreach ($transfer->items as $item) {
@@ -61,7 +61,6 @@ class CompleteStockTransfer
                     'related_type' => StockTransfer::class,
                     'related_id' => $transfer->id,
                     'notes' => "Transfer #{$transfer->transfer_number}",
-                    'created_by' => $completedBy->id,
                 ]);
 
                 StockMovement::create([
@@ -72,7 +71,6 @@ class CompleteStockTransfer
                     'related_type' => StockTransfer::class,
                     'related_id' => $transfer->id,
                     'notes' => "Transfer #{$transfer->transfer_number}",
-                    'created_by' => $completedBy->id,
                 ]);
             }
 

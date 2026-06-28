@@ -31,8 +31,9 @@ it('creates a sale with items and deducts stock', function () {
         'role' => 'staff',
         'location_id' => $location->id,
     ]);
+    $this->actingAs($staff);
     $product = Product::factory()->create();
-    $price = (float) $product->prices->first()->price;
+    $price = (float) $product->default_price;
     $total = round($price * 3, 2);
 
     Stock::factory()->create([
@@ -80,6 +81,7 @@ it('throws exception when stock is insufficient for sale', function () {
         'role' => 'staff',
         'location_id' => $location->id,
     ]);
+    $this->actingAs($staff);
     $product = Product::factory()->create();
 
     Stock::factory()->create([
@@ -107,6 +109,7 @@ it('generates an invoice number automatically', function () {
         'role' => 'staff',
         'location_id' => $location->id,
     ]);
+    $this->actingAs($staff);
     $product = Product::factory()->create();
 
     Stock::factory()->create([
@@ -142,6 +145,7 @@ it('relates sale to user and location', function () {
         'role' => 'staff',
         'location_id' => $location->id,
     ]);
+    $this->actingAs($staff);
     $product = Product::factory()->create();
 
     Stock::factory()->create([

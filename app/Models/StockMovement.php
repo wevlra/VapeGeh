@@ -7,9 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
-#[Fillable(['product_id', 'location_id', 'type', 'quantity', 'unit_price', 'related_type', 'related_id', 'buyer_id', 'additional_costs', 'notes', 'created_by'])]
+#[Fillable(['product_id', 'location_id', 'type', 'quantity', 'unit_price', 'related_type', 'related_id', 'buyer_id', 'additional_costs', 'notes'])]
 class StockMovement extends Model
 {
+    protected static function booted(): void
+    {
+        static::creating(function (StockMovement $movement) {
+            if (is_null($movement->created_by)) {
+                $movement->created_by = auth()->id();
+            }
+        });
+    }
+
     /**
      * @return BelongsTo<Product, $this>
      */

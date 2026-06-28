@@ -9,8 +9,11 @@ use LaravelDaily\Invoices\Invoice;
 
 Route::livewire('/', 'landing');
 
-Route::middleware(['web', 'auth'])->group(function () {
+Route::middleware(['web', 'auth', 'throttle:120,1'])->group(function () {
     Route::get('/admin/history/{stockMovement}/receipt', function (StockMovement $stockMovement) {
+        if (! in_array(auth()->user()->role, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
+        }
         if (auth()->user()->role === 'staff' && $stockMovement->location_id !== auth()->user()->location_id) {
             abort(403);
         }
@@ -20,13 +23,16 @@ Route::middleware(['web', 'auth'])->group(function () {
     })->name('admin.history.receipt');
 
     Route::get('/admin/history/{stockMovement}/invoice', function (StockMovement $stockMovement) {
+        if (! in_array(auth()->user()->role, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
+        }
         if (auth()->user()->role === 'staff' && $stockMovement->location_id !== auth()->user()->location_id) {
             abort(403);
         }
         if ($stockMovement->type !== 'out') {
             abort(404);
         }
-        $stockMovement->load(['product', 'location', 'creator', 'buyer', 'related']);
+        $stockMovement->load(['product', 'location', 'creator', 'buyer', 'related.items.product']);
 
         $location = $stockMovement->location;
         $related = $stockMovement->related;
@@ -109,6 +115,9 @@ Route::middleware(['web', 'auth'])->group(function () {
     })->name('admin.history.invoice');
 
     Route::get('/admin/sales/{sale}/receipt', function (Sale $sale) {
+        if (! in_array(auth()->user()->role, ['admin', 'staff'])) {
+            abort(403, 'Unauthorized.');
+        }
         if (auth()->user()->role === 'staff' && $sale->location_id !== auth()->user()->location_id) {
             abort(403);
         }

@@ -85,7 +85,6 @@ class UpdateSale
                     'related_type' => Sale::class,
                     'related_id' => $sale->id,
                     'notes' => "Sale {$sale->invoice_number}",
-                    'created_by' => auth()->id(),
                 ];
 
                 SaleItem::create([

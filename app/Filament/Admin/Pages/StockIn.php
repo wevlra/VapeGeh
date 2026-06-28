@@ -118,8 +118,14 @@ class StockIn extends Page implements HasForms
         $newPrice = (float) $data['price'];
         $newQty = (int) $data['qty'];
 
-        if ($product->purchase_price > 0) {
-            $avgPrice = ((float) $product->purchase_price + $newPrice) / 2;
+        $existingStock = Stock::where('product_id', $product->id)
+            ->where('location_id', $data['location_id'])
+            ->first();
+        $oldQty = $existingStock ? $existingStock->qty : 0;
+        $oldPrice = (float) $product->purchase_price;
+
+        if ($oldQty > 0 && $oldPrice > 0) {
+            $avgPrice = round(($oldPrice * $oldQty + $newPrice * $newQty) / ($oldQty + $newQty), 2);
         } else {
             $avgPrice = $newPrice;
         }
@@ -151,7 +157,6 @@ class StockIn extends Page implements HasForms
                     'notes' => $data['notes'] ?? null,
                     'related_type' => Stock::class,
                     'related_id' => $stock->id,
-                    'created_by' => auth()->id(),
                 ]);
             });
         } catch (\Throwable $e) {

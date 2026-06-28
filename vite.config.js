@@ -7,7 +7,7 @@ import { nativephpMobile } from "./vendor/nativephp/mobile/resources/js/vite-plu
 export default defineConfig({
     plugins: [
         laravel({
-            input: ["resources/css/app.css", "resources/js/app.js", "resources/css/filament/admin/theme.css", "resources/css/filament/staff/theme.css"],
+            input: ["resources/css/app.css", "resources/css/filament/admin/theme.css", "resources/css/filament/staff/theme.css"],
             refresh: true,
             fonts: [
                 bunny("Instrument Sans", {

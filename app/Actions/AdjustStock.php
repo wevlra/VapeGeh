@@ -44,7 +44,6 @@ class AdjustStock
                 'notes' => $notes,
                 'related_type' => Stock::class,
                 'related_id' => $lockedStock->id,
-                'created_by' => auth()->id(),
             ]);
         });
     }

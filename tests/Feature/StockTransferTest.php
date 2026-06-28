@@ -30,6 +30,7 @@ it('creates a stock transfer with items', function () {
     $warehouse = Location::factory()->warehouse()->create();
     $store = Location::factory()->create();
     $admin = User::factory()->admin()->create();
+    $this->actingAs($admin);
     $product = Product::factory()->create();
 
     $transfer = StockTransfer::factory()->create([
@@ -55,6 +56,7 @@ it('completes a transfer and moves stock correctly', function () {
     $warehouse = Location::factory()->warehouse()->create();
     $store = Location::factory()->create();
     $admin = User::factory()->admin()->create();
+    $this->actingAs($admin);
     $product = Product::factory()->create();
 
     Stock::factory()->create([
@@ -110,6 +112,7 @@ it('throws exception when source stock is insufficient', function () {
     $warehouse = Location::factory()->warehouse()->create();
     $store = Location::factory()->create();
     $admin = User::factory()->admin()->create();
+    $this->actingAs($admin);
     $product = Product::factory()->create();
 
     Stock::factory()->create([

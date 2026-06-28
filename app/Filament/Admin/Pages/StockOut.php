@@ -9,7 +9,6 @@ use App\Models\ProductPrice;
 use App\Models\Stock;
 use App\Models\StockMovement;
 use BackedEnum;
-use Closure;
 use DomainException;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -89,18 +88,7 @@ class StockOut extends Page implements HasForms
                     ->label('Quantity')
                     ->required()
                     ->integer()
-                    ->minValue(1)
-                    ->rules([
-                        fn (callable $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
-                            $stock = $this->getStockRecord($get('product_id'), $get('location_id'));
-                            if ($stock && $value > $stock->qty) {
-                                $fail("Quantity exceeds available stock ({$stock->qty} available).");
-                            }
-                            if (! $stock || $stock->qty < 1) {
-                                $fail('No stock available at the selected location.');
-                            }
-                        },
-                    ]),
+                    ->minValue(1),
                 Select::make('buyer_id')
                     ->label('Buyer (optional)')
                     ->options(fn () => Buyer::pluck('name', 'id'))
@@ -252,7 +240,7 @@ class StockOut extends Page implements HasForms
         $priceId = (int) $data['price_id'];
 
         try {
-            DB::transaction(function () use ($data, $productId, $locationId, $qty, $priceId) {
+            $result = DB::transaction(function () use ($data, $productId, $locationId, $qty, $priceId) {
                 $stock = Stock::where('product_id', $productId)
                     ->where('location_id', $locationId)
                     ->lockForUpdate()
@@ -278,11 +266,14 @@ class StockOut extends Page implements HasForms
                     'type' => 'out',
                     'quantity' => -$qty,
                     'unit_price' => $unitPrice,
+                    'related_type' => Stock::class,
+                    'related_id' => $stock->id,
                     'buyer_id' => $data['buyer_id'] ?? null,
                     'additional_costs' => $additionalCosts ?: null,
                     'notes' => $data['notes'] ?? null,
-                    'created_by' => auth()->id(),
                 ]);
+
+                return compact('unitPrice', 'subtotal', 'totalCost');
             });
         } catch (DomainException $e) {
             Notification::make()
@@ -296,8 +287,8 @@ class StockOut extends Page implements HasForms
             report($e);
 
             Notification::make()
-                ->title('Terjadi kesalahan')
-                ->body('Silakan coba lagi atau hubungi administrator.')
+                ->title('An error occurred')
+                ->body('Please try again or contact the administrator.')
                 ->danger()
                 ->send();
 
@@ -306,14 +297,9 @@ class StockOut extends Page implements HasForms
 
         $this->form->fill();
 
-        $unitPrice = ProductPrice::find($priceId)?->price ?? 0;
-        $subtotal = $unitPrice * $qty;
-        $additionalCosts = $data['additional_costs'] ?? [];
-        $totalCost = collect($additionalCosts)->sum(fn ($cost) => (float) ($cost['amount'] ?? 0));
-
-        $body = $qty.' units removed. Subtotal: Rp '.number_format($subtotal, 0, ',', '.').' ('.$qty.' × Rp '.number_format($unitPrice, 0, ',', '.').')';
-        if ($totalCost > 0) {
-            $body .= ' + Additional: Rp '.number_format($totalCost, 0, ',', '.');
+        $body = $qty.' units removed. Subtotal: Rp '.number_format($result['subtotal'], 0, ',', '.').' ('.$qty.' × Rp '.number_format($result['unitPrice'], 0, ',', '.').')';
+        if ($result['totalCost'] > 0) {
+            $body .= ' + Additional: Rp '.number_format($result['totalCost'], 0, ',', '.');
         }
 
         Notification::make()
