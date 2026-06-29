@@ -6,6 +6,7 @@ use App\Filament\Staff\Pages\Dashboard;
 use App\Filament\Staff\Widgets\StaffPaymentMethodChart;
 use App\Filament\Staff\Widgets\StaffSalesChart;
 use App\Filament\Staff\Widgets\StaffStatsOverview;
+use Filament\Auth\Http\Responses\Contracts\LogoutResponse;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -85,6 +86,14 @@ class StaffPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->bootUsing(function (): void {
+                app()->bind(LogoutResponse::class, fn (): \Filament\Auth\Http\Responses\LogoutResponse => new class extends \Filament\Auth\Http\Responses\LogoutResponse {
+                    public function toResponse($request): \Illuminate\Http\RedirectResponse
+                    {
+                        return redirect()->to('/');
+                    }
+                });
+            });
     }
 }

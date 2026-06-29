@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['from_location_id', 'to_location_id', 'notes'])]
+#[Fillable(['from_location_id', 'to_location_id', 'notes', 'created_by'])]
 class StockTransfer extends Model
 {
     /** @use HasFactory<StockTransferFactory> */

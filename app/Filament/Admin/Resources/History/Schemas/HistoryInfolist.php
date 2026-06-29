@@ -30,22 +30,21 @@ class HistoryInfolist
                             ->formatStateUsing(fn (string $state): string => match ($state) {
                                 'in' => 'Stok Masuk',
                                 'out' => 'Stok Keluar',
-                                'transfer_in' => 'Transfer Masuk',
-                                'transfer_out' => 'Transfer Keluar',
+                                'transfer' => 'Transfer',
                                 'adjustment' => 'Penyesuaian',
                                 default => ucfirst($state),
                             })
                             ->color(fn (string $state): string => match ($state) {
-                                'in', 'transfer_in' => 'success',
-                                'out', 'transfer_out' => 'danger',
+                                'in' => 'success',
+                                'out' => 'danger',
+                                'transfer' => 'info',
                                 'adjustment' => 'gray',
                                 default => 'gray',
                             })
                             ->icon(fn (string $state): ?string => match ($state) {
                                 'in' => 'heroicon-o-arrow-down-tray',
                                 'out' => 'heroicon-o-arrow-up-tray',
-                                'transfer_in' => 'heroicon-o-arrow-right',
-                                'transfer_out' => 'heroicon-o-arrow-left',
+                                'transfer' => 'heroicon-o-arrow-right-end-on-rectangle',
                                 'adjustment' => 'heroicon-o-pencil',
                                 default => null,
                             }),

@@ -75,7 +75,7 @@ class DeleteLocation
                         StockMovement::create([
                             'product_id' => $stock->product_id,
                             'location_id' => $record->id,
-                            'type' => 'transfer_out',
+                            'type' => 'transfer',
                             'quantity' => -$stock->qty,
                             'related_type' => Location::class,
                             'related_id' => $destination->id,
@@ -86,7 +86,7 @@ class DeleteLocation
                         StockMovement::create([
                             'product_id' => $stock->product_id,
                             'location_id' => $destination->id,
-                            'type' => 'transfer_in',
+                            'type' => 'transfer',
                             'quantity' => $stock->qty,
                             'related_type' => Location::class,
                             'related_id' => $record->id,
@@ -139,7 +139,7 @@ class DeleteLocation
                 StockMovement::create([
                     'product_id' => $stock->product_id,
                     'location_id' => $location->id,
-                    'type' => 'transfer_out',
+                    'type' => 'transfer',
                     'quantity' => -$stock->qty,
                     'related_type' => Location::class,
                     'related_id' => $destination->id,
@@ -150,7 +150,7 @@ class DeleteLocation
                 StockMovement::create([
                     'product_id' => $stock->product_id,
                     'location_id' => $destination->id,
-                    'type' => 'transfer_in',
+                    'type' => 'transfer',
                     'quantity' => $stock->qty,
                     'related_type' => Location::class,
                     'related_id' => $location->id,

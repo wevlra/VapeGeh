@@ -38,24 +38,21 @@ class HistoryRelationManager extends RelationManager
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'in' => 'Stok Masuk',
                         'out' => 'Stok Keluar',
-                        'transfer_in' => 'Transfer Masuk',
-                        'transfer_out' => 'Transfer Keluar',
+                        'transfer' => 'Transfer',
                         'adjustment' => 'Penyesuaian',
                         default => ucfirst($state),
                     })
                     ->color(fn (string $state): string => match ($state) {
                         'in' => 'success',
                         'out' => 'danger',
-                        'transfer_in' => 'info',
-                        'transfer_out' => 'warning',
+                        'transfer' => 'info',
                         'adjustment' => 'gray',
                         default => 'gray',
                     })
                     ->icon(fn (string $state): ?string => match ($state) {
                         'in' => 'heroicon-o-arrow-down-tray',
                         'out' => 'heroicon-o-arrow-up-tray',
-                        'transfer_in' => 'heroicon-o-arrow-right',
-                        'transfer_out' => 'heroicon-o-arrow-left',
+                        'transfer' => 'heroicon-o-arrow-right-end-on-rectangle',
                         'adjustment' => 'heroicon-o-pencil',
                         default => null,
                     }),

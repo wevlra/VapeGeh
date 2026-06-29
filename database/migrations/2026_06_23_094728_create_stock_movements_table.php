@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->foreignId('location_id')->constrained()->cascadeOnDelete();
-            $table->enum('type', ['in', 'out', 'adjustment', 'transfer_in', 'transfer_out']);
+            $table->string('type', 20);
             $table->integer('quantity');
             $table->string('related_type')->nullable();
             $table->unsignedBigInteger('related_id')->nullable();
