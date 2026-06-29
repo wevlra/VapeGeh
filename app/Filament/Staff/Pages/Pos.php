@@ -54,7 +54,7 @@ class Pos extends Page implements HasTable
                         ->where('location_id', $locationId)
                         ->where('qty', '>', 0),
                     )
-                    ->with(['stocks' => fn ($q) => $q->where('location_id', $locationId)])
+                    ->with(['stocks' => fn ($q) => $q->where('location_id', $locationId), 'prices'])
             )
             ->columns([
                 TextColumn::make('name')

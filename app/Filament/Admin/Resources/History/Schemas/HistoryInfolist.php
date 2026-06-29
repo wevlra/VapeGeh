@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\History\Schemas;
 
 use App\Models\Sale;
+use App\Models\StockEntry;
 use App\Models\StockTransfer;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\RepeatableEntry\TableColumn;
@@ -50,22 +51,11 @@ class HistoryInfolist
                             }),
                         TextEntry::make('location.name')
                             ->label('Lokasi'),
-                        TextEntry::make('unit_price')
-                            ->label('Harga Satuan')
-                            ->money('IDR')
-                            ->hidden(fn ($state): bool => is_null($state)),
                         TextEntry::make('creator.name')
                             ->label('Staf'),
-                        TextEntry::make('buyer.name')
-                            ->label('Pembeli')
-                            ->hidden(fn ($state): bool => is_null($state)),
-                        TextEntry::make('notes')
-                            ->label('Catatan')
-                            ->columnSpanFull()
-                            ->hidden(fn ($state): bool => blank($state)),
                     ]),
 
-                Section::make('Transaksi Terkait')
+                Section::make('Detail Transaksi')
                     ->columnSpanFull()
                     ->schema(function ($record) {
                         if ($record->related instanceof Sale) {
@@ -144,6 +134,61 @@ class HistoryInfolist
                                             ->label('Produk'),
                                         TextEntry::make('qty')
                                             ->label('Jumlah'),
+                                    ]),
+                            ];
+                        }
+
+                        if ($record->related instanceof StockEntry) {
+                            $entry = $record->related;
+                            $stockIn = $entry->type === 'in';
+                            $total = $entry->items->sum(fn ($i) => $i->qty * (float) $i->unit_price);
+
+                            return [
+                                TextEntry::make('related.vendor.name')
+                                    ->label('Vendor')
+                                    ->hidden(fn () => ! $stockIn)
+                                    ->default('-'),
+                                TextEntry::make('related.buyer.name')
+                                    ->label('Pembeli')
+                                    ->hidden(fn () => $stockIn)
+                                    ->default('-'),
+                                RepeatableEntry::make('additional_costs')
+                                    ->label('Biaya Tambahan')
+                                    ->hidden(fn () => blank($entry->additional_costs))
+                                    ->table([
+                                        TableColumn::make('Deskripsi')->width(180),
+                                        TableColumn::make('Jumlah')->width(80),
+                                    ])
+                                    ->schema([
+                                        TextEntry::make('description')
+                                            ->label('Deskripsi'),
+                                        TextEntry::make('amount')
+                                            ->label('Jumlah')
+                                            ->money('IDR'),
+                                    ]),
+                                TextEntry::make('related.notes')
+                                    ->label('Catatan')
+                                    ->columnSpanFull()
+                                    ->hidden(fn ($state): bool => blank($state)),
+                                TextEntry::make('stock_entry_total')
+                                    ->label('Total Harga')
+                                    ->state(fn () => $total)
+                                    ->money('IDR'),
+                                RepeatableEntry::make('related.items')
+                                    ->hiddenLabel()
+                                    ->table([
+                                        TableColumn::make('Produk')->width(180),
+                                        TableColumn::make('Jumlah')->width(80),
+                                        TableColumn::make('Harga Satuan')->width(180),
+                                    ])
+                                    ->schema([
+                                        TextEntry::make('product.name')
+                                            ->label('Produk'),
+                                        TextEntry::make('qty')
+                                            ->label('Jumlah'),
+                                        TextEntry::make('unit_price')
+                                            ->label('Harga Satuan')
+                                            ->money('IDR'),
                                     ]),
                             ];
                         }

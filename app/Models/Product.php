@@ -53,7 +53,7 @@ class Product extends Model
     {
         $sellingPrice = (float) $this->selling_price;
 
-        return $sellingPrice > 0 ? $sellingPrice : (float) ($this->prices->first()?->price ?? 0);
+        return $sellingPrice > 0 ? $sellingPrice : (float) ($this->prices()->first()?->price ?? 0);
     }
 
     protected function casts(): array

@@ -2,13 +2,13 @@
 
 namespace App\Actions;
 
+use App\Filament\Admin\Resources\Locations\LocationResource;
 use App\Models\Location;
 use App\Models\Stock;
 use App\Models\StockMovement;
 use DomainException;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
-use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\DB;
 
 class DeleteLocation
@@ -41,7 +41,7 @@ class DeleteLocation
                     ->required()
                     ->native(false),
             ])
-            ->action(function (array $data, Location $record): void {
+            ->action(function (array $data, Location $record) {
                 $destination = Location::findOrFail($data['destination_id']);
 
                 if ($destination->id === $record->id) {
@@ -100,11 +100,7 @@ class DeleteLocation
                     $record->delete();
                 });
 
-                Notification::make()
-                    ->title('Location deleted')
-                    ->body("{$record->name} has been permanently removed.")
-                    ->danger()
-                    ->send();
+                redirect(LocationResource::getUrl('index'));
             });
     }
 

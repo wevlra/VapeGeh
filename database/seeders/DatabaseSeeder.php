@@ -209,7 +209,7 @@ class DatabaseSeeder extends Seeder
             ['category' => 'sale', 'description' => 'Pembelian online via QRIS', 'amount' => 180000],
             ['category' => 'debt_payment', 'description' => 'Pembayaran hutang pelanggan', 'amount' => 500000],
             ['category' => 'debt_payment', 'description' => 'Pelunasan cicilan stok', 'amount' => 350000],
-            ['category' => 'other', 'description' => 'Refund dari pemasok', 'amount' => 120000],
+            ['category' => 'other', 'description' => 'Refund dari vendor', 'amount' => 120000],
             ['category' => 'sale', 'description' => 'Biaya penjualan restock', 'amount' => 200000],
             ['category' => 'sale', 'description' => 'Penjualan POD mingguan', 'amount' => 320000],
             ['category' => 'other', 'description' => 'Bonus distributor', 'amount' => 150000],

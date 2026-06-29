@@ -56,6 +56,8 @@ class StockMovement extends Model
         return $this->morphTo()->morphWith([
             Sale::class => ['items.product'],
             StockTransfer::class => ['items.product'],
+            Stock::class => [],
+            StockEntry::class => ['items.product'],
         ]);
     }
 

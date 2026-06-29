@@ -2,12 +2,16 @@
 
 namespace App\Filament\Admin\Pages;
 
+use App\Filament\Admin\Resources\History\HistoryResource;
 use App\Models\Location;
 use App\Models\Product;
 use App\Models\Stock;
+use App\Models\StockEntry;
 use App\Models\StockMovement;
 use App\Models\Vendor;
 use BackedEnum;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -15,6 +19,9 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Wizard;
+use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\DB;
@@ -50,118 +57,169 @@ class StockIn extends Page implements HasForms
     {
         return $schema
             ->statePath('data')
-            ->columns(2)
             ->components([
-                Select::make('product_id')
-                    ->label('Produk')
-                    ->options(fn () => Product::orderBy('name')->get()
-                        ->mapWithKeys(fn (Product $p): array => [$p->id => "{$p->sku} — {$p->name}"])
-                        ->toArray())
-                    ->searchable()
-                    ->required()
-                    ->live()
-                    ->afterStateUpdated(fn ($state, callable $set) => $set('price', Product::find($state)?->purchase_price ?? 0))
-                    ->columnSpanFull(),
-                Select::make('vendor_id')
-                    ->label('Pemasok')
-                    ->options(fn () => Vendor::pluck('name', 'id'))
-                    ->searchable()
-                    ->required()
-                    ->createOptionForm([
-                        TextInput::make('name')
-                            ->label('Nama')
-                            ->required()
-                            ->maxLength(255),
-                        TextInput::make('contact_person')
-                            ->label('Kontak Person')
-                            ->maxLength(255),
-                        TextInput::make('phone')
-                            ->label('Telepon')
-                            ->tel()
-                            ->maxLength(50),
-                        TextInput::make('email')
-                            ->label('Email')
-                            ->email()
-                            ->maxLength(255),
-                        TextInput::make('address')
-                            ->label('Alamat')
-                            ->maxLength(255),
-                    ])
-                    ->createOptionUsing(function (array $data): int {
-                        return Vendor::create($data)->getKey();
-                    }),
-                Select::make('location_id')
-                    ->label('Lokasi')
-                    ->options(fn () => Location::pluck('name', 'id'))
-                    ->searchable()
-                    ->default(fn () => Location::where('type', 'warehouse')->value('id'))
-                    ->required(),
-                TextInput::make('qty')
-                    ->label('Jumlah')
-                    ->required()
-                    ->integer()
-                    ->minValue(1),
-                TextInput::make('price')
-                    ->label('Harga Beli')
-                    ->required()
-                    ->numeric()
-                    ->minValue(0)
-                    ->prefix('Rp'),
-                Textarea::make('notes')
-                    ->label('Catatan (opsional)')
-                    ->rows(2)
-                    ->maxLength(1000)
-                    ->columnSpanFull(),
+                Wizard::make()
+                    ->columnSpanFull()
+                    ->steps([
+                        Step::make('Informasi Umum')
+                            ->description('Vendor dan lokasi')
+                            ->icon(Heroicon::OutlinedShoppingBag)
+                            ->schema([
+                                Grid::make(2)->schema([
+                                    Select::make('vendor_id')
+                                        ->label('Vendor')
+                                        ->options(fn () => Vendor::pluck('name', 'id'))
+                                        ->searchable()
+                                        ->required()
+                                        ->createOptionForm([
+                                            TextInput::make('name')
+                                                ->label('Nama')
+                                                ->required()
+                                                ->maxLength(255),
+                                            TextInput::make('contact_person')
+                                                ->label('Kontak Person')
+                                                ->maxLength(255),
+                                            TextInput::make('phone')
+                                                ->label('Telepon')
+                                                ->tel()
+                                                ->maxLength(50),
+                                            TextInput::make('email')
+                                                ->label('Email')
+                                                ->email()
+                                                ->maxLength(255),
+                                            TextInput::make('address')
+                                                ->label('Alamat')
+                                                ->maxLength(255),
+                                        ])
+                                        ->createOptionUsing(function (array $data): int {
+                                            return Vendor::create($data)->getKey();
+                                        }),
+                                    Select::make('location_id')
+                                        ->label('Lokasi')
+                                        ->options(fn () => Location::pluck('name', 'id'))
+                                        ->searchable()
+                                        ->default(fn () => Location::where('type', 'warehouse')->value('id'))
+                                        ->required(),
+                                ]),
+                                Textarea::make('notes')
+                                    ->label('Catatan (opsional)')
+                                    ->rows(2)
+                                    ->maxLength(1000)
+                                    ->columnSpanFull(),
+                            ]),
+                        Step::make('Daftar Produk')
+                            ->description('Pilih produk dan jumlah')
+                            ->icon(Heroicon::OutlinedCube)
+                            ->schema([
+                                Repeater::make('items')
+                                    ->label('Produk')
+                                    ->defaultItems(1)
+                                    ->minItems(1)
+                                    ->addActionLabel('Tambah Produk')
+                                    ->table([
+                                        TableColumn::make('Produk')->width('55%'),
+                                        TableColumn::make('Jumlah')->width('20%'),
+                                        TableColumn::make('Harga Beli')->width('25%'),
+                                    ])
+                                    ->schema([
+                                        Select::make('product_id')
+                                            ->label('Produk')
+                                            ->options(fn () => Product::orderBy('name')->get()
+                                                ->mapWithKeys(fn (Product $p): array => [$p->id => "{$p->sku} — {$p->name}"])
+                                                ->toArray())
+                                            ->required()
+                                            ->searchable()
+                                            ->preload()
+                                            ->live()
+                                            ->afterStateUpdated(fn ($state, callable $set) => $set('price', Product::find($state)?->purchase_price ?? 0)),
+                                        TextInput::make('qty')
+                                            ->label('Jumlah')
+                                            ->integer()
+                                            ->minValue(1)
+                                            ->default(1)
+                                            ->required(),
+                                        TextInput::make('price')
+                                            ->label('Harga Beli')
+                                            ->numeric()
+                                            ->minValue(0)
+                                            ->prefix('Rp')
+                                            ->required(),
+                                    ]),
+                            ]),
+                    ]),
             ]);
     }
 
     public function save(): void
     {
         $data = $this->form->getState();
+        $items = $data['items'] ?? [];
+        $location = Location::find($data['location_id']);
 
-        $product = Product::findOrFail($data['product_id']);
-        $newPrice = (float) $data['price'];
-        $newQty = (int) $data['qty'];
+        if (empty($items)) {
+            Notification::make()
+                ->title('Tidak ada produk')
+                ->body('Tambahkan minimal satu produk.')
+                ->danger()
+                ->send();
 
-        $existingStock = Stock::where('product_id', $product->id)
-            ->where('location_id', $data['location_id'])
-            ->first();
-        $oldQty = $existingStock ? $existingStock->qty : 0;
-        $oldPrice = (float) $product->purchase_price;
-
-        if ($oldQty > 0 && $oldPrice > 0) {
-            $avgPrice = round(($oldPrice * $oldQty + $newPrice * $newQty) / ($oldQty + $newQty), 2);
-        } else {
-            $avgPrice = $newPrice;
+            return;
         }
 
         try {
-            DB::transaction(function () use ($data, $product, $avgPrice, $newQty) {
-                $product->update(['purchase_price' => round($avgPrice, 2)]);
+            $movement = DB::transaction(function () use ($data, $items) {
+                $entry = StockEntry::create([
+                    'type' => 'in',
+                    'location_id' => $data['location_id'],
+                    'vendor_id' => $data['vendor_id'],
+                    'notes' => $data['notes'] ?? null,
+                    'created_by' => auth()->id(),
+                ]);
 
-                $stock = Stock::where('product_id', $data['product_id'])
-                    ->where('location_id', $data['location_id'])
-                    ->lockForUpdate()
-                    ->first();
+                foreach ($items as $item) {
+                    $product = Product::findOrFail($item['product_id']);
+                    $newPrice = (float) $item['price'];
+                    $newQty = (int) $item['qty'];
 
-                if ($stock) {
-                    $stock->increment('qty', $newQty);
-                } else {
-                    $stock = Stock::create([
-                        'product_id' => $data['product_id'],
-                        'location_id' => $data['location_id'],
+                    $stock = Stock::where('product_id', $item['product_id'])
+                        ->where('location_id', $data['location_id'])
+                        ->lockForUpdate()
+                        ->first();
+
+                    $oldQty = $stock ? $stock->qty : 0;
+                    $oldPrice = (float) $product->purchase_price;
+
+                    $avgPrice = ($oldQty > 0 && $oldPrice > 0)
+                        ? round(($oldPrice * $oldQty + $newPrice * $newQty) / ($oldQty + $newQty), 2)
+                        : $newPrice;
+
+                    $product->update(['purchase_price' => round($avgPrice, 2)]);
+
+                    if ($stock) {
+                        $stock->increment('qty', $newQty);
+                    } else {
+                        $stock = Stock::create([
+                            'product_id' => $item['product_id'],
+                            'location_id' => $data['location_id'],
+                            'qty' => $newQty,
+                        ]);
+                    }
+
+                    $entry->items()->create([
+                        'product_id' => $item['product_id'],
                         'qty' => $newQty,
+                        'unit_price' => $newPrice,
                     ]);
                 }
 
-                StockMovement::create([
-                    'product_id' => $data['product_id'],
+                return StockMovement::create([
+                    'product_id' => $items[0]['product_id'],
                     'location_id' => $data['location_id'],
                     'type' => 'in',
-                    'quantity' => $newQty,
+                    'quantity' => collect($items)->sum('qty'),
                     'notes' => $data['notes'] ?? null,
-                    'related_type' => Stock::class,
-                    'related_id' => $stock->id,
+                    'related_type' => StockEntry::class,
+                    'related_id' => $entry->id,
                 ]);
             });
         } catch (\Throwable $e) {
@@ -180,8 +238,10 @@ class StockIn extends Page implements HasForms
 
         Notification::make()
             ->title('Stok ditambahkan')
-            ->body("{$product->name} — {$newQty} unit ditambahkan ke stok di ".($product->stocks->first()?->location?->name ?? 'lokasi yang dipilih').'.')
+            ->body(count($items).' produk ditambahkan ke '.($location?->name ?? 'lokasi yang dipilih').'.')
             ->success()
             ->send();
+
+        $this->redirect(HistoryResource::getUrl('view', ['record' => $movement->id]));
     }
 }

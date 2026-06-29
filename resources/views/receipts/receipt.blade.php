@@ -105,6 +105,29 @@
             Dari: {{ $related->fromLocation?->name }}<br>
             Ke: {{ $related->toLocation?->name }}
         </div>
+    @elseif ($related instanceof \App\Models\StockEntry)
+        @php $stockIn = $related->type === 'in'; @endphp
+        <table>
+            <thead><tr><th>Item</th><th>Jumlah</th><th>Harga</th></tr></thead>
+            <tbody>
+                @foreach ($related->items as $item)
+                <tr>
+                    <td>{{ $item->product->name ?? 'Produk #'.$item->product_id }}</td>
+                    <td>{{ $item->qty }}</td>
+                    <td>{{ number_format((float) $item->unit_price, 0, ',', '.') }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        <div class="totals">
+            <div>Total: Rp {{ number_format($related->items->sum(fn ($i) => $i->qty * (float) $i->unit_price), 0, ',', '.') }}</div>
+            @if (! $stockIn && $related->buyer)
+                <div>Pembeli: {{ $related->buyer->name }}</div>
+            @endif
+            @if ($stockIn && $related->vendor)
+                <div>Vendor: {{ $related->vendor->name }}</div>
+            @endif
+        </div>
     @else
         <table>
             <thead><tr><th>Item</th><th>Jumlah</th></tr></thead>

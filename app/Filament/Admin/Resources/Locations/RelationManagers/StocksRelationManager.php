@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Locations\RelationManagers;
 
 use App\Actions\AdjustStock;
+use App\Models\Product;
 use App\Models\Stock;
 use Filament\Actions\EditAction as TableEditAction;
 use Filament\Forms\Components\Textarea;
@@ -68,7 +69,7 @@ class StocksRelationManager extends RelationManager
 
                         Notification::make()
                             ->title('Stok disesuaikan')
-                            ->body('Jumlah untuk '.$record->product->name.' telah disetel menjadi '.$data['qty'].' unit.')
+                            ->body('Jumlah untuk '.Product::find($record->product_id)?->name.' telah disetel menjadi '.$data['qty'].' unit.')
                             ->success()
                             ->send();
                     }),

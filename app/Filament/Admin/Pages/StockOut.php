@@ -2,15 +2,18 @@
 
 namespace App\Filament\Admin\Pages;
 
+use App\Filament\Admin\Resources\History\HistoryResource;
 use App\Models\Buyer;
 use App\Models\Location;
 use App\Models\Product;
 use App\Models\ProductPrice;
 use App\Models\Stock;
+use App\Models\StockEntry;
 use App\Models\StockMovement;
 use BackedEnum;
 use DomainException;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -18,6 +21,9 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Wizard;
+use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\DB;
@@ -53,98 +59,113 @@ class StockOut extends Page implements HasForms
     {
         return $schema
             ->statePath('data')
-            ->columns(2)
             ->components([
-                Select::make('product_id')
-                    ->label('Produk')
-                    ->options(fn () => Product::orderBy('name')->get()
-                        ->mapWithKeys(fn (Product $p): array => [$p->id => "{$p->sku} — {$p->name}"])
-                        ->toArray())
-                    ->searchable()
-                    ->required()
-                    ->live()
-                    ->afterStateUpdated(function () {
-                        $this->refreshStockOptions();
-                        $this->data['price_id'] = null;
-                    })
-                    ->columnSpanFull(),
-                Select::make('price_id')
-                    ->label('Harga (Harga Jual)')
-                    ->options(fn (callable $get) => $this->getPriceOptions($get('product_id')))
-                    ->helperText(fn (callable $get) => $this->getPriceHelper($get('price_id')))
-                    ->searchable()
-                    ->required()
-                    ->live()
-                    ->columnSpanFull(),
-                Select::make('location_id')
-                    ->label('Dari Lokasi')
-                    ->options(fn (callable $get) => $this->getLocationOptionsWithStock($get('product_id')))
-                    ->getOptionLabelUsing(fn ($value) => $this->getLocationLabel($value))
-                    ->searchable()
-                    ->required()
-                    ->live()
-                    ->helperText(fn (callable $get) => $this->getStockHelper($get('product_id'), $get('location_id'))),
-                TextInput::make('qty')
-                    ->label('Jumlah')
-                    ->required()
-                    ->integer()
-                    ->minValue(1),
-                Select::make('buyer_id')
-                    ->label('Pembeli (opsional)')
-                    ->options(fn () => Buyer::pluck('name', 'id'))
-                    ->searchable()
-                    ->createOptionForm([
-                        TextInput::make('name')
-                            ->label('Nama')
-                            ->required()
-                            ->maxLength(255),
-                        TextInput::make('phone')
-                            ->label('Telepon')
-                            ->tel()
-                            ->maxLength(50),
-                        TextInput::make('email')
-                            ->label('Email')
-                            ->email()
-                            ->maxLength(255),
-                        Textarea::make('address')
-                            ->label('Alamat')
-                            ->rows(2),
-                    ])
-                    ->createOptionUsing(function (array $data): int {
-                        return Buyer::create($data)->getKey();
-                    })
-                    ->columnSpanFull(),
-                Repeater::make('additional_costs')
-                    ->label('Biaya Tambahan (opsional)')
-                    ->schema([
-                        TextInput::make('description')
-                            ->label('Deskripsi')
-                            ->required()
-                            ->placeholder('Misal: Pengiriman, Kemasan')
-                            ->columnSpan(2),
-                        TextInput::make('amount')
-                            ->label('Jumlah')
-                            ->required()
-                            ->numeric()
-                            ->minValue(0)
-                            ->prefix('Rp')
-                            ->columnSpan(1),
-                    ])
-                    ->columns(3)
-                    ->addActionLabel('Tambah Biaya')
-                    ->defaultItems(0)
-                    ->columnSpanFull(),
-                Textarea::make('notes')
-                    ->label('Catatan (opsional)')
-                    ->rows(2)
-                    ->maxLength(1000)
-                    ->columnSpanFull(),
+                Wizard::make()
+                    ->columnSpanFull()
+                    ->steps([
+                        Step::make('Informasi Umum')
+                            ->description('Lokasi dan detail')
+                            ->icon(Heroicon::OutlinedClipboardDocumentList)
+                            ->schema([
+                                Grid::make(2)->schema([
+                                    Select::make('location_id')
+                                        ->label('Dari Lokasi')
+                                        ->options(fn () => Location::pluck('name', 'id'))
+                                        ->searchable()
+                                        ->required()
+                                        ->helperText('Pilih lokasi pengambilan stok.'),
+                                    Select::make('buyer_id')
+                                        ->label('Pembeli (opsional)')
+                                        ->options(fn () => Buyer::pluck('name', 'id'))
+                                        ->searchable()
+                                        ->createOptionForm([
+                                            TextInput::make('name')
+                                                ->label('Nama')
+                                                ->required()
+                                                ->maxLength(255),
+                                            TextInput::make('phone')
+                                                ->label('Telepon')
+                                                ->tel()
+                                                ->maxLength(50),
+                                            TextInput::make('email')
+                                                ->label('Email')
+                                                ->email()
+                                                ->maxLength(255),
+                                            Textarea::make('address')
+                                                ->label('Alamat')
+                                                ->rows(2),
+                                        ])
+                                        ->createOptionUsing(function (array $data): int {
+                                            return Buyer::create($data)->getKey();
+                                        }),
+                                ]),
+                                Repeater::make('additional_costs')
+                                    ->label('Biaya Tambahan (opsional)')
+                                    ->schema([
+                                        TextInput::make('description')
+                                            ->label('Deskripsi')
+                                            ->required()
+                                            ->placeholder('Misal: Pengiriman, Kemasan')
+                                            ->columnSpan(2),
+                                        TextInput::make('amount')
+                                            ->label('Jumlah')
+                                            ->required()
+                                            ->numeric()
+                                            ->minValue(0)
+                                            ->prefix('Rp')
+                                            ->columnSpan(1),
+                                    ])
+                                    ->columns(3)
+                                    ->addActionLabel('Tambah Biaya')
+                                    ->defaultItems(0),
+                                Textarea::make('notes')
+                                    ->label('Catatan (opsional)')
+                                    ->rows(2)
+                                    ->maxLength(1000)
+                                    ->columnSpanFull(),
+                            ]),
+                        Step::make('Daftar Produk')
+                            ->description('Pilih produk dan harga jual')
+                            ->icon(Heroicon::OutlinedCube)
+                            ->schema([
+                                Repeater::make('items')
+                                    ->label('Produk')
+                                    ->defaultItems(1)
+                                    ->minItems(1)
+                                    ->addActionLabel('Tambah Produk')
+                                    ->table([
+                                        TableColumn::make('Produk')->width('45%'),
+                                        TableColumn::make('Harga Jual')->width('30%'),
+                                        TableColumn::make('Jumlah')->width('25%'),
+                                    ])
+                                    ->schema([
+                                        Select::make('product_id')
+                                            ->label('Produk')
+                                            ->options(fn () => Product::orderBy('name')->get()
+                                                ->mapWithKeys(fn (Product $p): array => [$p->id => "{$p->sku} — {$p->name}"])
+                                                ->toArray())
+                                            ->required()
+                                            ->searchable()
+                                            ->preload()
+                                            ->live()
+                                            ->afterStateUpdated(fn (callable $set) => $set('price_id', null)),
+                                        Select::make('price_id')
+                                            ->label('Harga Jual')
+                                            ->options(fn (callable $get) => $this->getPriceOptions($get('product_id')))
+                                            ->helperText(fn (callable $get) => $this->getPriceHelper($get('price_id')))
+                                            ->required()
+                                            ->searchable()
+                                            ->live(),
+                                        TextInput::make('qty')
+                                            ->label('Jumlah')
+                                            ->integer()
+                                            ->minValue(1)
+                                            ->default(1)
+                                            ->required(),
+                                    ]),
+                            ]),
+                    ]),
             ]);
-    }
-
-    protected function refreshStockOptions(): void
-    {
-        $this->data['location_id'] = null;
     }
 
     protected function getPriceOptions(?int $productId): array
@@ -174,110 +195,80 @@ class StockOut extends Page implements HasForms
             return '';
         }
 
-        return 'Harga per unit: Rp '.number_format((float) $price->price, 0, ',', '.').' × jumlah = subtotal';
-    }
-
-    protected function getLocationOptionsWithStock(?int $productId): array
-    {
-        if (! $productId) {
-            return Location::pluck('name', 'id')->toArray();
-        }
-
-        return Stock::where('product_id', $productId)
-            ->where('qty', '>', 0)
-            ->with('location')
-            ->get()
-            ->mapWithKeys(fn (Stock $stock) => [
-                $stock->location_id => "{$stock->location->name} ({$stock->qty} tersedia)",
-            ])
-            ->toArray();
-    }
-
-    protected function getLocationLabel($value): string
-    {
-        $location = Location::find($value);
-        if (! $location) {
-            return '';
-        }
-        $stock = Stock::where('location_id', $value)->first();
-
-        return $stock ? "{$location->name} ({$stock->qty} tersedia)" : $location->name;
-    }
-
-    protected function getStockHelper(?int $productId, ?int $locationId): string
-    {
-        $stock = $this->getStockRecord($productId, $locationId);
-
-        if (! $productId) {
-            return 'Pilih produk terlebih dahulu.';
-        }
-
-        if (! $locationId) {
-            return '';
-        }
-
-        if (! $stock) {
-            return 'Tidak ada stok di lokasi ini.';
-        }
-
-        return "{$stock->qty} tersedia.";
-    }
-
-    protected function getStockRecord(?int $productId, ?int $locationId): ?Stock
-    {
-        if (! $productId || ! $locationId) {
-            return null;
-        }
-
-        return Stock::where('product_id', $productId)
-            ->where('location_id', $locationId)
-            ->first();
+        return 'Rp '.number_format((float) $price->price, 0, ',', '.');
     }
 
     public function save(): void
     {
         $data = $this->form->getState();
-
-        $productId = (int) $data['product_id'];
+        $items = $data['items'] ?? [];
         $locationId = (int) $data['location_id'];
-        $qty = (int) $data['qty'];
-        $priceId = (int) $data['price_id'];
+
+        if (empty($items)) {
+            Notification::make()
+                ->title('Tidak ada produk')
+                ->body('Tambahkan minimal satu produk.')
+                ->danger()
+                ->send();
+
+            return;
+        }
 
         try {
-            $result = DB::transaction(function () use ($data, $productId, $locationId, $qty, $priceId) {
-                $stock = Stock::where('product_id', $productId)
-                    ->where('location_id', $locationId)
-                    ->lockForUpdate()
-                    ->first();
-
-                if (! $stock || $stock->qty < $qty) {
-                    throw new DomainException('Stok tidak mencukupi.');
-                }
-
-                $stock->qty -= $qty;
-                $stock->save();
-
-                $price = ProductPrice::find($priceId);
-                $unitPrice = $price ? (float) $price->price : 0;
-                $subtotal = $unitPrice * $qty;
-
-                $additionalCosts = $data['additional_costs'] ?? [];
-                $totalCost = collect($additionalCosts)->sum(fn ($cost) => (float) ($cost['amount'] ?? 0));
-
-                StockMovement::create([
-                    'product_id' => $productId,
-                    'location_id' => $locationId,
+            $movement = DB::transaction(function () use ($data, $items, $locationId) {
+                $entry = StockEntry::create([
                     'type' => 'out',
-                    'quantity' => -$qty,
-                    'unit_price' => $unitPrice,
-                    'related_type' => Stock::class,
-                    'related_id' => $stock->id,
+                    'location_id' => $locationId,
                     'buyer_id' => $data['buyer_id'] ?? null,
-                    'additional_costs' => $additionalCosts ?: null,
+                    'additional_costs' => $data['additional_costs'] ?? null,
                     'notes' => $data['notes'] ?? null,
+                    'created_by' => auth()->id(),
                 ]);
 
-                return compact('unitPrice', 'subtotal', 'totalCost');
+                foreach ($items as $item) {
+                    $productId = (int) $item['product_id'];
+                    $qty = (int) $item['qty'];
+                    $priceId = (int) $item['price_id'];
+
+                    $stock = Stock::where('product_id', $productId)
+                        ->where('location_id', $locationId)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (! $stock || $stock->qty < $qty) {
+                        $product = Product::find($productId);
+
+                        throw new DomainException(
+                            'Stok tidak mencukupi untuk '.($product?->name ?? 'produk #'.$productId)
+                            .'. Tersedia: '.($stock ? $stock->qty : 0)
+                        );
+                    }
+
+                    $stock->qty -= $qty;
+                    $stock->save();
+
+                    $price = ProductPrice::find($priceId);
+                    $unitPrice = $price ? (float) $price->price : 0;
+
+                    $entry->items()->create([
+                        'product_id' => $productId,
+                        'qty' => $qty,
+                        'unit_price' => $unitPrice,
+                    ]);
+                }
+
+                return StockMovement::create([
+                    'product_id' => $items[0]['product_id'],
+                    'location_id' => $locationId,
+                    'type' => 'out',
+                    'quantity' => -collect($items)->sum('qty'),
+                    'unit_price' => 0,
+                    'related_type' => StockEntry::class,
+                    'related_id' => $entry->id,
+                    'buyer_id' => $data['buyer_id'] ?? null,
+                    'additional_costs' => $data['additional_costs'] ?? null,
+                    'notes' => $data['notes'] ?? null,
+                ]);
             });
         } catch (DomainException $e) {
             Notification::make()
@@ -301,15 +292,12 @@ class StockOut extends Page implements HasForms
 
         $this->form->fill();
 
-        $body = $qty.' unit dikeluarkan. Subtotal: Rp '.number_format($result['subtotal'], 0, ',', '.').' ('.$qty.' × Rp '.number_format($result['unitPrice'], 0, ',', '.').')';
-        if ($result['totalCost'] > 0) {
-            $body .= ' + Biaya Tambahan: Rp '.number_format($result['totalCost'], 0, ',', '.');
-        }
-
         Notification::make()
             ->title('Stok dikeluarkan')
-            ->body($body)
+            ->body(count($items).' produk berhasil dikeluarkan.')
             ->success()
             ->send();
+
+        $this->redirect(HistoryResource::getUrl('view', ['record' => $movement->id]));
     }
 }

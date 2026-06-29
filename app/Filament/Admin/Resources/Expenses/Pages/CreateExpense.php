@@ -12,6 +12,11 @@ class CreateExpense extends CreateRecord
 
     protected static string $resource = ExpenseResource::class;
 
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResourceUrl('view');
+    }
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         return $data;
