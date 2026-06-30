@@ -166,7 +166,26 @@
     </div>
 
     <script>
-        window.onload = function() { window.print(); }
+        window.onload = function() {
+            if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                // Mobile native print via Capacitor bridge
+                var url = window.location.pathname + '/print-data';
+                fetch(url)
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (window.Capacitor.Plugins && window.Capacitor.Plugins.Printer) {
+                            window.Capacitor.Plugins.Printer.printReceipt(data);
+                        } else {
+                            window.print();
+                        }
+                    })
+                    .catch(function() {
+                        window.print();
+                    });
+            } else {
+                window.print();
+            }
+        }
         window.onafterprint = function() { window.close(); }
     </script>
 </body>
