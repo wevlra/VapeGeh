@@ -139,9 +139,11 @@ public class PrinterPlugin extends Plugin {
         }
 
         // Print in background thread
+        final String printerAddress = address;
+        final JSObject printPayload = payload;
         new Thread(() -> {
             try {
-                printViaBluetooth(address, payload);
+                printViaBluetooth(printerAddress, printPayload);
                 call.resolve();
             } catch (Exception e) {
                 Log.e(TAG, "Print failed", e);

@@ -166,27 +166,151 @@
     </div>
 
     <script>
+        function goPrint() { window.print(); }
+        window.onafterprint = function() { window.close(); }
+
         window.onload = function() {
             if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                // Mobile native print via Capacitor bridge
-                var url = window.location.pathname + '/print-data';
-                fetch(url)
-                    .then(function(r) { return r.json(); })
-                    .then(function(data) {
-                        if (window.Capacitor.Plugins && window.Capacitor.Plugins.Printer) {
-                            window.Capacitor.Plugins.Printer.printReceipt(data);
-                        } else {
-                            window.print();
-                        }
-                    })
-                    .catch(function() {
-                        window.print();
-                    });
+                showPrinterModal();
             } else {
-                window.print();
+                goPrint();
             }
         }
-        window.onafterprint = function() { window.close(); }
+
+        // --- Printer modal (Capacitor only) ---
+        function showPrinterModal() {
+            var modal = document.getElementById('printer-modal');
+            if (modal) modal.style.display = 'flex';
+            loadDevices();
+        }
+
+        function hidePrinterModal() {
+            var modal = document.getElementById('printer-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        async function loadDevices() {
+            var list = document.getElementById('printer-list');
+            var status = document.getElementById('printer-status');
+            var noBluetooth = document.getElementById('no-bluetooth');
+            var noDevices = document.getElementById('no-devices');
+            list.innerHTML = '';
+
+            try {
+                var r = await window.Capacitor.Plugins.Printer.getPairedDevices();
+                noBluetooth.style.display = 'none';
+                if (r && r.devices && r.devices.length > 0) {
+                    noDevices.style.display = 'none';
+                    r.devices.forEach(function(d) {
+                        var div = document.createElement('div');
+                        div.className = 'printer-item';
+                        div.innerHTML = '<strong>' + d.name + '</strong> <span class="addr">' + d.address + '</span>';
+                        div.onclick = function() { selectDevice(d); };
+                        list.appendChild(div);
+                    });
+
+                    // mark currently selected
+                    try {
+                        var sel = await window.Capacitor.Plugins.Printer.getSelectedPrinter();
+                        if (sel && sel.address) {
+                            document.querySelectorAll('.printer-item').forEach(function(el) {
+                                if (el.innerHTML.indexOf(sel.address) > -1) {
+                                    el.classList.add('selected');
+                                }
+                            });
+                        }
+                    } catch(e) {}
+                } else {
+                    noDevices.style.display = 'block';
+                }
+            } catch (e) {
+                if (e.message && e.message.indexOf('disabled') > -1) {
+                    noBluetooth.style.display = 'block';
+                }
+            }
+            status.style.display = 'none';
+        }
+
+        async function selectDevice(device) {
+            try {
+                await window.Capacitor.Plugins.Printer.selectPrinter({ address: device.address });
+                document.querySelectorAll('.printer-item').forEach(function(el) { el.classList.remove('selected'); });
+                event.currentTarget.classList.add('selected');
+            } catch(e) { alert('Gagal memilih printer: ' + e.message); }
+        }
+
+        async function doPrint() {
+            var status = document.getElementById('printer-status');
+            status.style.display = 'block';
+            status.textContent = 'Mencetak...';
+            try {
+                var url = window.location.pathname + '/print-data';
+                var r = await fetch(url);
+                var data = await r.json();
+                await window.Capacitor.Plugins.Printer.printReceipt({ payload: data });
+                status.textContent = 'Nota berhasil dicetak!';
+                setTimeout(hidePrinterModal, 1500);
+            } catch(e) {
+                status.textContent = 'Gagal: ' + (e.message || 'unknown');
+            }
+        }
     </script>
+
+    <style>
+        #printer-modal {
+            display: none;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            align-items: center; justify-content: center;
+            font-family: 'Courier New', monospace;
+        }
+        #printer-modal .modal-box {
+            background: #fff;
+            width: 90%; max-width: 360px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+        }
+        #printer-modal h3 { margin: 0 0 4px; font-size: 16px; }
+        #printer-modal .sub { font-size: 12px; color: #666; margin-bottom: 16px; }
+        #printer-modal .printer-item {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        #printer-modal .printer-item:hover { background: #f5f5f5; }
+        #printer-modal .printer-item.selected { border-color: #b8860b; background: #fffbee; }
+        #printer-modal .printer-item .addr { font-size: 11px; color: #999; display: block; }
+        #printer-modal .btn-row { display: flex; gap: 8px; margin-top: 12px; }
+        #printer-modal .btn-row button {
+            flex: 1; padding: 8px; border: none; border-radius: 6px;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+        }
+        #printer-modal .btn-print { background: #b8860b; color: #fff; }
+        #printer-modal .btn-cancel { background: #e5e7eb; color: #333; }
+        #printer-modal .btn-refresh { background: #f3f4f6; color: #555; padding: 6px 12px; font-size: 11px; }
+        #printer-modal #printer-status { margin-top: 8px; font-size: 12px; }
+        #no-bluetooth, #no-devices { display: none; font-size: 12px; color: #b91c1c; margin: 8px 0; }
+    </style>
+
+    <div id="printer-modal">
+        <div class="modal-box">
+            <h3>Cetak Nota</h3>
+            <p class="sub">Pilih printer Bluetooth</p>
+            <div id="no-bluetooth">Bluetooth tidak aktif. Aktifkan di Pengaturan Android.</div>
+            <div id="no-devices">Tidak ada printer terpair. Pair dulu di Pengaturan Bluetooth.</div>
+            <div id="printer-list"></div>
+            <div id="printer-status" style="display:none;"></div>
+            <div class="btn-row">
+                <button class="btn-cancel" onclick="hidePrinterModal()">Batal</button>
+                <button class="btn-refresh" onclick="loadDevices()">Refresh</button>
+                <button class="btn-print" onclick="doPrint()">Cetak</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
