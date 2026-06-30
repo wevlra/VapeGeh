@@ -6,6 +6,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Filament\Support\RawJs;
 
 class ProductForm
 {
@@ -22,13 +23,17 @@ class ProductForm
                     ->required()
                     ->numeric()
                     ->minValue(0)
-                    ->prefix('Rp'),
+                    ->prefix('Rp')
+                    ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                    ->stripCharacters('.'),
                 TextInput::make('selling_price')
                     ->label('Harga Jual (Default)')
                     ->required()
                     ->numeric()
                     ->minValue(0)
-                    ->prefix('Rp'),
+                    ->prefix('Rp')
+                    ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                    ->stripCharacters('.'),
                 Repeater::make('prices')
                     ->relationship()
                     ->columnSpanFull()
@@ -50,7 +55,9 @@ class ProductForm
                             ->required()
                             ->numeric()
                             ->minValue(0)
-                            ->prefix('Rp'),
+                            ->prefix('Rp')
+                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                            ->stripCharacters('.'),
                     ]),
             ]);
     }

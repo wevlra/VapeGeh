@@ -26,6 +26,7 @@ use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Support\RawJs;
 use Illuminate\Support\Facades\DB;
 
 class StockOut extends Page implements HasForms
@@ -98,6 +99,13 @@ class StockOut extends Page implements HasForms
                                         ->createOptionUsing(function (array $data): int {
                                             return Buyer::create($data)->getKey();
                                         }),
+                                    Select::make('payment_method')
+                                        ->label('Metode Pembayaran (opsional)')
+                                        ->options([
+                                            'cash' => 'Tunai',
+                                            'transfer' => 'Transfer',
+                                            'qris' => 'QRIS',
+                                        ]),
                                 ]),
                                 Repeater::make('additional_costs')
                                     ->label('Biaya Tambahan (opsional)')
@@ -113,6 +121,8 @@ class StockOut extends Page implements HasForms
                                             ->numeric()
                                             ->minValue(0)
                                             ->prefix('Rp')
+                                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                                            ->stripCharacters('.')
                                             ->columnSpan(1),
                                     ])
                                     ->columns(3)
@@ -134,8 +144,9 @@ class StockOut extends Page implements HasForms
                                     ->minItems(1)
                                     ->addActionLabel('Tambah Produk')
                                     ->table([
-                                        TableColumn::make('Produk')->width('45%'),
-                                        TableColumn::make('Harga Jual')->width('30%'),
+                                        TableColumn::make('Produk')->width('35%'),
+                                        TableColumn::make('Harga Jual')->width('25%'),
+                                        TableColumn::make('Harga Manual')->width('15%'),
                                         TableColumn::make('Jumlah')->width('25%'),
                                     ])
                                     ->schema([
@@ -152,10 +163,18 @@ class StockOut extends Page implements HasForms
                                         Select::make('price_id')
                                             ->label('Harga Jual')
                                             ->options(fn (callable $get) => $this->getPriceOptions($get('product_id')))
-                                            ->helperText(fn (callable $get) => $this->getPriceHelper($get('price_id')))
-                                            ->required()
                                             ->searchable()
-                                            ->live(),
+                                            ->live()
+                                            ->afterStateUpdated(fn ($state, callable $set) => $state === 'manual' ? $set('manual_price', null) : null),
+                                        TextInput::make('manual_price')
+                                            ->label('Harga Manual')
+                                            ->numeric()
+                                            ->minValue(0)
+                                            ->prefix('Rp')
+                                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                                            ->stripCharacters('.')
+                                            ->visible(fn (callable $get) => $get('price_id') === 'manual')
+                                            ->required(fn (callable $get) => $get('price_id') === 'manual'),
                                         TextInput::make('qty')
                                             ->label('Jumlah')
                                             ->integer()
@@ -174,16 +193,20 @@ class StockOut extends Page implements HasForms
             return [];
         }
 
-        return Product::find($productId)
+        $options = Product::find($productId)
             ?->prices()
             ->get()
             ->mapWithKeys(fn (ProductPrice $p): array => [
                 $p->id => "{$p->label}: Rp ".number_format((float) $p->price, 0, ',', '.'),
             ])
             ->toArray() ?? [];
+
+        $options['manual'] = 'Manual (isi sendiri)';
+
+        return $options;
     }
 
-    protected function getPriceHelper(?int $priceId): string
+    protected function getPriceHelper(int|string|null $priceId): string
     {
         if (! $priceId) {
             return '';
@@ -221,6 +244,7 @@ class StockOut extends Page implements HasForms
                     'location_id' => $locationId,
                     'buyer_id' => $data['buyer_id'] ?? null,
                     'additional_costs' => $data['additional_costs'] ?? null,
+                    'payment_method' => $data['payment_method'] ?? null,
                     'notes' => $data['notes'] ?? null,
                     'created_by' => auth()->id(),
                 ]);
@@ -228,7 +252,11 @@ class StockOut extends Page implements HasForms
                 foreach ($items as $item) {
                     $productId = (int) $item['product_id'];
                     $qty = (int) $item['qty'];
-                    $priceId = (int) $item['price_id'];
+                    $priceId = $item['price_id'];
+                    $isManual = $priceId === 'manual';
+                    $unitPrice = $isManual
+                        ? (float) ($item['manual_price'] ?? 0)
+                        : (float) (ProductPrice::find((int) $priceId)?->price ?? 0);
 
                     $stock = Stock::where('product_id', $productId)
                         ->where('location_id', $locationId)
@@ -246,9 +274,6 @@ class StockOut extends Page implements HasForms
 
                     $stock->qty -= $qty;
                     $stock->save();
-
-                    $price = ProductPrice::find($priceId);
-                    $unitPrice = $price ? (float) $price->price : 0;
 
                     $entry->items()->create([
                         'product_id' => $productId,

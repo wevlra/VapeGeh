@@ -151,6 +151,15 @@ class HistoryInfolist
                                     ->label('Pembeli')
                                     ->hidden(fn () => $stockIn)
                                     ->default('-'),
+                                TextEntry::make('related.payment_method')
+                                    ->label('Pembayaran')
+                                    ->hidden(fn () => $stockIn || blank($entry->payment_method))
+                                    ->formatStateUsing(fn (?string $state): ?string => match ($state) {
+                                        'cash' => 'Tunai',
+                                        'transfer' => 'Transfer',
+                                        'qris' => 'QRIS',
+                                        default => $state,
+                                    }),
                                 RepeatableEntry::make('additional_costs')
                                     ->label('Biaya Tambahan')
                                     ->hidden(fn () => blank($entry->additional_costs))

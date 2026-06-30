@@ -19,6 +19,7 @@ use Hammadzafar05\MobileBottomNav\MobileBottomNavItem;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
@@ -88,8 +89,9 @@ class StaffPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->bootUsing(function (): void {
-                app()->bind(LogoutResponse::class, fn (): \Filament\Auth\Http\Responses\LogoutResponse => new class extends \Filament\Auth\Http\Responses\LogoutResponse {
-                    public function toResponse($request): \Illuminate\Http\RedirectResponse
+                app()->bind(LogoutResponse::class, fn (): \Filament\Auth\Http\Responses\LogoutResponse => new class extends \Filament\Auth\Http\Responses\LogoutResponse
+                {
+                    public function toResponse($request): RedirectResponse
                     {
                         return redirect()->to('/');
                     }

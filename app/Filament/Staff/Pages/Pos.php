@@ -18,6 +18,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Support\RawJs;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -211,6 +212,8 @@ class Pos extends Page implements HasTable
                     ->label('Bayar')
                     ->numeric()
                     ->prefix('Rp')
+                    ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                    ->stripCharacters('.')
                     ->default(fn (): float => $this->getCartTotal())
                     ->visible(fn (callable $get): bool => $get('payment_method') === 'cash')
                     ->rules(fn (callable $get): array => $get('payment_method') === 'cash'

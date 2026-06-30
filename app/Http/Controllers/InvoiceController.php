@@ -51,12 +51,21 @@ class InvoiceController extends Controller
             }
         }
 
-        $paymentMethod = $isSale ? match ($related->payment_method) {
-            'cash' => 'Cash',
-            'transfer' => 'Bank Transfer',
-            'qris' => 'QRIS',
-            default => ucfirst($related->payment_method ?? '-'),
-        } : '-';
+        $paymentMethod = match (true) {
+            $isSale => match ($related->payment_method) {
+                'cash' => 'Cash',
+                'transfer' => 'Bank Transfer',
+                'qris' => 'QRIS',
+                default => ucfirst($related->payment_method ?? '-'),
+            },
+            $isStockEntry && $related->payment_method => match ($related->payment_method) {
+                'cash' => 'Cash',
+                'transfer' => 'Bank Transfer',
+                'qris' => 'QRIS',
+                default => ucfirst($related->payment_method),
+            },
+            default => '-',
+        };
 
         $buyerData['custom_fields'] = [
             'Metode Pembayaran' => $paymentMethod,
@@ -78,6 +87,14 @@ class InvoiceController extends Controller
                     ->description($item->product->sku ?? '')
                     ->pricePerUnit((float) $item->unit_price)
                     ->quantity((int) $item->qty);
+            }
+
+            if ($related->additional_costs) {
+                foreach ($related->additional_costs as $cost) {
+                    $items[] = InvoiceItem::make($cost['description'] ?? 'Biaya Tambahan')
+                        ->pricePerUnit((float) ($cost['amount'] ?? 0))
+                        ->quantity(1);
+                }
             }
         } else {
             $items[] = InvoiceItem::make($stockMovement->product->name ?? 'Product')
@@ -103,18 +120,12 @@ class InvoiceController extends Controller
             ->filename($serialNumber)
             ->addItems($items)
             ->logo(public_path('assets/images/logo-light-tr.png'))
-            ->notes($stockMovement->notes);
+            ->payUntilDays(0)
+            ->notes($stockMovement->notes ?? '');
 
         if ($isSale) {
             $total = (float) $related->total;
             $invoice = $invoice->status($related->paid_amount >= $total ? 'PAID' : 'UNPAID');
-        }
-
-        if ($isStockEntry && $related->additional_costs) {
-            $costs = collect($related->additional_costs);
-            $totalCost = $costs->sum(fn ($c) => (float) ($c['amount'] ?? 0));
-            $desc = $costs->pluck('description')->filter()->implode(', ');
-            $invoice = $invoice->notes('Biaya Tambahan: '.$desc.' — Rp '.number_format($totalCost, 0, ',', '.'));
         }
 
         return $invoice->stream();

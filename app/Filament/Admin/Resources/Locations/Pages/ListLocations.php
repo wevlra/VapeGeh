@@ -24,7 +24,7 @@ class ListLocations extends ListRecords
     public function responsiveTable(ResponsiveTableConfiguration $config): ResponsiveTableConfiguration
     {
         return $config
-            ->only(['name', 'status'])
+            ->only(['name', 'total_asset', 'status'])
             ->cardTitle(fn ($record) => $record->name);
     }
 }

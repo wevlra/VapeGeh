@@ -8,6 +8,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Filament\Support\RawJs;
 
 class SaleForm
 {
@@ -35,6 +36,8 @@ class SaleForm
                             ->label('Harga')
                             ->numeric()
                             ->prefix('Rp')
+                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                            ->stripCharacters('.')
                             ->required(),
                     ])
                     ->columns(3)
@@ -53,7 +56,9 @@ class SaleForm
                 TextInput::make('paid_amount')
                     ->label('Jumlah Dibayar')
                     ->numeric()
-                    ->prefix('Rp'),
+                    ->prefix('Rp')
+                    ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                    ->stripCharacters('.'),
                 Textarea::make('notes')
                     ->label('Catatan')
                     ->placeholder('Catatan untuk transaksi ini...')

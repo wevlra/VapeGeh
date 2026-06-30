@@ -7,6 +7,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Filament\Support\RawJs;
 
 class IncomeForm
 {
@@ -33,7 +34,9 @@ class IncomeForm
                     ->required()
                     ->numeric()
                     ->minValue(0)
-                    ->prefix('Rp'),
+                    ->prefix('Rp')
+                    ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                    ->stripCharacters('.'),
                 DatePicker::make('date')
                     ->label('Tanggal')
                     ->required()

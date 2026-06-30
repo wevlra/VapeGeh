@@ -24,6 +24,7 @@ use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Support\RawJs;
 use Illuminate\Support\Facades\DB;
 
 class StockIn extends Page implements HasForms
@@ -143,6 +144,8 @@ class StockIn extends Page implements HasForms
                                             ->numeric()
                                             ->minValue(0)
                                             ->prefix('Rp')
+                                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                                            ->stripCharacters('.')
                                             ->required(),
                                     ]),
                             ]),

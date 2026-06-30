@@ -13,6 +13,7 @@ class StockEntry extends Model
         'location_id',
         'vendor_id',
         'buyer_id',
+        'payment_method',
         'notes',
         'additional_costs',
         'created_by',

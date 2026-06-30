@@ -8,7 +8,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Courier New', monospace; font-size: 12px; padding: 8px 12px; color: #000; }
         .header { text-align: center; margin-bottom: 12px; }
-        .header img { max-height: 50px; margin-bottom: 6px; }
+        .header img { max-height: 64px; }
         .header .name { font-size: 16px; font-weight: bold; }
         .header .info { font-size: 10px; }
         hr { border: none; border-top: 1px dashed #333; margin: 8px 0; }
@@ -30,8 +30,8 @@
 <body>
     @php $location = $movement->location; @endphp
     <div class="header">
-        <img src="{{ asset('assets/images/logo-light-tr.png') }}" alt="{{ config('store.name') }}">
-        <div class="name">{{ config('store.name') }}</div>
+        <img src="{{ asset('assets/images/logo-stacked-light-tr.png') }}" alt="{{ config('store.name') }}">
+        {{-- <div class="name">{{ config('store.name') }}</div> --}}
         <div class="info">{{ $location->address ?? config('store.address') }}</div>
         <div class="info">{{ config('store.phone') }}</div>
     </div>

@@ -16,17 +16,17 @@ class DeleteLocation
     public static function make(): Action
     {
         return Action::make('deleteLocation')
-            ->label('Delete')
+            ->label('Hapus')
             ->color('danger')
             ->icon('heroicon-o-trash')
             ->requiresConfirmation()
-            ->modalHeading('Delete Location')
-            ->modalDescription(fn (Location $record): string => "All stock at \"{$record->name}\" must be moved before deletion.")
-            ->modalSubmitActionLabel('Continue')
+            ->modalHeading('Hapus Lokasi')
+            ->modalDescription(fn (Location $record): string => "Semua stok di \"{$record->name}\" harus dipindahkan sebelum dihapus.")
+            ->modalSubmitActionLabel('Hapus')
             ->form([
                 Select::make('destination_id')
-                    ->label('Move stock to')
-                    ->helperText('Choose where to transfer existing stock from this location.')
+                    ->label('Pindahkan stok ke')
+                    ->helperText('Pilih lokasi tujuan untuk stok dari lokasi ini.')
                     ->options(fn (Location $record) => Location::query()
                         ->where('id', '!=', $record->id)
                         ->where('status', 'active')
@@ -45,12 +45,12 @@ class DeleteLocation
                 $destination = Location::findOrFail($data['destination_id']);
 
                 if ($destination->id === $record->id) {
-                    throw new DomainException('Destination must be different from the deleted location.');
+                    throw new DomainException('Lokasi tujuan harus berbeda dari lokasi yang dihapus.');
                 }
 
                 $hasUsers = $record->users()->exists();
                 if ($hasUsers) {
-                    throw new DomainException("Cannot delete \"{$record->name}\" — staff users are still assigned to this location.");
+                    throw new DomainException("Tidak dapat menghapus \"{$record->name}\" — staf masih terdaftar di lokasi ini.");
                 }
 
                 DB::transaction(function () use ($record, $destination) {
@@ -112,11 +112,11 @@ class DeleteLocation
         $destination ??= Location::where('type', 'warehouse')->first();
 
         if (! $destination) {
-            throw new DomainException('No warehouse location configured.');
+            throw new DomainException('Tidak ada lokasi gudang yang tersedia.');
         }
 
         if ($destination->id === $location->id) {
-            throw new DomainException('Destination cannot be the same as the deleted location.');
+            throw new DomainException('Lokasi tujuan harus berbeda dari lokasi yang dihapus.');
         }
 
         DB::transaction(function () use ($location, $destination) {

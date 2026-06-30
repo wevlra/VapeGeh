@@ -49,7 +49,11 @@ class LocationsTable
                         'inactive' => 'danger',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => ucfirst($state)),
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'active' => 'Aktif',
+                        'inactive' => 'Nonaktif',
+                        default => ucfirst($state),
+                    }),
             ])
             ->filters([
                 SelectFilter::make('status')
