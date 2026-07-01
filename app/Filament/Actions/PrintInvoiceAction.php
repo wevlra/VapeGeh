@@ -14,8 +14,6 @@ class PrintInvoiceAction extends Action
         $this->label('Cetak Invoice')
             ->icon('heroicon-o-document-text')
             ->color('primary')
-            ->url(fn (StockMovement $record): string => route('admin.history.invoice', $record))
-            ->openUrlInNewTab()
             ->hidden(fn (StockMovement $record): bool => $record->type !== 'out');
     }
 }

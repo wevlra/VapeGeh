@@ -1,0 +1,14 @@
+[[set]]
+identifier = "default"
+description = "Default permissions for the printer plugin"
+permissions = ["allow-list-printers", "allow-print-receipt"]
+
+[[permission]]
+identifier = "allow-list-printers"
+description = "Enables the list_printers command"
+commands.allow = ["list_printers"]
+
+[[permission]]
+identifier = "allow-print-receipt"
+description = "Enables the print_receipt command"
+commands.allow = ["print_receipt"]

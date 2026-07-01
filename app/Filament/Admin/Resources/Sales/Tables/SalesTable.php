@@ -71,18 +71,6 @@ class SalesTable
                     ]),
             ])
             ->recordActions([
-                Action::make('print_receipt')
-                    ->label('Cetak Nota')
-                    ->icon('heroicon-o-printer')
-                    ->color('gray')
-                    ->url(fn (Sale $record): string => route('admin.sales.receipt', $record))
-                    ->openUrlInNewTab(),
-                Action::make('print_invoice')
-                    ->label('Cetak Invoice')
-                    ->icon('heroicon-o-document-text')
-                    ->color('primary')
-                    ->url(fn (Sale $record): string => route('admin.history.invoice', $record->stockMovements()->first()))
-                    ->openUrlInNewTab(),
                 EditAction::make(),
                 DeleteAction::make()
                     ->action(fn (Sale $record) => app(DeleteSale::class)->execute($record))

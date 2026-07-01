@@ -361,18 +361,27 @@ class Pos extends Page implements HasTable
         $this->cart = [];
         $this->dispatch('$refresh');
 
+        $isTauri = session('__tauri', false);
         $printUrl = route('admin.sales.receipt', $sale);
+
+        $printAction = Action::make('print')
+            ->label('Cetak Nota')
+            ->icon('heroicon-o-printer');
+
+        if (! $isTauri) {
+            $printAction->url($printUrl, shouldOpenInNewTab: true);
+        } else {
+            $printAction->action(function () use ($sale): void {
+                $movementId = $sale->stockMovements()->first()?->id;
+                $this->js("window.dispatchEvent(new CustomEvent('print-receipt-init', { detail: { movementId: {$movementId} } }))");
+            });
+        }
 
         Notification::make()
             ->title('Penjualan selesai')
             ->body("Invoice \"{$sale->invoice_number}\" berhasil dibuat. Total: Rp ".number_format($sale->total, 0, ',', '.'))
             ->success()
-            ->actions([
-                Action::make('print')
-                    ->label('Cetak Nota')
-                    ->icon('heroicon-o-printer')
-                    ->url($printUrl, shouldOpenInNewTab: true),
-            ])
+            ->actions([$printAction])
             ->send();
     }
 }

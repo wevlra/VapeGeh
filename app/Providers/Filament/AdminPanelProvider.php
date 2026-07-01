@@ -21,6 +21,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Hammadzafar05\MobileBottomNav\MobileBottomNav;
 use Hammadzafar05\MobileBottomNav\MobileBottomNavItem;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -29,6 +30,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Wezlo\FilamentResponsiveTable\FilamentResponsiveTablePlugin;
 
@@ -44,8 +46,8 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->profile()
             ->sidebarCollapsibleOnDesktop()
-            ->brandLogo(asset('assets/images/logo-wordmark-light-tr.png'))
-            ->darkModeBrandLogo(asset('assets/images/logo-wordmark-dark-tr.png'))
+            ->brandLogo(asset('assets/images/logo-wordmark-dark-tr.png'))
+            ->darkModeBrandLogo(asset('assets/images/logo-wordmark-light-tr.png'))
             ->brandLogoHeight('4rem')
             ->colors([
                 'primary' => Color::Amber,
@@ -103,6 +105,14 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn (): string => Blade::render('@livewire(\'receipt-printer-modal\')'),
+            )
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn (): string => Blade::render('@vite([\'resources/js/tauri-bridge.js\'])'),
+            )
             ->bootUsing(function (): void {
                 app()->bind(LogoutResponse::class, fn (): \Filament\Auth\Http\Responses\LogoutResponse => new class extends \Filament\Auth\Http\Responses\LogoutResponse
                 {

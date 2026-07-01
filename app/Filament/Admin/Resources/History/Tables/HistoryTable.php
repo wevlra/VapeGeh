@@ -17,6 +17,21 @@ class HistoryTable
 {
     public static function configure(Table $table): Table
     {
+        $livewire = $table->getLivewire();
+        $isTauri = session('__tauri', false);
+
+        $receiptAction = PrintReceiptAction::make('print_receipt');
+
+        if (! $isTauri) {
+            $receiptAction
+                ->url(fn (StockMovement $record): string => route('admin.history.receipt', $record))
+                ->openUrlInNewTab();
+        } else {
+            $receiptAction->action(function (StockMovement $record) use ($livewire): void {
+                $livewire->js("window.dispatchEvent(new CustomEvent('print-receipt-init', { detail: { movementId: {$record->id} } }))");
+            });
+        }
+
         return $table
             ->recordUrl(fn (StockMovement $record): string => HistoryResource::getUrl('view', ['record' => $record]))
             ->columns([
@@ -95,8 +110,10 @@ class HistoryTable
                     }),
             ])
             ->recordActions([
-                PrintReceiptAction::make('print_receipt'),
-                PrintInvoiceAction::make('print_invoice'),
+                $receiptAction,
+                PrintInvoiceAction::make('print_invoice')
+                    ->url(fn (StockMovement $record): string => route('admin.history.invoice', $record))
+                    ->openUrlInNewTab(),
             ])
             ->defaultSort('created_at', 'desc');
     }

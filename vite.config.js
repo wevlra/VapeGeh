@@ -9,7 +9,8 @@ export default defineConfig({
             input: [
                 "resources/css/app.css",
                 "resources/css/filament/admin/theme.css",
-                "resources/css/filament/staff/theme.css"
+                "resources/css/filament/staff/theme.css",
+                "resources/js/tauri-bridge.js"
             ],
             refresh: true,
             fonts: [

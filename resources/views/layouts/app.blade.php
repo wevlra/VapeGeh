@@ -13,7 +13,7 @@
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <meta name="theme-color" content="#F59E0B">
 
-        @vite(['resources/css/app.css'])
+        @vite(['resources/css/app.css', 'resources/js/tauri-bridge.js'])
 
         @livewireStyles
     </head>
@@ -21,5 +21,7 @@
         {{ $slot }}
 
         @livewireScripts
+
+        @livewire('receipt-printer-modal')
     </body>
 </html>

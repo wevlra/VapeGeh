@@ -1,0 +1,12 @@
+{
+  "identifier": "main-capability",
+  "description": "Capability for the main window",
+  "windows": ["main"],
+  "platforms": ["linux", "macOS", "windows", "android"],
+  "permissions": [
+    "core:default",
+    "shell:allow-open",
+    "printer:allow-list-printers",
+    "printer:allow-print-receipt"
+  ]
+}
