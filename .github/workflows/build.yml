@@ -1,0 +1,105 @@
+name: build
+
+on:
+  push:
+    branches: [master, feat/tauri]
+  pull_request:
+    branches: [master]
+
+jobs:
+  # ──────────────────────────────────────────────
+  # Linux (.deb, .AppImage)
+  # ──────────────────────────────────────────────
+  build-linux:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: install Linux system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            xdg-utils \
+            libssl-dev \
+            libgtk-3-dev
+
+      - name: build app bundle
+        uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: src-tauri
+          uploadWorkflowArtifacts: true
+          workflowArtifactNamePattern: "vapegeh-linux-*"
+
+  # ──────────────────────────────────────────────
+  # Android (.apk)
+  # ──────────────────────────────────────────────
+  build-android:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+
+      - name: install Linux system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            xdg-utils \
+            libssl-dev \
+            libgtk-3-dev
+
+      - name: install Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: install Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: init Android project
+        run: |
+          cd src-tauri
+          cargo tauri android init
+
+      - name: build Android APK
+        uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: src-tauri
+          mobile: android
+          uploadWorkflowArtifacts: true
+          workflowArtifactNamePattern: "vapegeh-android-*"
