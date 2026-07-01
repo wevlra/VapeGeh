@@ -18,7 +18,7 @@ pub fn run() {
 
                 loop {
                     match client
-                        .get("http://localhost:8000/")
+                        .get("https://vapegeh.wevlra.dev/")
                         .send()
                         .await
                     {
