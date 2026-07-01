@@ -8,14 +8,14 @@ new class extends Component {};
 <div class="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-zinc-950 px-6">
     <div class="w-full max-w-md">
         <img
-            src="/assets/images/logo-wordmark-light-tr.png"
+            src="/assets/images/logo-stacked-dark-tr.png"
             alt="VapeGeh"
-            class="block dark:hidden"
+            class="mx-auto w-64 dark:hidden"
         >
         <img
-            src="/assets/images/logo-wordmark-dark-tr.png"
+            src="/assets/images/logo-stacked-light-tr.png"
             alt="VapeGeh"
-            class="hidden dark:block"
+            class="mx-auto w-64 hidden dark:block"
         >
 
         <div class="rounded-3xl border border-gray-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 p-2">

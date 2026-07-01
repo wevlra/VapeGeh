@@ -28,7 +28,7 @@ class StockEntryItem extends Model
     {
         return [
             'qty' => 'integer',
-            'unit_price' => 'decimal:2',
+            'unit_price' => 'float',
         ];
     }
 }

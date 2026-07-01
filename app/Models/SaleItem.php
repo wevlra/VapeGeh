@@ -29,8 +29,8 @@ class SaleItem extends Model
     {
         return [
             'qty' => 'integer',
-            'price' => 'decimal:2',
-            'subtotal' => 'decimal:2',
+            'price' => 'float',
+            'subtotal' => 'float',
         ];
     }
 }

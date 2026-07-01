@@ -99,11 +99,11 @@ it('completes a transfer and moves stock correctly', function () {
     $movements = StockMovement::where('product_id', $product->id)->get();
     expect($movements)->toHaveCount(2);
 
-    $out = $movements->where('type', 'transfer_out')->first();
+    $out = $movements->first(fn ($m) => $m->quantity < 0);
     expect($out->quantity)->toBe(-20)
         ->and($out->location_id)->toBe($warehouse->id);
 
-    $in = $movements->where('type', 'transfer_in')->first();
+    $in = $movements->first(fn ($m) => $m->quantity > 0);
     expect($in->quantity)->toBe(20)
         ->and($in->location_id)->toBe($store->id);
 });

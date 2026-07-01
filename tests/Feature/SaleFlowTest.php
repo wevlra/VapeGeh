@@ -55,7 +55,7 @@ it('creates a sale with items and deducts stock', function () {
 
     expect($sale)->toBeInstanceOf(Sale::class)
         ->and($sale->invoice_number)->toStartWith('INV-')
-        ->and($sale->total)->toEqual((string) number_format($total, 2, '.', ''))
+        ->and(round((float) $sale->total, 2))->toEqual($total)
         ->and($sale->items)->toHaveCount(1);
 
     $item = $sale->items->first();

@@ -131,7 +131,7 @@
     <body>
         {{-- Header --}}
         @if($invoice->logo)
-            <img src="{{ $invoice->getLogo() }}" alt="logo" height="100">
+            <img src="{{ $invoice->getLogo() }}" alt="logo" height="150">
         @endif
 
         <table class="table mt-5">
@@ -368,7 +368,7 @@
             {{ __('invoices::invoice.amount_in_words') }}: {{ $invoice->getTotalAmountInWords() }}
         </p>
         <p>
-            {{ __('invoices::invoice.pay_until') }}: {{ $invoice->getPayUntilDate() }}
+            {{-- {{ __('invoices::invoice.pay_until') }}: {{ $invoice->getPayUntilDate() }} --}}
         </p>
 
         <script type="text/php">

@@ -30,7 +30,7 @@
 <body>
     @php $location = $movement->location; @endphp
     <div class="header">
-        <img src="{{ asset('assets/images/logo-stacked-light-tr.png') }}" alt="{{ config('store.name') }}">
+        <img src="{{ asset('assets/images/logo-stacked-dark-tr.png') }}" alt="{{ config('store.name') }}">
         {{-- <div class="name">{{ config('store.name') }}</div> --}}
         <div class="info">{{ $location->address ?? config('store.address') }}</div>
         <div class="info">{{ config('store.phone') }}</div>

@@ -60,11 +60,13 @@ class Pos extends Page implements HasTable
             ->columns([
                 TextColumn::make('name')
                     ->label('Produk')
+                    ->formatStateUsing(fn (Product $record): string => mb_strimwidth($record->name, 0, 30, '...'))
+                    ->description(fn (Product $record): string => 'Rp '.number_format((float) $record->default_price, 0, ',', '.'))
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('sku')
-                    ->label('SKU')
-                    ->searchable(),
+                // TextColumn::make('sku')
+                //     ->label('SKU')
+                //     ->searchable(),
                 TextColumn::make('stock_qty')
                     ->label('Stok')
                     ->badge()
@@ -74,10 +76,10 @@ class Pos extends Page implements HasTable
                         default => 'success',
                     })
                     ->getStateUsing(fn (Product $record): int => $record->stocks->first()?->qty ?? 0),
-                TextColumn::make('id')
-                    ->label('Harga')
-                    ->formatStateUsing(fn (Product $record): string => 'Rp '.number_format((float) $record->default_price, 0, ',', '.'))
-                    ->sortable(false),
+                // TextColumn::make('id')
+                //     ->label('Harga')
+                //     ->formatStateUsing(fn (Product $record): string => 'Rp '.number_format((float) $record->default_price, 0, ',', '.'))
+                //     ->sortable(false),
             ])
             ->actions([
                 Action::make('addToCart')

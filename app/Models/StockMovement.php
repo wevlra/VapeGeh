@@ -65,7 +65,7 @@ class StockMovement extends Model
     {
         return [
             'quantity' => 'integer',
-            'unit_price' => 'decimal:2',
+            'unit_price' => 'float',
             'additional_costs' => 'array',
         ];
     }

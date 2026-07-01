@@ -61,7 +61,7 @@ it('reconciles stock when sale items are changed', function () {
     expect($stock->qty)->toBe(6);
 
     $sale->refresh();
-    expect($sale->total)->toBe('200000.00')
+    expect($sale->total)->toBe(200000.0)
         ->and($sale->payment_method)->toBe('transfer');
 });
 

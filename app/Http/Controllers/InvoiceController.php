@@ -105,7 +105,7 @@ class InvoiceController extends Controller
 
         $serialNumber = $isSale ? $related->invoice_number : ($isStockEntry ? '#SM-'.$stockMovement->id : '#SM-'.$stockMovement->id);
 
-        $invoice = Invoice::make('vapegeh')
+        $invoice = Invoice::make('invoice')
             ->serialNumberFormat('{SERIES}{SEQUENCE}')
             ->seller($seller)
             ->buyer($buyer)
@@ -119,7 +119,7 @@ class InvoiceController extends Controller
             ->currencyDecimals(0)
             ->filename($serialNumber)
             ->addItems($items)
-            ->logo(public_path('assets/images/logo-light-tr.png'))
+            ->logo(public_path('assets/images/logo-stacked-dark-tr.png'))
             ->payUntilDays(0)
             ->notes($stockMovement->notes ?? '');
 

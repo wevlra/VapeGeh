@@ -59,8 +59,8 @@ class Product extends Model
     protected function casts(): array
     {
         return [
-            'purchase_price' => 'decimal:2',
-            'selling_price' => 'decimal:2',
+            'purchase_price' => 'float',
+            'selling_price' => 'float',
         ];
     }
 }

@@ -63,6 +63,17 @@ class CompleteStockTransfer
                     'created_by' => $completedBy->id,
                     'notes' => "Transfer #{$transfer->transfer_number}",
                 ]);
+
+                StockMovement::create([
+                    'product_id' => $item->product_id,
+                    'location_id' => $transfer->to_location_id,
+                    'type' => 'transfer',
+                    'quantity' => $item->qty,
+                    'related_type' => StockTransfer::class,
+                    'related_id' => $transfer->id,
+                    'created_by' => $completedBy->id,
+                    'notes' => "Transfer #{$transfer->transfer_number}",
+                ]);
             }
 
             $transfer->status = 'completed';

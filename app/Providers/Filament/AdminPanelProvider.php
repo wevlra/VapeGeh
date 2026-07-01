@@ -13,6 +13,7 @@ use App\Filament\Admin\Widgets\AdminStatsOverview;
 use App\Filament\Admin\Widgets\AdminStatsOverviewMobile;
 use App\Filament\Admin\Widgets\OperationalQuickActionsWidget;
 use App\Filament\Admin\Widgets\StockQuickActionsWidget;
+use App\Filament\Middleware\RedirectPanelUser;
 use Filament\Auth\Http\Responses\Contracts\LogoutResponse;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -44,9 +45,7 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->profile()
             ->sidebarCollapsibleOnDesktop()
-            ->brandLogo(asset('assets/images/logo-wordmark-light-tr.png'))
-            ->darkModeBrandLogo(asset('assets/images/logo-wordmark-dark-tr.png'))
-            ->brandLogoHeight('4rem')
+            ->brandLogo(fn () => view('filament.admin.brand'))
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -101,8 +100,9 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
+                RedirectPanelUser::class,
                 Authenticate::class,
-            ])
+            ], isPersistent: true)
             ->bootUsing(function (): void {
                 app()->bind(LogoutResponse::class, fn (): \Filament\Auth\Http\Responses\LogoutResponse => new class extends \Filament\Auth\Http\Responses\LogoutResponse
                 {

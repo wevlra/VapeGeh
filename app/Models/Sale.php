@@ -76,8 +76,8 @@ class Sale extends Model
     protected function casts(): array
     {
         return [
-            'total' => 'decimal:2',
-            'paid_amount' => 'decimal:2',
+            'total' => 'float',
+            'paid_amount' => 'float',
         ];
     }
 }

@@ -50,11 +50,13 @@ class Pos extends StaffPos
             ->columns([
                 TextColumn::make('product.name')
                     ->label('Produk')
+                    ->formatStateUsing(fn (Stock $record): string => mb_strimwidth($record->product->name, 0, 30, '...'))
+                    ->description(fn (Stock $record): string => 'Rp '.number_format((float) $record->product->default_price, 0, ',', '.'))
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('product.sku')
-                    ->label('SKU')
-                    ->searchable(),
+                // TextColumn::make('product.sku')
+                //     ->label('SKU')
+                //     ->searchable(),
                 TextColumn::make('location.name')
                     ->label('Lokasi')
                     ->badge()
@@ -68,10 +70,10 @@ class Pos extends StaffPos
                         $state < 10 => 'warning',
                         default => 'success',
                     }),
-                TextColumn::make('product.selling_price')
-                    ->label('Harga')
-                    ->formatStateUsing(fn ($state): string => 'Rp '.number_format((float) ($state ?? 0), 0, ',', '.'))
-                    ->sortable(false),
+                // TextColumn::make('product.selling_price')
+                //     ->label('Harga')
+                //     ->formatStateUsing(fn ($state): string => 'Rp '.number_format((float) ($state ?? 0), 0, ',', '.'))
+                //     ->sortable(false),
             ])
             ->filters([
                 SelectFilter::make('location_id')
@@ -82,7 +84,7 @@ class Pos extends StaffPos
             ->actions([
                 $this->addToCartAction(),
             ])
-            ->defaultSort('product.name');
+            ->defaultSort('location.name');
     }
 
     /**

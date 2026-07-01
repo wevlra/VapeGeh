@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Middleware\RedirectPanelUser;
 use App\Filament\Staff\Pages\Dashboard;
 use App\Filament\Staff\Widgets\StaffPaymentMethodChart;
 use App\Filament\Staff\Widgets\StaffSalesChart;
@@ -36,9 +37,7 @@ class StaffPanelProvider extends PanelProvider
             ->login()
             ->profile()
             ->sidebarCollapsibleOnDesktop()
-            ->brandLogo(asset('assets/images/logo-wordmark-light-tr.png'))
-            ->darkModeBrandLogo(asset('assets/images/logo-wordmark-dark-tr.png'))
-            ->brandLogoHeight('4rem')
+            ->brandLogo(fn () => view('filament.staff.brand'))
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -86,8 +85,9 @@ class StaffPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
+                RedirectPanelUser::class,
                 Authenticate::class,
-            ])
+            ], isPersistent: true)
             ->bootUsing(function (): void {
                 app()->bind(LogoutResponse::class, fn (): \Filament\Auth\Http\Responses\LogoutResponse => new class extends \Filament\Auth\Http\Responses\LogoutResponse
                 {

@@ -32,7 +32,7 @@ it('relates users to locations', function () {
         ->and($location->users()->whereKey($user)->exists())->toBeTrue();
 });
 
-it('gates filament panel access by role and active status', function () {
+it('gates filament panel access by active status', function () {
     $adminPanel = Panel::make()->id('admin');
     $staffPanel = Panel::make()->id('staff');
 
@@ -51,8 +51,8 @@ it('gates filament panel access by role and active status', function () {
     ]);
 
     expect($admin->canAccessPanel($adminPanel))->toBeTrue()
-        ->and($admin->canAccessPanel($staffPanel))->toBeFalse()
-        ->and($staff->canAccessPanel($adminPanel))->toBeFalse()
+        ->and($admin->canAccessPanel($staffPanel))->toBeTrue()
+        ->and($staff->canAccessPanel($adminPanel))->toBeTrue()
         ->and($staff->canAccessPanel($staffPanel))->toBeTrue()
         ->and($inactiveAdmin->canAccessPanel($adminPanel))->toBeFalse();
 });

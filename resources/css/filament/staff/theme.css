@@ -2,3 +2,4 @@
 
 @source '../../../../app/Filament/Staff/**/*';
 @source '../../../../resources/views/filament/staff/**/*';
+@source '../../../../resources/views/filament/staff/*';
