@@ -153,7 +153,7 @@ class StockOut extends Page implements HasForms
                                         Select::make('product_id')
                                             ->label('Produk')
                                             ->options(fn () => Product::orderBy('name')->get()
-                                                ->mapWithKeys(fn (Product $p): array => [$p->id => "{$p->sku} — {$p->name}"])
+                                                ->mapWithKeys(fn (Product $p): array => [$p->id => "{$p->name}"])
                                                 ->toArray())
                                             ->required()
                                             ->searchable()
