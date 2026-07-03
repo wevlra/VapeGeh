@@ -10,6 +10,7 @@
         .header { text-align: center; margin-bottom: 8px; }
         .header img { max-height: 48px; }
         .header .name { font-size: 14px; font-weight: bold; }
+        .header .tagline { font-size: 10px; font-style: italic; margin-bottom: 2px; }
         .header .info { font-size: 9px; }
         hr { border: none; border-top: 1px dashed #333; margin: 6px 0; }
         .ref { font-weight: bold; font-size: 11px; margin-bottom: 2px; }
@@ -32,6 +33,9 @@
     <div class="header">
         <img src="{{ asset('assets/images/logo-stacked-dark-tr.png') }}" alt="{{ config('store.name') }}">
         {{-- <div class="name">{{ config('store.name') }}</div> --}}
+        @if(config('store.tagline'))
+            <div class="tagline">{{ config('store.tagline') }}</div>
+        @endif
         <div class="info">{{ $location->address ?? config('store.address') }}</div>
         <div class="info">{{ config('store.phone') }}</div>
     </div>
