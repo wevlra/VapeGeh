@@ -206,7 +206,6 @@ return [
         'category' => 'Kategori',
         'date' => 'Tanggal',
         'label' => 'Label',
-        'sku' => 'SKU',
         'email' => 'Email',
         'phone' => 'Telepon',
         'address' => 'Alamat',

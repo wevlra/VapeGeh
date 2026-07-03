@@ -77,14 +77,12 @@ class InvoiceController extends Controller
         if ($isSale) {
             foreach ($related->items as $item) {
                 $items[] = InvoiceItem::make($item->product->name ?? 'Product')
-                    ->description($item->product->sku ?? '')
                     ->pricePerUnit((float) $item->price)
                     ->quantity((int) $item->qty);
             }
         } elseif ($isStockEntry) {
             foreach ($related->items as $item) {
                 $items[] = InvoiceItem::make($item->product->name ?? 'Product')
-                    ->description($item->product->sku ?? '')
                     ->pricePerUnit((float) $item->unit_price)
                     ->quantity((int) $item->qty);
             }
@@ -98,7 +96,6 @@ class InvoiceController extends Controller
             }
         } else {
             $items[] = InvoiceItem::make($stockMovement->product->name ?? 'Product')
-                ->description($stockMovement->product->sku ?? '')
                 ->pricePerUnit((float) ($stockMovement->unit_price ?? 0))
                 ->quantity(abs((int) $stockMovement->quantity));
         }

@@ -16,10 +16,6 @@ class ProductsTable
         return $table
             ->recordUrl(fn (Product $record): string => ProductResource::getUrl('view', ['record' => $record]))
             ->columns([
-                TextColumn::make('sku')
-                    ->label('SKU')
-                    ->searchable()
-                    ->sortable(),
                 TextColumn::make('name')
                     ->label('Nama')
                     ->searchable()

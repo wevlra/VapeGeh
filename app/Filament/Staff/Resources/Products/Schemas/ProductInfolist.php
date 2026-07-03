@@ -18,8 +18,6 @@ class ProductInfolist
                     ->columnSpanFull()
                     ->columns(3)
                     ->schema([
-                        TextEntry::make('sku')
-                            ->label('SKU'),
                         TextEntry::make('name')
                             ->label('Nama'),
                         TextEntry::make('stocks')

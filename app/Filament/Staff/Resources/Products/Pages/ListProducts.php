@@ -24,6 +24,6 @@ class ListProducts extends ListRecords
     {
         return $config
             ->only(['name', 'stock_qty', 'selling_price'])
-            ->cardTitle(fn ($record) => $record->sku);
+            ->cardTitle(fn ($record) => $record->name);
     }
 }

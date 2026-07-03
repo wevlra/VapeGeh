@@ -15,12 +15,6 @@ class Product extends Model
     /** @use HasFactory<ProductFactory> */
     use HasFactory;
 
-    protected static function booted(): void
-    {
-        static::creating(function (Product $product) {
-            $product->sku ??= 'PRD-'.Str::upper(Str::random(8));
-        });
-    }
 
     /**
      * @return HasMany<ProductPrice, $this>

@@ -82,7 +82,6 @@ trait NotifiesWithDetail
             ?? $record->getAttribute('title')
             ?? $record->getAttribute('invoice_number')
             ?? $record->getAttribute('transfer_number')
-            ?? $record->getAttribute('sku')
             ?? $record->getKey());
 
         return Str::headline(class_basename($record)).' "'.$label.'"';

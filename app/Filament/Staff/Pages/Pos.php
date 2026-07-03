@@ -64,9 +64,6 @@ class Pos extends Page implements HasTable
                     ->description(fn (Product $record): string => 'Rp '.number_format((float) $record->default_price, 0, ',', '.'))
                     ->searchable()
                     ->sortable(),
-                // TextColumn::make('sku')
-                //     ->label('SKU')
-                //     ->searchable(),
                 TextColumn::make('stock_qty')
                     ->label('Stok')
                     ->badge()

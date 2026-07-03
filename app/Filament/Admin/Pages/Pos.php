@@ -54,9 +54,6 @@ class Pos extends StaffPos
                     ->description(fn (Stock $record): string => 'Rp '.number_format((float) $record->product->default_price, 0, ',', '.'))
                     ->searchable()
                     ->sortable(),
-                // TextColumn::make('product.sku')
-                //     ->label('SKU')
-                //     ->searchable(),
                 TextColumn::make('location.name')
                     ->label('Lokasi')
                     ->badge()
