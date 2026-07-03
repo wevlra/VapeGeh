@@ -4,26 +4,26 @@
     <meta charset="utf-8">
     <title>Nota</title>
     <style>
-        @page { size: 80mm auto; margin: 0; }
+        @page { size: 58mm auto; margin: 0; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Courier New', monospace; font-size: 12px; padding: 8px 12px; color: #000; }
-        .header { text-align: center; margin-bottom: 12px; }
-        .header img { max-height: 64px; }
-        .header .name { font-size: 16px; font-weight: bold; }
-        .header .info { font-size: 10px; }
-        hr { border: none; border-top: 1px dashed #333; margin: 8px 0; }
-        .ref { font-weight: bold; font-size: 13px; margin-bottom: 4px; }
-        .meta { font-size: 10px; margin-bottom: 8px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        thead th { border-bottom: 1px solid #333; padding: 4px 0; text-align: left; }
+        body { font-family: 'Courier New', monospace; font-size: 11px; width: 58mm; padding: 4px; color: #000; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 8px; }
+        .header img { max-height: 48px; }
+        .header .name { font-size: 14px; font-weight: bold; }
+        .header .info { font-size: 9px; }
+        hr { border: none; border-top: 1px dashed #333; margin: 6px 0; }
+        .ref { font-weight: bold; font-size: 11px; margin-bottom: 2px; }
+        .meta { font-size: 9px; margin-bottom: 6px; }
+        table { width: 100%; border-collapse: collapse; font-size: 9px; }
+        thead th { border-bottom: 1px solid #333; padding: 3px 0; text-align: left; }
         thead th:last-child { text-align: right; }
-        tbody td { padding: 2px 0; vertical-align: top; }
+        tbody td { padding: 2px 0; vertical-align: top; word-break: break-word; }
         tbody td:last-child { text-align: right; white-space: nowrap; }
-        .totals { margin-top: 8px; text-align: right; font-size: 11px; }
-        .totals .grand-total { font-size: 14px; font-weight: bold; margin-top: 4px; }
-        .footer { text-align: center; margin-top: 16px; font-size: 10px; }
-        .payment { margin-top: 4px; font-size: 11px; }
-        .additional { margin-top: 8px; font-size: 10px; }
+        .totals { margin-top: 6px; text-align: right; font-size: 10px; }
+        .totals .grand-total { font-size: 12px; font-weight: bold; margin-top: 2px; }
+        .footer { text-align: center; margin-top: 12px; font-size: 9px; }
+        .payment { margin-top: 2px; font-size: 10px; }
+        .additional { margin-top: 6px; font-size: 9px; }
         .additional li { list-style: none; }
     </style>
 </head>
