@@ -57,11 +57,7 @@ class Pos extends StaffPos
                 // TextColumn::make('product.sku')
                 //     ->label('SKU')
                 //     ->searchable(),
-                TextColumn::make('location.name')
-                    ->label('Lokasi')
-                    ->badge()
-                    ->color('info')
-                    ->sortable(),
+
                 TextColumn::make('qty')
                     ->label('Stok')
                     ->badge()
@@ -84,7 +80,7 @@ class Pos extends StaffPos
             ->actions([
                 $this->addToCartAction(),
             ])
-            ->defaultSort('location.name');
+            ->defaultSort('product.name');
     }
 
     /**
