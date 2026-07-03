@@ -6,8 +6,6 @@ use App\Actions\DeleteSale;
 use App\Filament\Staff\Resources\Sales\SaleResource;
 use App\Models\Sale;
 use Filament\Actions\Action;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\EditAction;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -65,21 +63,6 @@ class SalesTable
                     ->color('gray')
                     ->url(fn (Sale $record): string => route('admin.sales.receipt', $record))
                     ->openUrlInNewTab(),
-                Action::make('print_invoice')
-                    ->label('Cetak Invoice')
-                    ->icon('heroicon-o-document-text')
-                    ->color('primary')
-                    ->url(fn (Sale $record): string => route('admin.history.invoice', $record->stockMovements()->first()))
-                    ->openUrlInNewTab(),
-                EditAction::make(),
-                DeleteAction::make()
-                    ->action(fn (Sale $record) => app(DeleteSale::class)->execute($record))
-                    ->successNotification(
-                        Notification::make()
-                            ->title('Penjualan dihapus')
-                            ->body('Penjualan telah dihapus secara permanen.')
-                            ->danger()
-                    ),
             ])
             ->defaultSort('created_at', 'desc');
     }
