@@ -3,7 +3,6 @@
 namespace App\Filament\Admin\Pages;
 
 use App\Filament\Staff\Pages\Pos as StaffPos;
-use App\Models\Location;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\Stock;
@@ -14,8 +13,9 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
 
@@ -48,8 +48,8 @@ class Pos extends StaffPos
         return $table
             ->query($query)
             ->columns([
-                \Filament\Tables\Columns\Layout\Split::make([
-                    \Filament\Tables\Columns\Layout\Stack::make([
+                Split::make([
+                    Stack::make([
                         TextColumn::make('product.name')
                             ->label('Produk')
                             ->formatStateUsing(fn (Stock $record): string => mb_strimwidth($record->product->name, 0, 30, '...'))
@@ -60,13 +60,7 @@ class Pos extends StaffPos
                             ->formatStateUsing(fn (Stock $record): string => 'Rp '.number_format((float) $record->product->default_price, 0, ',', '.'))
                             ->color('gray'),
                     ]),
-                    \Filament\Tables\Columns\Layout\Stack::make([
-                        TextColumn::make('location.name')
-                            ->label('Lokasi')
-                            ->badge()
-                            ->alignEnd()
-                            ->color('info')
-                            ->sortable(),
+                    Stack::make([
                         TextColumn::make('qty')
                             ->label('Stok')
                             ->badge()
@@ -77,18 +71,14 @@ class Pos extends StaffPos
                                 default => 'success',
                             }),
                     ])->space(1),
-                ])
+                ]),
             ])
             ->filters([
-                SelectFilter::make('location_id')
-                    ->label('Lokasi')
-                    ->options(fn () => Location::pluck('name', 'id'))
-                    ->visible(! $locationId),
             ])
             ->actions([
                 $this->addToCartAction(),
             ])
-            ->defaultSort('location.name');
+            ->defaultSort('product.name');
     }
 
     /**
