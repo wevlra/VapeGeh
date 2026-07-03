@@ -4,11 +4,11 @@ namespace App\Filament\Admin\Resources\Products\Tables;
 
 use App\Filament\Admin\Resources\Products\ProductResource;
 use App\Models\Product;
-use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Notifications\Notification;
+use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -19,18 +19,26 @@ class ProductsTable
         return $table
             ->recordUrl(fn (Product $record): string => ProductResource::getUrl('view', ['record' => $record]))
             ->columns([
-                TextColumn::make('name')
-                    ->label('Nama')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('purchase_price')
-                    ->label('Harga Beli')
-                    ->money('IDR')
-                    ->sortable(),
-                TextColumn::make('selling_price')
-                    ->label('Harga Jual')
-                    ->money('IDR')
-                    ->sortable(),
+                Split::make([
+                    Stack::make([
+                        TextColumn::make('name')
+                            ->weight('bold')
+                            ->searchable()
+                            ->sortable(),
+                        TextColumn::make('purchase_price')
+                            ->formatStateUsing(fn ($state) => 'Beli: Rp ' . number_format($state, 0, ',', '.'))
+                            ->color('gray')
+                            ->sortable(),
+                    ]),
+                    Stack::make([
+                        TextColumn::make('selling_price')
+                            ->formatStateUsing(fn ($state) => 'Jual: Rp ' . number_format($state, 0, ',', '.'))
+                            ->color('primary')
+                            ->weight('bold')
+                            ->alignEnd()
+                            ->sortable(),
+                    ])->space(1),
+                ])
             ])
             ->filters([])
             ->recordActions([
@@ -42,11 +50,6 @@ class ProductsTable
                             ->body('Produk telah dihapus permanen.')
                             ->danger()
                     ),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ]);
     }
 }

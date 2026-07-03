@@ -58,25 +58,31 @@ class Pos extends Page implements HasTable
                     ->with(['stocks' => fn ($q) => $q->where('location_id', $locationId), 'prices'])
             )
             ->columns([
-                TextColumn::make('name')
-                    ->label('Produk')
-                    ->formatStateUsing(fn (Product $record): string => mb_strimwidth($record->name, 0, 30, '...'))
-                    ->description(fn (Product $record): string => 'Rp '.number_format((float) $record->default_price, 0, ',', '.'))
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('stock_qty')
-                    ->label('Stok')
-                    ->badge()
-                    ->color(fn (int $state): string => match (true) {
-                        $state <= 0 => 'danger',
-                        $state < 10 => 'warning',
-                        default => 'success',
-                    })
-                    ->getStateUsing(fn (Product $record): int => $record->stocks->first()?->qty ?? 0),
-                // TextColumn::make('id')
-                //     ->label('Harga')
-                //     ->formatStateUsing(fn (Product $record): string => 'Rp '.number_format((float) $record->default_price, 0, ',', '.'))
-                //     ->sortable(false),
+                \Filament\Tables\Columns\Layout\Split::make([
+                    \Filament\Tables\Columns\Layout\Stack::make([
+                        TextColumn::make('name')
+                            ->label('Produk')
+                            ->formatStateUsing(fn (Product $record): string => mb_strimwidth($record->name, 0, 30, '...'))
+                            ->weight('bold')
+                            ->searchable()
+                            ->sortable(),
+                        TextColumn::make('default_price')
+                            ->formatStateUsing(fn (Product $record): string => 'Rp '.number_format((float) $record->default_price, 0, ',', '.'))
+                            ->color('gray'),
+                    ]),
+                    \Filament\Tables\Columns\Layout\Stack::make([
+                        TextColumn::make('stock_qty')
+                            ->label('Stok')
+                            ->badge()
+                            ->alignEnd()
+                            ->color(fn (int $state): string => match (true) {
+                                $state <= 0 => 'danger',
+                                $state < 10 => 'warning',
+                                default => 'success',
+                            })
+                            ->getStateUsing(fn (Product $record): int => $record->stocks->first()?->qty ?? 0),
+                    ])->space(1),
+                ])
             ])
             ->actions([
                 Action::make('addToCart')

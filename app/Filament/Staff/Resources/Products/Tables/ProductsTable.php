@@ -4,6 +4,8 @@ namespace App\Filament\Staff\Resources\Products\Tables;
 
 use App\Filament\Staff\Resources\Products\ProductResource;
 use App\Models\Product;
+use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -16,23 +18,29 @@ class ProductsTable
         return $table
             ->recordUrl(fn (Product $record): string => ProductResource::getUrl('view', ['record' => $record]))
             ->columns([
-                TextColumn::make('name')
-                    ->label('Nama')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('stock_qty')
-                    ->label('Stok')
-                    ->getStateUsing(fn (Product $record): int => $record->stocks->firstWhere('location_id', $locationId)?->qty ?? 0)
-                    ->badge()
-                    ->color(fn (int $state): string => match (true) {
-                        $state <= 0 => 'danger',
-                        $state < 10 => 'warning',
-                        default => 'success',
-                    }),
-                TextColumn::make('selling_price')
-                    ->label('Harga Jual')
-                    ->money('IDR')
-                    ->sortable(),
+                Split::make([
+                    Stack::make([
+                        TextColumn::make('name')
+                            ->weight('bold')
+                            ->searchable()
+                            ->sortable(),
+                        TextColumn::make('selling_price')
+                            ->money('IDR')
+                            ->color('gray')
+                            ->sortable(),
+                    ]),
+                    Stack::make([
+                        TextColumn::make('stock_qty')
+                            ->badge()
+                            ->alignEnd()
+                            ->color(fn (int $state): string => match (true) {
+                                $state <= 0 => 'danger',
+                                $state < 10 => 'warning',
+                                default => 'success',
+                            })
+                            ->getStateUsing(fn (Product $record): int => $record->stocks->firstWhere('location_id', $locationId)?->qty ?? 0),
+                    ])->space(1),
+                ])
             ])
             ->filters([])
             ->recordActions([])

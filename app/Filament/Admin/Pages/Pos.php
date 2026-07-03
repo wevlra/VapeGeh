@@ -48,29 +48,36 @@ class Pos extends StaffPos
         return $table
             ->query($query)
             ->columns([
-                TextColumn::make('product.name')
-                    ->label('Produk')
-                    ->formatStateUsing(fn (Stock $record): string => mb_strimwidth($record->product->name, 0, 30, '...'))
-                    ->description(fn (Stock $record): string => 'Rp '.number_format((float) $record->product->default_price, 0, ',', '.'))
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('location.name')
-                    ->label('Lokasi')
-                    ->badge()
-                    ->color('info')
-                    ->sortable(),
-                TextColumn::make('qty')
-                    ->label('Stok')
-                    ->badge()
-                    ->color(fn (int $state): string => match (true) {
-                        $state <= 0 => 'danger',
-                        $state < 10 => 'warning',
-                        default => 'success',
-                    }),
-                // TextColumn::make('product.selling_price')
-                //     ->label('Harga')
-                //     ->formatStateUsing(fn ($state): string => 'Rp '.number_format((float) ($state ?? 0), 0, ',', '.'))
-                //     ->sortable(false),
+                \Filament\Tables\Columns\Layout\Split::make([
+                    \Filament\Tables\Columns\Layout\Stack::make([
+                        TextColumn::make('product.name')
+                            ->label('Produk')
+                            ->formatStateUsing(fn (Stock $record): string => mb_strimwidth($record->product->name, 0, 30, '...'))
+                            ->weight('bold')
+                            ->searchable()
+                            ->sortable(),
+                        TextColumn::make('product.default_price')
+                            ->formatStateUsing(fn (Stock $record): string => 'Rp '.number_format((float) $record->product->default_price, 0, ',', '.'))
+                            ->color('gray'),
+                    ]),
+                    \Filament\Tables\Columns\Layout\Stack::make([
+                        TextColumn::make('location.name')
+                            ->label('Lokasi')
+                            ->badge()
+                            ->alignEnd()
+                            ->color('info')
+                            ->sortable(),
+                        TextColumn::make('qty')
+                            ->label('Stok')
+                            ->badge()
+                            ->alignEnd()
+                            ->color(fn (int $state): string => match (true) {
+                                $state <= 0 => 'danger',
+                                $state < 10 => 'warning',
+                                default => 'success',
+                            }),
+                    ])->space(1),
+                ])
             ])
             ->filters([
                 SelectFilter::make('location_id')
