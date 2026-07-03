@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Pages;
 
 use App\Filament\Staff\Pages\Pos as StaffPos;
+use App\Models\Location;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\Stock;
@@ -13,9 +14,8 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Columns\Layout\Split;
-use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
 
@@ -48,37 +48,43 @@ class Pos extends StaffPos
         return $table
             ->query($query)
             ->columns([
-                Split::make([
-                    Stack::make([
-                        TextColumn::make('product.name')
-                            ->label('Produk')
-                            ->formatStateUsing(fn (Stock $record): string => mb_strimwidth($record->product->name, 0, 30, '...'))
-                            ->weight('bold')
-                            ->searchable()
-                            ->sortable(),
-                        TextColumn::make('product.default_price')
-                            ->formatStateUsing(fn (Stock $record): string => 'Rp '.number_format((float) $record->product->default_price, 0, ',', '.'))
-                            ->color('gray'),
-                    ]),
-                    Stack::make([
-                        TextColumn::make('qty')
-                            ->label('Stok')
-                            ->badge()
-                            ->alignEnd()
-                            ->color(fn (int $state): string => match (true) {
-                                $state <= 0 => 'danger',
-                                $state < 10 => 'warning',
-                                default => 'success',
-                            }),
-                    ])->space(1),
-                ]),
+                TextColumn::make('product.name')
+                    ->label('Produk')
+                    ->formatStateUsing(fn (Stock $record): string => mb_strimwidth($record->product->name, 0, 30, '...'))
+                    ->description(fn (Stock $record): string => 'Rp '.number_format((float) $record->product->default_price, 0, ',', '.'))
+                    ->searchable()
+                    ->sortable(),
+                // TextColumn::make('product.sku')
+                //     ->label('SKU')
+                //     ->searchable(),
+                TextColumn::make('location.name')
+                    ->label('Lokasi')
+                    ->badge()
+                    ->color('info')
+                    ->sortable(),
+                TextColumn::make('qty')
+                    ->label('Stok')
+                    ->badge()
+                    ->color(fn (int $state): string => match (true) {
+                        $state <= 0 => 'danger',
+                        $state < 10 => 'warning',
+                        default => 'success',
+                    }),
+                // TextColumn::make('product.selling_price')
+                //     ->label('Harga')
+                //     ->formatStateUsing(fn ($state): string => 'Rp '.number_format((float) ($state ?? 0), 0, ',', '.'))
+                //     ->sortable(false),
             ])
             ->filters([
+                SelectFilter::make('location_id')
+                    ->label('Lokasi')
+                    ->options(fn () => Location::pluck('name', 'id'))
+                    ->visible(! $locationId),
             ])
             ->actions([
                 $this->addToCartAction(),
             ])
-            ->defaultSort('product.name');
+            ->defaultSort('location.name');
     }
 
     /**

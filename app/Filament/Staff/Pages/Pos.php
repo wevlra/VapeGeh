@@ -19,6 +19,8 @@ use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Support\RawJs;
+use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -58,20 +60,41 @@ class Pos extends Page implements HasTable
                     ->with(['stocks' => fn ($q) => $q->where('location_id', $locationId), 'prices'])
             )
             ->columns([
-                \Filament\Tables\Columns\Layout\Split::make([
-                    \Filament\Tables\Columns\Layout\Stack::make([
-                        TextColumn::make('name')
+                TextColumn::make('name')
+                    ->label('Produk')
+                    ->formatStateUsing(fn (Product $record): string => mb_strimwidth($record->name, 0, 30, '...'))
+                    ->weight('bold')
+                    ->searchable()
+                    ->sortable()
+                    ->visibleFrom('md'),
+                TextColumn::make('default_price')
+                    ->label('Harga')
+                    ->formatStateUsing(fn (Product $record): string => 'Rp '.number_format((float) $record->default_price, 0, ',', '.'))
+                    ->visibleFrom('md'),
+                TextColumn::make('stock_qty')
+                    ->label('Stok')
+                    ->badge()
+                    ->color(fn (int $state): string => match (true) {
+                        $state <= 0 => 'danger',
+                        $state < 10 => 'warning',
+                        default => 'success',
+                    })
+                    ->getStateUsing(fn (Product $record): int => $record->stocks->first()?->qty ?? 0)
+                    ->visibleFrom('md'),
+                Split::make([
+                    Stack::make([
+                        TextColumn::make('name_mobile')
+                            ->state(fn (Product $record): string => $record->name)
                             ->label('Produk')
-                            ->formatStateUsing(fn (Product $record): string => mb_strimwidth($record->name, 0, 30, '...'))
-                            ->weight('bold')
-                            ->searchable()
-                            ->sortable(),
-                        TextColumn::make('default_price')
-                            ->formatStateUsing(fn (Product $record): string => 'Rp '.number_format((float) $record->default_price, 0, ',', '.'))
+                            ->formatStateUsing(fn (string $state): string => mb_strimwidth($state, 0, 30, '...'))
+                            ->weight('bold'),
+                        TextColumn::make('default_price_mobile')
+                            ->state(fn (Product $record): string => $record->default_price)
+                            ->formatStateUsing(fn (string $state): string => 'Rp '.number_format((float) $state, 0, ',', '.'))
                             ->color('gray'),
                     ]),
-                    \Filament\Tables\Columns\Layout\Stack::make([
-                        TextColumn::make('stock_qty')
+                    Stack::make([
+                        TextColumn::make('stock_qty_mobile')
                             ->label('Stok')
                             ->badge()
                             ->alignEnd()
@@ -82,7 +105,7 @@ class Pos extends Page implements HasTable
                             })
                             ->getStateUsing(fn (Product $record): int => $record->stocks->first()?->qty ?? 0),
                     ])->space(1),
-                ])
+                ])->hiddenFrom('md'),
             ])
             ->actions([
                 Action::make('addToCart')
