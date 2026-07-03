@@ -2,11 +2,9 @@
 
 namespace App\Filament\Staff\Resources\Sales\Tables;
 
-use App\Actions\DeleteSale;
 use App\Filament\Staff\Resources\Sales\SaleResource;
 use App\Models\Sale;
 use Filament\Actions\Action;
-use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
