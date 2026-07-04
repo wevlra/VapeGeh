@@ -6,6 +6,7 @@ use App\Actions\DeleteSale;
 use App\Filament\Admin\Resources\Sales\SaleResource;
 use App\Models\Sale;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Notifications\Notification;
@@ -71,27 +72,29 @@ class SalesTable
                     ]),
             ])
             ->recordActions([
-                Action::make('print_receipt')
-                    ->label('Cetak Nota')
-                    ->icon('heroicon-o-printer')
-                    ->color('gray')
-                    ->url(fn (Sale $record): string => route('admin.sales.receipt', $record))
-                    ->openUrlInNewTab(),
-                Action::make('print_invoice')
-                    ->label('Cetak Invoice')
-                    ->icon('heroicon-o-document-text')
-                    ->color('primary')
-                    ->url(fn (Sale $record): string => route('admin.history.invoice', $record->stockMovements()->first()))
-                    ->openUrlInNewTab(),
-                EditAction::make(),
-                DeleteAction::make()
-                    ->action(fn (Sale $record) => app(DeleteSale::class)->execute($record))
-                    ->successNotification(
-                        Notification::make()
-                            ->title('Penjualan dihapus')
-                            ->body('Penjualan telah dihapus permanen.')
-                            ->danger()
-                    ),
+                ActionGroup::make([
+                    Action::make('print_receipt')
+                        ->label('Cetak Nota')
+                        ->icon('heroicon-o-printer')
+                        ->color('gray')
+                        ->url(fn (Sale $record): string => route('admin.sales.receipt', $record))
+                        ->openUrlInNewTab(),
+                    Action::make('print_invoice')
+                        ->label('Cetak Invoice')
+                        ->icon('heroicon-o-document-text')
+                        ->color('primary')
+                        ->url(fn (Sale $record): string => route('admin.history.invoice', $record->stockMovements()->first()))
+                        ->openUrlInNewTab(),
+                    EditAction::make(),
+                    DeleteAction::make()
+                        ->action(fn (Sale $record) => app(DeleteSale::class)->execute($record))
+                        ->successNotification(
+                            Notification::make()
+                                ->title('Penjualan dihapus')
+                                ->body('Penjualan telah dihapus permanen.')
+                                ->danger()
+                        ),
+                ]),
             ])
             ->defaultSort('created_at', 'desc');
     }

@@ -38,11 +38,13 @@ class Pos extends StaffPos
         $locationId = auth()->user()->location_id;
 
         $query = Stock::query()
+            ->select('stocks.*')
+            ->join('locations', 'locations.id', '=', 'stocks.location_id')
             ->where('qty', '>', 0)
-            ->with('product');
+            ->with(['product', 'location']);
 
         if ($locationId) {
-            $query->where('location_id', $locationId);
+            $query->where('stocks.location_id', $locationId);
         }
 
         return $table
@@ -54,9 +56,6 @@ class Pos extends StaffPos
                     ->description(fn (Stock $record): string => 'Rp '.number_format((float) $record->product->default_price, 0, ',', '.'))
                     ->searchable()
                     ->sortable(),
-                // TextColumn::make('product.sku')
-                //     ->label('SKU')
-                //     ->searchable(),
 
                 TextColumn::make('qty')
                     ->label('Stok')
@@ -66,10 +65,6 @@ class Pos extends StaffPos
                         $state < 10 => 'warning',
                         default => 'success',
                     }),
-                // TextColumn::make('product.selling_price')
-                //     ->label('Harga')
-                //     ->formatStateUsing(fn ($state): string => 'Rp '.number_format((float) ($state ?? 0), 0, ',', '.'))
-                //     ->sortable(false),
             ])
             ->filters([
                 SelectFilter::make('location_id')
@@ -80,7 +75,7 @@ class Pos extends StaffPos
             ->actions([
                 $this->addToCartAction(),
             ])
-            ->defaultSort('product.name');
+            ->defaultSort('locations.name');
     }
 
     /**
