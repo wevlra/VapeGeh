@@ -2,7 +2,6 @@
 
 namespace App\Filament\Staff\Resources\Sales;
 
-use App\Filament\Staff\Resources\Sales\Pages\EditSale;
 use App\Filament\Staff\Resources\Sales\Pages\ListSales;
 use App\Filament\Staff\Resources\Sales\Pages\ViewSale;
 use App\Filament\Staff\Resources\Sales\Schemas\SaleForm;
@@ -61,7 +60,6 @@ class SaleResource extends Resource
         return [
             'index' => ListSales::route('/'),
             'view' => ViewSale::route('/{record}'),
-            'edit' => EditSale::route('/{record}/edit'),
         ];
     }
 

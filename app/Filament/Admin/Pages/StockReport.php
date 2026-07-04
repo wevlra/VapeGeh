@@ -39,7 +39,7 @@ class StockReport extends Page implements Tables\Contracts\HasTable
     {
         return $config
             ->only(['product.name', 'location.name', 'qty'])
-            ->cardTitle(fn ($record) => $record->product->sku);
+            ->cardTitle(fn ($record) => $record->product->name);
     }
 
     public function table(Table $table): Table
@@ -47,10 +47,6 @@ class StockReport extends Page implements Tables\Contracts\HasTable
         return $table
             ->query(Stock::query()->with(['product', 'location']))
             ->columns([
-                TextColumn::make('product.sku')
-                    ->label('SKU')
-                    ->searchable()
-                    ->sortable(),
                 TextColumn::make('product.name')
                     ->label('Produk')
                     ->searchable()

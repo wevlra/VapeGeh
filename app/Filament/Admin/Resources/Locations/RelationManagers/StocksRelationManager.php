@@ -26,10 +26,6 @@ class StocksRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                TextColumn::make('product.sku')
-                    ->label('SKU')
-                    ->searchable()
-                    ->sortable(),
                 TextColumn::make('product.name')
                     ->label('Produk')
                     ->searchable()

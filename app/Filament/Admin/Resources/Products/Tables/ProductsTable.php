@@ -4,9 +4,7 @@ namespace App\Filament\Admin\Resources\Products\Tables;
 
 use App\Filament\Admin\Resources\Products\ProductResource;
 use App\Models\Product;
-use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
@@ -19,23 +17,24 @@ class ProductsTable
         return $table
             ->recordUrl(fn (Product $record): string => ProductResource::getUrl('view', ['record' => $record]))
             ->columns([
-                TextColumn::make('sku')
-                    ->label('SKU')
-                    ->searchable()
-                    ->sortable(),
                 TextColumn::make('name')
-                    ->label('Nama')
+                    ->label('Nama Produk')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->view('filament.columns.admin-product-name'),
                 TextColumn::make('purchase_price')
                     ->label('Harga Beli')
-                    ->money('IDR')
-                    ->sortable(),
+                    ->formatStateUsing(fn ($state) => 'Rp '.number_format($state, 0, ',', '.'))
+                    ->sortable()
+                    ->visibleFrom('md'),
                 TextColumn::make('selling_price')
                     ->label('Harga Jual')
-                    ->money('IDR')
-                    ->sortable(),
+                    ->formatStateUsing(fn ($state) => 'Rp '.number_format($state, 0, ',', '.'))
+                    ->color('primary')
+                    ->sortable()
+                    ->visibleFrom('md'),
             ])
+            ->stackedOnMobile()
             ->filters([])
             ->recordActions([
                 EditAction::make(),
@@ -46,11 +45,6 @@ class ProductsTable
                             ->body('Produk telah dihapus permanen.')
                             ->danger()
                     ),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ]);
     }
 }

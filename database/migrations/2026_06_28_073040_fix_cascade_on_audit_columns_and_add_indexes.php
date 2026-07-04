@@ -65,17 +65,10 @@ return new class extends Migration
             $table->index('status');
         });
 
-        Schema::table('products', function (Blueprint $table) {
-            $table->unique('sku');
-        });
     }
 
     public function down(): void
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->dropUnique(['sku']);
-        });
-
         Schema::table('stock_transfers', function (Blueprint $table) {
             $table->dropIndex(['status']);
         });

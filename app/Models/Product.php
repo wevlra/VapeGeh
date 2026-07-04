@@ -7,20 +7,12 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
 
 #[Fillable(['name', 'purchase_price', 'selling_price'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
     use HasFactory;
-
-    protected static function booted(): void
-    {
-        static::creating(function (Product $product) {
-            $product->sku ??= 'PRD-'.Str::upper(Str::random(8));
-        });
-    }
 
     /**
      * @return HasMany<ProductPrice, $this>
