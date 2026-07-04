@@ -6,7 +6,9 @@ use App\Filament\Actions\PrintInvoiceAction;
 use App\Filament\Actions\PrintReceiptAction;
 use App\Filament\Admin\Resources\History\HistoryResource;
 use App\Models\Sale;
+use App\Models\StockEntry;
 use App\Models\StockMovement;
+use App\Models\StockTransfer;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -51,19 +53,57 @@ class HistoryTable
                 TextColumn::make('product.name')
                     ->label('Produk')
                     ->searchable()
-                    ->sortable()
-                    ->formatStateUsing(fn (StockMovement $record): string => $record->related instanceof Sale
-                        ? 'Penjualan ('.$record->related->invoice_number.')'
-                        : ($record->product?->name ?? '-')),
+                    ->formatStateUsing(function (StockMovement $record): string {
+                        $related = $record->related;
+
+                        if ($related instanceof Sale) {
+                            $items = $related->items->pluck('product.name')->filter()->toArray();
+                            $count = count($items);
+                            if ($count > 1) {
+                                return $items[0].' + '.($count - 1).' lainnya';
+                            }
+
+                            return $items[0] ?? '-';
+                        }
+
+                        if ($related instanceof StockTransfer) {
+                            $items = $related->items->pluck('product.name')->filter()->toArray();
+                            $count = count($items);
+                            if ($count > 1) {
+                                return $items[0].' + '.($count - 1).' lainnya';
+                            }
+
+                            return $items[0] ?? '-';
+                        }
+
+                        if ($related instanceof StockEntry) {
+                            $items = $related->items->pluck('product.name')->filter()->toArray();
+                            $count = count($items);
+                            if ($count > 1) {
+                                return $items[0].' + '.($count - 1).' lainnya';
+                            }
+
+                            return $items[0] ?? '-';
+                        }
+
+                        return $record->product?->name ?? '-';
+                    }),
                 TextColumn::make('location.name')
                     ->label('Lokasi')
                     ->sortable(),
                 TextColumn::make('quantity')
                     ->label('Jumlah')
                     ->getStateUsing(function (StockMovement $record): string {
-                        $total = $record->related instanceof Sale
-                            ? $record->related->items->sum('qty')
-                            : abs($record->quantity);
+                        $related = $record->related;
+                        if ($related instanceof Sale) {
+                            $total = $related->items->sum('qty');
+                        } elseif ($related instanceof StockTransfer) {
+                            $total = $related->items->sum('qty');
+                        } elseif ($related instanceof StockEntry) {
+                            $total = $related->items->sum('qty');
+                        } else {
+                            $total = abs($record->quantity);
+                        }
 
                         return $record->quantity > 0 ? '+'.$total : (string) (-$total);
                     })

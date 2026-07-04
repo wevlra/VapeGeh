@@ -6,7 +6,6 @@ use App\Filament\Admin\Resources\History\Pages\ListHistory;
 use App\Filament\Admin\Resources\History\Pages\ViewHistory;
 use App\Filament\Admin\Resources\History\Schemas\HistoryInfolist;
 use App\Filament\Admin\Resources\History\Tables\HistoryTable;
-use App\Models\Sale;
 use App\Models\StockMovement;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -43,19 +42,10 @@ class HistoryResource extends Resource
     {
         return parent::getEloquentQuery()
             ->with(['product', 'location', 'creator', 'related'])
-            ->where(function (Builder $query) {
-                // Non-Sale movements: show all
-                $query->where('related_type', '!=', Sale::class)
-                    // Sale movements: only show the first (min id) per related_id
-                    ->orWhere(function (Builder $q) {
-                        $q->where('related_type', Sale::class)
-                            ->whereIn('id', function ($sub) {
-                                $sub->selectRaw('MIN(id)')
-                                    ->from('stock_movements')
-                                    ->where('related_type', Sale::class)
-                                    ->groupBy('related_id');
-                            });
-                    });
+            ->whereIn('id', function ($sub) {
+                $sub->selectRaw('MIN(id)')
+                    ->from('stock_movements')
+                    ->groupBy(['related_type', 'related_id', 'location_id']);
             });
     }
 
