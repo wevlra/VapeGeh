@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\History\Schemas;
 
 use App\Models\Sale;
 use App\Models\StockEntry;
+use App\Models\StockOpname;
 use App\Models\StockTransfer;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\RepeatableEntry\TableColumn;
@@ -31,6 +32,7 @@ class HistoryInfolist
                                 'in' => 'Stok Masuk',
                                 'out' => 'Stok Keluar',
                                 'transfer' => 'Transfer',
+                                'opname' => 'Penyesuaian',
                                 'adjustment' => 'Penyesuaian',
                                 default => ucfirst($state),
                             })
@@ -38,6 +40,7 @@ class HistoryInfolist
                                 'in' => 'success',
                                 'out' => 'danger',
                                 'transfer' => 'info',
+                                'opname' => 'gray',
                                 'adjustment' => 'gray',
                                 default => 'gray',
                             })
@@ -45,6 +48,7 @@ class HistoryInfolist
                                 'in' => 'heroicon-o-arrow-down-tray',
                                 'out' => 'heroicon-o-arrow-up-tray',
                                 'transfer' => 'heroicon-o-arrow-right-end-on-rectangle',
+                                'opname' => 'heroicon-o-pencil',
                                 'adjustment' => 'heroicon-o-pencil',
                                 default => null,
                             }),
@@ -197,6 +201,58 @@ class HistoryInfolist
                                         TextEntry::make('unit_price')
                                             ->label('Harga Satuan')
                                             ->money('IDR'),
+                                    ]),
+                            ];
+                        }
+
+                        if ($record->related instanceof StockOpname) {
+                            return [
+                                TextEntry::make('related.opname_number')
+                                    ->label('No. Opname'),
+                                TextEntry::make('related.total_difference_value')
+                                    ->label('Total Selisih Nilai')
+                                    ->state(fn ($record) => $record?->related?->total_difference_value)
+                                    ->color(fn ($state) => $state < 0 ? 'danger' : ($state > 0 ? 'success' : 'gray'))
+                                    ->formatStateUsing(function ($state) {
+                                        $prefix = $state > 0 ? '+' : '';
+
+                                        return $prefix.'Rp '.number_format($state, 0, ',', '.');
+                                    }),
+                                TextEntry::make('related.notes')
+                                    ->label('Catatan')
+                                    ->columnSpanFull()
+                                    ->default('-'),
+                                RepeatableEntry::make('related.items')
+                                    ->hiddenLabel()
+                                    ->table([
+                                        TableColumn::make('Produk'),
+                                        TableColumn::make('Stok Sistem')
+                                            ->width(100),
+                                        TableColumn::make('Stok Fisik')
+                                            ->width(100),
+                                        TableColumn::make('Selisih')
+                                            ->width(100),
+                                        TableColumn::make('Selisih Nilai')
+                                            ->width(150),
+                                    ])
+                                    ->schema([
+                                        TextEntry::make('product.name')
+                                            ->label('Produk'),
+                                        TextEntry::make('system_qty')
+                                            ->label('Stok Sistem'),
+                                        TextEntry::make('actual_qty')
+                                            ->label('Stok Fisik'),
+                                        TextEntry::make('difference')
+                                            ->label('Selisih')
+                                            ->formatStateUsing(fn ($state) => $state > 0 ? '+'.$state : $state),
+                                        TextEntry::make('difference_value')
+                                            ->label('Selisih Nilai')
+                                            ->color(fn ($state) => $state < 0 ? 'danger' : ($state > 0 ? 'success' : 'gray'))
+                                            ->formatStateUsing(function ($state) {
+                                                $prefix = $state > 0 ? '+' : '';
+
+                                                return $prefix.'Rp '.number_format($state, 0, ',', '.');
+                                            }),
                                     ]),
                             ];
                         }

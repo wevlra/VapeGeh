@@ -58,6 +58,7 @@ class StockMovement extends Model
             StockTransfer::class => ['items.product'],
             Stock::class => [],
             StockEntry::class => ['items.product'],
+            StockOpname::class => ['items.product'],
         ]);
     }
 

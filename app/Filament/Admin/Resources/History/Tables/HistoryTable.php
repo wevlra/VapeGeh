@@ -8,6 +8,7 @@ use App\Filament\Admin\Resources\History\HistoryResource;
 use App\Models\Sale;
 use App\Models\StockEntry;
 use App\Models\StockMovement;
+use App\Models\StockOpname;
 use App\Models\StockTransfer;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
@@ -33,6 +34,7 @@ class HistoryTable
                         'in' => 'Stok Masuk',
                         'out' => 'Stok Keluar',
                         'transfer' => 'Transfer',
+                        'opname' => 'Penyesuaian',
                         'adjustment' => 'Penyesuaian',
                         default => ucfirst($state),
                     })
@@ -40,6 +42,7 @@ class HistoryTable
                         'in' => 'success',
                         'out' => 'danger',
                         'transfer' => 'info',
+                        'opname' => 'gray',
                         'adjustment' => 'gray',
                         default => 'gray',
                     })
@@ -47,6 +50,7 @@ class HistoryTable
                         'in' => 'heroicon-o-arrow-down-tray',
                         'out' => 'heroicon-o-arrow-up-tray',
                         'transfer' => 'heroicon-o-arrow-right-end-on-rectangle',
+                        'opname' => 'heroicon-o-pencil',
                         'adjustment' => 'heroicon-o-pencil',
                         default => null,
                     }),
@@ -86,6 +90,16 @@ class HistoryTable
                             return $items[0] ?? '-';
                         }
 
+                        if ($related instanceof StockOpname) {
+                            $items = $related->items->pluck('product.name')->filter()->toArray();
+                            $count = count($items);
+                            if ($count > 1) {
+                                return $items[0].' + '.($count - 1).' lainnya';
+                            }
+
+                            return $items[0] ?? '-';
+                        }
+
                         return $record->product?->name ?? '-';
                     }),
                 TextColumn::make('location.name')
@@ -101,8 +115,15 @@ class HistoryTable
                             $total = $related->items->sum('qty');
                         } elseif ($related instanceof StockEntry) {
                             $total = $related->items->sum('qty');
+                        } elseif ($related instanceof StockOpname) {
+                            $total = $related->items->sum('difference');
                         } else {
                             $total = abs($record->quantity);
+                        }
+
+                        $prefix = $total > 0 && (! ($related instanceof StockOpname) || $total > 0) ? '+' : '';
+                        if ($related instanceof StockOpname) {
+                            return $total > 0 ? '+'.$total : (string) $total;
                         }
 
                         return $record->quantity > 0 ? '+'.$total : (string) (-$total);
