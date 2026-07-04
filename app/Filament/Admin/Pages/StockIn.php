@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Pages;
 use App\Filament\Admin\Resources\History\HistoryResource;
 use App\Models\Location;
 use App\Models\Product;
+use App\Models\ProductPrice;
 use App\Models\Stock;
 use App\Models\StockEntry;
 use App\Models\StockMovement;
@@ -118,9 +119,10 @@ class StockIn extends Page implements HasForms
                                     ->minItems(1)
                                     ->addActionLabel('Tambah Produk')
                                     ->table([
-                                        TableColumn::make('Produk')->width('55%'),
-                                        TableColumn::make('Jumlah')->width('20%'),
-                                        TableColumn::make('Harga Beli')->width('25%'),
+                                        TableColumn::make('Produk')->width('40%'),
+                                        TableColumn::make('Jumlah')->width('15%'),
+                                        TableColumn::make('Harga Beli')->width('20%'),
+                                        TableColumn::make('Harga Jual Baru')->width('25%'),
                                     ])
                                     ->schema([
                                         Select::make('product_id')
@@ -147,6 +149,44 @@ class StockIn extends Page implements HasForms
                                             ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
                                             ->stripCharacters('.')
                                             ->required(),
+                                        Select::make('selling_price_type')
+                                            ->label('Harga Jual Baru')
+                                            ->options(function (callable $get): array {
+                                                $productId = $get('product_id');
+                                                if (! $productId) {
+                                                    return [];
+                                                }
+
+                                                $product = Product::find($productId);
+                                                if (! $product) {
+                                                    return [];
+                                                }
+
+                                                $options = [];
+
+                                                $defaultPrice = (float) $product->default_price;
+                                                if ($defaultPrice > 0) {
+                                                    $options['default'] = 'Default: Rp '.number_format($defaultPrice, 0, ',', '.');
+                                                }
+
+                                                foreach ($product->prices as $price) {
+                                                    $options['pp_'.$price->id] = "{$price->label}: Rp ".number_format((float) $price->price, 0, ',', '.');
+                                                }
+
+                                                $options['custom'] = 'Harga Kustom...';
+
+                                                return $options;
+                                            })
+                                            ->live()
+                                            ->searchable()
+                                            ->preload()
+                                            ->nullable(),
+                                        TextInput::make('custom_selling_price')
+                                            ->label('Harga Jual Kustom')
+                                            ->numeric()
+                                            ->prefix('Rp')
+                                            ->visible(fn (callable $get) => $get('selling_price_type') === 'custom')
+                                            ->required(fn (callable $get) => $get('selling_price_type') === 'custom'),
                                     ]),
                             ]),
                     ]),
@@ -198,13 +238,30 @@ class StockIn extends Page implements HasForms
 
                     $product->update(['purchase_price' => round($avgPrice, 2)]);
 
+                    $sellingPriceType = $item['selling_price_type'] ?? null;
+                    if ($sellingPriceType === 'custom') {
+                        $newSellingPrice = (float) ($item['custom_selling_price'] ?? 0);
+                    } elseif ($sellingPriceType === 'default') {
+                        $newSellingPrice = (float) $product->default_price;
+                    } elseif ($sellingPriceType && str_starts_with($sellingPriceType, 'pp_')) {
+                        $priceId = (int) str_replace('pp_', '', $sellingPriceType);
+                        $priceModel = ProductPrice::find($priceId);
+                        $newSellingPrice = $priceModel ? (float) $priceModel->price : null;
+                    } else {
+                        $newSellingPrice = null;
+                    }
+
                     if ($stock) {
                         $stock->increment('qty', $newQty);
+                        if ($newSellingPrice > 0) {
+                            $stock->update(['price' => $newSellingPrice]);
+                        }
                     } else {
                         $stock = Stock::create([
                             'product_id' => $item['product_id'],
                             'location_id' => $data['location_id'],
                             'qty' => $newQty,
+                            'price' => $newSellingPrice > 0 ? $newSellingPrice : null,
                         ]);
                     }
 

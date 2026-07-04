@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['stock_transfer_id', 'product_id', 'qty'])]
+#[Fillable(['stock_transfer_id', 'product_id', 'qty', 'price'])]
 class StockTransferItem extends Model
 {
     /**
@@ -29,6 +29,7 @@ class StockTransferItem extends Model
     {
         return [
             'qty' => 'integer',
+            'price' => 'float',
         ];
     }
 }

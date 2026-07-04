@@ -108,6 +108,45 @@ it('completes a transfer and moves stock correctly', function () {
         ->and($in->location_id)->toBe($store->id);
 });
 
+it('completes a transfer and updates destination stock price correctly', function () {
+    $warehouse = Location::factory()->warehouse()->create();
+    $store = Location::factory()->create();
+    $admin = User::factory()->admin()->create();
+    $this->actingAs($admin);
+    $product = Product::factory()->create();
+
+    Stock::factory()->create([
+        'product_id' => $product->id,
+        'location_id' => $warehouse->id,
+        'qty' => 50,
+        'price' => null,
+    ]);
+
+    $transfer = StockTransfer::factory()->create([
+        'from_location_id' => $warehouse->id,
+        'to_location_id' => $store->id,
+        'status' => 'pending',
+        'created_by' => $admin->id,
+    ]);
+
+    StockTransferItem::create([
+        'stock_transfer_id' => $transfer->id,
+        'product_id' => $product->id,
+        'qty' => 20,
+        'price' => 75000.00,
+    ]);
+
+    $action = app(CompleteStockTransfer::class);
+    $action->execute($transfer, $admin);
+
+    $destinationStock = Stock::where('product_id', $product->id)
+        ->where('location_id', $store->id)
+        ->first();
+
+    expect($destinationStock->qty)->toBe(20)
+        ->and($destinationStock->price)->toBe(75000.00);
+});
+
 it('throws exception when source stock is insufficient', function () {
     $warehouse = Location::factory()->warehouse()->create();
     $store = Location::factory()->create();

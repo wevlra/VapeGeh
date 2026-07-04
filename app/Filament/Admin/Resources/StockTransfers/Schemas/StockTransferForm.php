@@ -2,6 +2,8 @@
 
 namespace App\Filament\Admin\Resources\StockTransfers\Schemas;
 
+use App\Models\Product;
+use App\Models\ProductPrice;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
@@ -57,8 +59,10 @@ class StockTransferForm
                                     ->addActionLabel('Tambah Produk')
                                     ->table([
                                         TableColumn::make('Produk')
-                                            ->width('65%'),
+                                            ->width('45%'),
                                         TableColumn::make('Jumlah')
+                                            ->width('25%'),
+                                        TableColumn::make('Harga Jual Baru')
                                             ->width('30%'),
                                     ])
                                     ->schema([
@@ -67,7 +71,8 @@ class StockTransferForm
                                             ->relationship('product', 'name')
                                             ->required()
                                             ->searchable()
-                                            ->preload(),
+                                            ->preload()
+                                            ->reactive(),
 
                                         TextInput::make('qty')
                                             ->label('Jumlah')
@@ -76,6 +81,76 @@ class StockTransferForm
                                             ->maxValue(2147483647)
                                             ->default(1)
                                             ->required(),
+
+                                        Select::make('price')
+                                            ->label('Harga Jual Baru')
+                                            ->options(function (callable $get): array {
+                                                $productId = $get('product_id');
+                                                if (! $productId) {
+                                                    return [];
+                                                }
+
+                                                $product = Product::find($productId);
+                                                if (! $product) {
+                                                    return [];
+                                                }
+
+                                                $options = [];
+
+                                                $defaultPrice = (float) $product->default_price;
+                                                if ($defaultPrice > 0) {
+                                                    $options['default'] = 'Default: Rp '.number_format($defaultPrice, 0, ',', '.');
+                                                }
+
+                                                foreach ($product->prices as $price) {
+                                                    $options['pp_'.$price->id] = "{$price->label}: Rp ".number_format((float) $price->price, 0, ',', '.');
+                                                }
+
+                                                return $options;
+                                            })
+                                            ->formatStateUsing(function ($state, callable $get) {
+                                                if (! $state) {
+                                                    return null;
+                                                }
+                                                $productId = $get('product_id');
+                                                if (! $productId) {
+                                                    return $state;
+                                                }
+                                                $product = Product::find($productId);
+                                                if (! $product) {
+                                                    return $state;
+                                                }
+
+                                                if ((float) $state == (float) $product->default_price) {
+                                                    return 'default';
+                                                }
+
+                                                foreach ($product->prices as $p) {
+                                                    if ((float) $state == (float) $p->price) {
+                                                        return 'pp_'.$p->id;
+                                                    }
+                                                }
+
+                                                return $state;
+                                            })
+                                            ->dehydrateStateUsing(function ($state, callable $get) {
+                                                if ($state === 'default') {
+                                                    $product = Product::find($get('product_id'));
+
+                                                    return $product ? (float) $product->default_price : null;
+                                                }
+                                                if ($state && str_starts_with($state, 'pp_')) {
+                                                    $priceId = (int) str_replace('pp_', '', $state);
+                                                    $priceModel = ProductPrice::find($priceId);
+
+                                                    return $priceModel ? (float) $priceModel->price : null;
+                                                }
+
+                                                return $state;
+                                            })
+                                            ->searchable()
+                                            ->preload()
+                                            ->nullable(),
                                     ]),
                             ]),
                     ]),

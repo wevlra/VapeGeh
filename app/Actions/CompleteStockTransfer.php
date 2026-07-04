@@ -48,9 +48,13 @@ class CompleteStockTransfer
                         'product_id' => $item->product_id,
                         'location_id' => $transfer->to_location_id,
                         'qty' => $item->qty,
+                        'price' => $item->price > 0 ? $item->price : null,
                     ]);
                 } else {
                     $destinationStock->increment('qty', $item->qty);
+                    if ($item->price > 0) {
+                        $destinationStock->update(['price' => $item->price]);
+                    }
                 }
 
                 StockMovement::create([

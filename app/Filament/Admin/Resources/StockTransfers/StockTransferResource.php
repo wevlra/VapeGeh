@@ -45,7 +45,7 @@ class StockTransferResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['fromLocation', 'toLocation', 'creator']);
+            ->with(['fromLocation', 'toLocation', 'creator', 'items.product']);
     }
 
     public static function table(Table $table): Table

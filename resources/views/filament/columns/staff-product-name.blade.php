@@ -10,15 +10,19 @@
             <span class="text-sm font-semibold text-gray-950 dark:text-white truncate">
                 {{ $getRecord()->name }}
             </span>
+            @php
+                $locationId = auth()->user()?->location_id;
+                $stock = $getRecord()->stocks->firstWhere('location_id', $locationId);
+                $price = $stock && $stock->price > 0 ? $stock->price : $getRecord()->selling_price;
+            @endphp
             <span class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                Rp {{ number_format($getRecord()->selling_price, 0, ',', '.') }}
+                Rp {{ number_format($price, 0, ',', '.') }}
             </span>
         </div>
         <div class="flex flex-col items-end shrink-0">
             <span class="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-0.5">Stok</span>
             @php
-                $locationId = auth()->user()?->location_id;
-                $qty = $getRecord()->stocks->firstWhere('location_id', $locationId)?->qty ?? 0;
+                $qty = $stock?->qty ?? 0;
                 $color = match (true) {
                     $qty <= 0 => 'danger',
                     $qty < 10 => 'warning',

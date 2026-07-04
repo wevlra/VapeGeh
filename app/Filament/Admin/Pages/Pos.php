@@ -53,7 +53,9 @@ class Pos extends StaffPos
                 TextColumn::make('product.name')
                     ->label('Produk')
                     ->formatStateUsing(fn (Stock $record): string => mb_strimwidth($record->product->name, 0, 30, '...'))
-                    ->description(fn (Stock $record): string => 'Rp '.number_format((float) $record->product->default_price, 0, ',', '.'))
+                    ->description(fn (Stock $record): string => $record->price > 0
+                        ? 'Harga Outlet: Rp '.number_format((float) $record->price, 0, ',', '.').' (Default: Rp '.number_format((float) $record->product->default_price, 0, ',', '.').')'
+                        : 'Rp '.number_format((float) $record->product->default_price, 0, ',', '.'))
                     ->searchable()
                     ->sortable(),
 
@@ -94,6 +96,10 @@ class Pos extends StaffPos
                         $product = $record->product;
                         $options = [];
 
+                        if ((float) $record->price > 0) {
+                            $options['stock'] = 'Harga Outlet: Rp '.number_format((float) $record->price, 0, ',', '.');
+                        }
+
                         if ((float) $product->selling_price > 0) {
                             $options['default'] = 'Default: Rp '.number_format((float) $product->selling_price, 0, ',', '.');
                         }
@@ -108,7 +114,7 @@ class Pos extends StaffPos
 
                         return $options;
                     })
-                    ->default('default')
+                    ->default(fn (Stock $record): string => $record->price > 0 ? 'stock' : 'default')
                     ->required(),
             ])
             ->action(function (array $data, Stock $record): void {
@@ -118,6 +124,9 @@ class Pos extends StaffPos
                 if ($selected === 'default') {
                     $price = (float) $product->default_price;
                     $label = 'Default';
+                } elseif ($selected === 'stock') {
+                    $price = (float) $record->price;
+                    $label = 'Harga Outlet';
                 } else {
                     $priceId = (int) str_replace('pp_', '', $selected);
                     $priceModel = $product->prices()->find($priceId);

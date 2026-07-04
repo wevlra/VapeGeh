@@ -69,7 +69,8 @@ class Pos extends Page implements HasTable
                     ->visibleFrom('md'),
                 TextColumn::make('default_price')
                     ->label('Harga')
-                    ->formatStateUsing(fn (Product $record): string => 'Rp '.number_format((float) $record->default_price, 0, ',', '.'))
+                    ->getStateUsing(fn (Product $record): float => $record->stocks->first()?->price > 0 ? (float) $record->stocks->first()?->price : (float) $record->default_price)
+                    ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
                     ->visibleFrom('md'),
                 TextColumn::make('stock_qty')
                     ->label('Stok')
@@ -89,8 +90,8 @@ class Pos extends Page implements HasTable
                             ->formatStateUsing(fn (string $state): string => mb_strimwidth($state, 0, 30, '...'))
                             ->weight('bold'),
                         TextColumn::make('default_price_mobile')
-                            ->state(fn (Product $record): string => $record->default_price)
-                            ->formatStateUsing(fn (string $state): string => 'Rp '.number_format((float) $state, 0, ',', '.'))
+                            ->state(fn (Product $record): float => $record->stocks->first()?->price > 0 ? (float) $record->stocks->first()?->price : (float) $record->default_price)
+                            ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
                             ->color('gray'),
                     ]),
                     Stack::make([
@@ -129,14 +130,21 @@ class Pos extends Page implements HasTable
     {
         $productIds = collect($this->cart)->pluck('product_id');
         $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
+        $locationId = auth()->user()->location_id;
 
-        return collect($this->cart)->map(function ($item) use ($products) {
+        $stocks = Stock::whereIn('product_id', $productIds)
+            ->where('location_id', $locationId)
+            ->get()
+            ->keyBy('product_id');
+
+        return collect($this->cart)->map(function ($item) use ($products, $stocks) {
             $product = $products->get($item['product_id']);
             if (! $product) {
                 return null;
             }
             $item['name'] = $product->name;
-            $item['price'] = (float) $product->default_price;
+            $stock = $stocks->get($item['product_id']);
+            $item['price'] = $stock && $stock->price > 0 ? (float) $stock->price : (float) $product->default_price;
             $item['subtotal'] = $item['price'] * (int) $item['qty'];
 
             return $item;
@@ -317,7 +325,7 @@ class Pos extends Page implements HasTable
                         );
                     }
 
-                    $price = (float) $product->default_price;
+                    $price = $stock && $stock->price > 0 ? (float) $stock->price : (float) $product->default_price;
                     $subtotal = $price * $qty;
                     $total += $subtotal;
 

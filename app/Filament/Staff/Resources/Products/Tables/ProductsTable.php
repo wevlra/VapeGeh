@@ -23,6 +23,11 @@ class ProductsTable
                     ->view('filament.columns.staff-product-name'),
                 TextColumn::make('selling_price')
                     ->label('Harga')
+                    ->getStateUsing(function (Product $record) use ($locationId): float {
+                        $stock = $record->stocks->firstWhere('location_id', $locationId);
+
+                        return $stock && $stock->price > 0 ? (float) $stock->price : (float) $record->selling_price;
+                    })
                     ->money('IDR')
                     ->sortable()
                     ->visibleFrom('md'),
