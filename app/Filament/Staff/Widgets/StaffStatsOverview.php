@@ -2,6 +2,7 @@
 
 namespace App\Filament\Staff\Widgets;
 
+use App\Models\Income;
 use App\Models\Sale;
 use App\Models\Stock;
 use Carbon\Carbon;
@@ -76,12 +77,14 @@ class StaffStatsOverview extends StatsOverviewWidget
         $start = $this->periodStart();
 
         $saleQuery = Sale::where('location_id', $locationId);
+        $incomeQuery = Income::where('location_id', $locationId);
         if ($start) {
             $saleQuery->where('created_at', '>=', $start);
+            $incomeQuery->where('date', '>=', $start->toDateString());
         }
 
         $totalSales = $saleQuery->count();
-        $totalRevenue = $saleQuery->sum('total');
+        $totalRevenue = $incomeQuery->sum('amount');
         $totalStock = Stock::where('location_id', $locationId)->sum('qty');
 
         $days = match ($this->period) {
@@ -96,9 +99,9 @@ class StaffStatsOverview extends StatsOverviewWidget
         $chartValues = collect(range($days - 1, 0))->map(function ($i) use ($chartStart, $locationId) {
             $day = $chartStart->copy()->addDays($i);
 
-            return (int) Sale::where('location_id', $locationId)
-                ->whereBetween('created_at', [$day->copy()->startOfDay(), $day->copy()->endOfDay()])
-                ->sum('total');
+            return (int) Income::where('location_id', $locationId)
+                ->where('date', $day->toDateString())
+                ->sum('amount');
         })->toArray();
 
         return [

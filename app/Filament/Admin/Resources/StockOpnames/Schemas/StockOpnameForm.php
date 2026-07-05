@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\StockOpnames\Schemas;
 
 use App\Models\Product;
 use App\Models\Stock;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
@@ -53,6 +54,7 @@ class StockOpnameForm
                                                     $systemQty = $stock ? $stock->qty : 0;
                                                     $items[] = [
                                                         'product_id' => $product->id,
+                                                        'product_name' => $product->name,
                                                         'system_qty' => $systemQty,
                                                         'actual_qty' => $systemQty,
                                                         'difference' => 0,
@@ -85,14 +87,11 @@ class StockOpnameForm
                                         TableColumn::make('Catatan'),
                                     ])
                                     ->schema([
-                                        Select::make('product_id')
+                                        TextInput::make('product_name')
                                             ->label('Produk')
-                                            ->relationship('product', 'name')
-                                            ->required()
-                                            ->searchable()
-                                            ->preload()
                                             ->disabled()
-                                            ->dehydrated(),
+                                            ->dehydrated(false),
+                                        Hidden::make('product_id'),
                                         TextInput::make('system_qty')
                                             ->label('Stok Sistem')
                                             ->integer()
@@ -124,6 +123,11 @@ class StockOpnameForm
                                     })
                                     ->mutateRelationshipDataBeforeSaveUsing(function (array $data): array {
                                         $data['difference'] = (int) ($data['actual_qty'] ?? 0) - (int) ($data['system_qty'] ?? 0);
+
+                                        return $data;
+                                    })
+                                    ->mutateRelationshipDataBeforeFillUsing(function (array $data): array {
+                                        $data['product_name'] = Product::find($data['product_id'])?->name ?? '-';
 
                                         return $data;
                                     }),

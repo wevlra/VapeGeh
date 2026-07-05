@@ -2,7 +2,7 @@
 
 namespace App\Filament\Staff\Widgets;
 
-use App\Models\Sale;
+use App\Models\Income;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -20,12 +20,12 @@ class StaffSalesChart extends ChartWidget
         $end = now()->endOfMonth();
 
         $dateExpr = DB::connection()->getDriverName() === 'sqlite'
-            ? "strftime('%Y-%m', created_at) as month_key"
-            : "DATE_FORMAT(created_at, '%Y-%m') as month_key";
+            ? "strftime('%Y-%m', date) as month_key"
+            : "DATE_FORMAT(date, '%Y-%m') as month_key";
 
-        $salesByMonth = Sale::where('location_id', $locationId)
-            ->whereBetween('created_at', [$start, $end])
-            ->selectRaw("{$dateExpr}, SUM(total) as total")
+        $salesByMonth = Income::where('location_id', $locationId)
+            ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+            ->selectRaw("{$dateExpr}, SUM(amount) as total")
             ->groupBy('month_key')
             ->pluck('total', 'month_key');
 

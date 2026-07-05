@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Pages;
 
 use App\Filament\Admin\Resources\History\HistoryResource;
+use App\Models\Expense;
 use App\Models\Location;
 use App\Models\Product;
 use App\Models\ProductPrice;
@@ -11,8 +12,8 @@ use App\Models\StockEntry;
 use App\Models\StockMovement;
 use App\Models\Vendor;
 use BackedEnum;
-use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Repeater\TableColumn;
+use Filament\Actions\Action;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -20,17 +21,29 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Support\RawJs;
+use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\Layout\Stack;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\HtmlString;
 
-class StockIn extends Page implements HasForms
+class StockIn extends Page implements HasForms, HasTable
 {
     use InteractsWithForms;
+    use InteractsWithTable;
 
     protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedArrowUpTray;
 
@@ -49,6 +62,8 @@ class StockIn extends Page implements HasForms
     protected string $view = 'filament.admin.pages.stock-in';
 
     public ?array $data = [];
+
+    public array $items = [];
 
     public function mount(): void
     {
@@ -113,90 +128,154 @@ class StockIn extends Page implements HasForms
                             ->description('Pilih produk dan jumlah')
                             ->icon(Heroicon::OutlinedCube)
                             ->schema([
-                                Repeater::make('items')
-                                    ->label('Produk')
-                                    ->defaultItems(1)
-                                    ->minItems(1)
-                                    ->addActionLabel('Tambah Produk')
-                                    ->table([
-                                        TableColumn::make('Produk')->width('40%'),
-                                        TableColumn::make('Jumlah')->width('15%'),
-                                        TableColumn::make('Harga Beli')->width('20%'),
-                                        TableColumn::make('Harga Jual Baru')->width('25%'),
-                                    ])
-                                    ->schema([
-                                        Select::make('product_id')
-                                            ->label('Produk')
-                                            ->options(fn () => Product::orderBy('name')->get()
-                                                ->mapWithKeys(fn (Product $p): array => [$p->id => "{$p->name}"])
-                                                ->toArray())
-                                            ->required()
-                                            ->searchable()
-                                            ->preload()
-                                            ->live()
-                                            ->afterStateUpdated(fn ($state, callable $set) => $set('price', Product::find($state)?->purchase_price ?? 0)),
-                                        TextInput::make('qty')
-                                            ->label('Jumlah')
-                                            ->integer()
-                                            ->minValue(1)
-                                            ->default(1)
-                                            ->required(),
-                                        TextInput::make('price')
-                                            ->label('Harga Beli')
-                                            ->numeric()
-                                            ->minValue(0)
-                                            ->prefix('Rp')
-                                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
-                                            ->stripCharacters('.')
-                                            ->required(),
-                                        Select::make('selling_price_type')
-                                            ->label('Harga Jual Baru')
-                                            ->options(function (callable $get): array {
-                                                $productId = $get('product_id');
-                                                if (! $productId) {
-                                                    return [];
-                                                }
-
-                                                $product = Product::find($productId);
-                                                if (! $product) {
-                                                    return [];
-                                                }
-
-                                                $options = [];
-
-                                                $defaultPrice = (float) $product->default_price;
-                                                if ($defaultPrice > 0) {
-                                                    $options['default'] = 'Default: Rp '.number_format($defaultPrice, 0, ',', '.');
-                                                }
-
-                                                foreach ($product->prices as $price) {
-                                                    $options['pp_'.$price->id] = "{$price->label}: Rp ".number_format((float) $price->price, 0, ',', '.');
-                                                }
-
-                                                $options['custom'] = 'Harga Kustom...';
-
-                                                return $options;
-                                            })
-                                            ->live()
-                                            ->searchable()
-                                            ->preload()
-                                            ->nullable(),
-                                        TextInput::make('custom_selling_price')
-                                            ->label('Harga Jual Kustom')
-                                            ->numeric()
-                                            ->prefix('Rp')
-                                            ->visible(fn (callable $get) => $get('selling_price_type') === 'custom')
-                                            ->required(fn (callable $get) => $get('selling_price_type') === 'custom'),
-                                    ]),
+                                EmbeddedTable::make(),
+                                View::make('filament.admin.pages.selected-items-preview'),
                             ]),
                     ]),
             ]);
     }
 
+    public function table(Table $table): Table
+    {
+        $addItemAction = Action::make('addItem')
+            ->modalHeading('Jumlah Stok Masuk')
+            ->modalDescription(fn (Product $record): string => $record->name)
+            ->modalSubmitActionLabel('Simpan')
+            ->modalIcon(null)
+            ->form(function (Product $record) {
+                $existing = collect($this->items)->firstWhere('product_id', $record->id);
+
+                return [
+                    TextInput::make('price')
+                        ->label('Harga Beli')
+                        ->numeric()
+                        ->prefix('Rp')
+                        ->default($existing['price'] ?? $record->purchase_price)
+                        ->required(),
+                    Select::make('selling_price_type')
+                        ->label('Harga Jual Baru')
+                        ->options(function () use ($record) {
+                            $options = [];
+                            $defaultPrice = (float) $record->default_price;
+                            if ($defaultPrice > 0) {
+                                $options['default'] = 'Default: Rp '.number_format($defaultPrice, 0, ',', '.');
+                            }
+                            foreach ($record->prices as $price) {
+                                $options['pp_'.$price->id] = "{$price->label}: Rp ".number_format((float) $price->price, 0, ',', '.');
+                            }
+                            $options['custom'] = 'Harga Kustom...';
+
+                            return $options;
+                        })
+                        ->default($existing['selling_price_type'] ?? null)
+                        ->live()
+                        ->nullable(),
+                    TextInput::make('custom_selling_price')
+                        ->label('Harga Jual Kustom')
+                        ->numeric()
+                        ->prefix('Rp')
+                        ->default($existing['custom_selling_price'] ?? null)
+                        ->visible(fn (callable $get) => $get('selling_price_type') === 'custom')
+                        ->required(fn (callable $get) => $get('selling_price_type') === 'custom'),
+                    Grid::make(['default' => 3])
+                        ->schema([
+                            Actions::make([
+                                Action::make('decrement')
+                                    ->button()
+                                    ->label('')
+                                    ->icon('heroicon-m-minus')
+                                    ->color('gray')
+                                    ->action(fn (Set $set, Get $get) => $set('qty', max(1, (int) $get('qty') - 1))),
+                            ])->alignCenter(),
+                            TextInput::make('qty')
+                                ->hiddenLabel()
+                                ->integer()
+                                ->minValue(1)
+                                ->default($existing['qty'] ?? 1)
+                                ->required()
+                                ->live()
+                                ->extraAttributes(['class' => 'text-center text-3xl font-bold border-none bg-transparent focus:ring-0']),
+                            Actions::make([
+                                Action::make('increment')
+                                    ->button()
+                                    ->label('')
+                                    ->icon('heroicon-m-plus')
+                                    ->action(fn (Set $set, Get $get) => $set('qty', (int) $get('qty') + 1)),
+                            ])->alignCenter(),
+                        ]),
+                    Placeholder::make('stock_comparison')
+                        ->hiddenLabel()
+                        ->content(function (Get $get) use ($record) {
+                            $qty = (int) ($get('qty') ?? 1);
+                            $locationId = $this->data['location_id'] ?? null;
+                            $oldStock = $locationId
+                                ? (int) Stock::where('product_id', $record->id)->where('location_id', $locationId)->value('qty')
+                                : 0;
+                            $newStock = $oldStock + $qty;
+
+                            return new HtmlString("<div class='text-center text-lg text-gray-500 font-medium'>{$oldStock} &rarr; {$newStock}</div>");
+                        }),
+                ];
+            })
+            ->action(function (array $data, Product $record) {
+                $existingIndex = collect($this->items)->search(fn ($item) => $item['product_id'] === $record->id);
+
+                $itemData = [
+                    'product_id' => $record->id,
+                    'name' => $record->name,
+                    'qty' => (int) $data['qty'],
+                    'price' => (float) $data['price'],
+                    'selling_price_type' => $data['selling_price_type'] ?? null,
+                    'custom_selling_price' => $data['selling_price_type'] === 'custom' ? (float) ($data['custom_selling_price'] ?? 0) : null,
+                ];
+
+                if ($existingIndex !== false) {
+                    $this->items[$existingIndex] = $itemData;
+                } else {
+                    $this->items[] = $itemData;
+                }
+            });
+
+        return $table
+            ->query(Product::query()->orderBy('name'))
+            ->columns([
+                Split::make([
+                    Stack::make([
+                        TextColumn::make('name')
+                            ->label('Nama Produk')
+                            ->weight('bold')
+                            ->searchable()
+                            ->action($addItemAction),
+                        TextColumn::make('purchase_price')
+                            ->label('Harga Beli Terakhir')
+                            ->formatStateUsing(fn (float $state): string => 'Beli: Rp '.number_format($state, 0, ',', '.'))
+                            ->color('gray')
+                            ->action($addItemAction),
+                    ]),
+                    Stack::make([
+                        TextColumn::make('default_price')
+                            ->label('Harga Jual Default')
+                            ->formatStateUsing(fn (float $state): string => 'Jual: Rp '.number_format($state, 0, ',', '.'))
+                            ->alignEnd()
+                            ->color('gray')
+                            ->action($addItemAction),
+                    ])->space(1),
+                ]),
+            ]);
+    }
+
+    public function removeItem(int $productId): void
+    {
+        $this->items = collect($this->items)
+            ->reject(fn ($item) => $item['product_id'] === $productId)
+            ->values()
+            ->toArray();
+    }
+
     public function save(): void
     {
         $data = $this->form->getState();
-        $items = $data['items'] ?? [];
+        $items = $this->items;
         $location = Location::find($data['location_id']);
 
         if (empty($items)) {
@@ -272,6 +351,25 @@ class StockIn extends Page implements HasForms
                     ]);
                 }
 
+                $totalAmount = 0;
+                foreach ($items as $item) {
+                    $newPrice = (float) $item['price'];
+                    $newQty = (int) $item['qty'];
+                    $totalAmount += ($newPrice * $newQty);
+                }
+
+                if ($totalAmount > 0) {
+                    $vendor = Vendor::find($data['vendor_id']);
+                    $vendorName = $vendor ? $vendor->name : 'Vendor';
+                    Expense::create([
+                        'location_id' => $data['location_id'],
+                        'category' => 'purchase',
+                        'description' => "Stok Masuk dari {$vendorName} (Entry #{$entry->id})",
+                        'amount' => $totalAmount,
+                        'date' => now(),
+                    ]);
+                }
+
                 return StockMovement::create([
                     'product_id' => $items[0]['product_id'],
                     'location_id' => $data['location_id'],
@@ -295,6 +393,7 @@ class StockIn extends Page implements HasForms
         }
 
         $this->form->fill();
+        $this->items = [];
 
         Notification::make()
             ->title('Stok ditambahkan')
