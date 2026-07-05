@@ -2,12 +2,12 @@
 
 namespace App\Filament\Admin\Resources\Products\RelationManagers;
 
+use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\Stock;
 use App\Models\StockMovement;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 
 class HistoryRelationManager extends RelationManager
 {
+    use NotifiesWithDetail;
+
     protected static string $relationship = 'movements';
 
     protected static ?string $title = 'Riwayat';
@@ -93,11 +95,10 @@ class HistoryRelationManager extends RelationManager
                         if ($newQty === $oldQty) {
                             $record->update(['notes' => $data['notes'] ?? null]);
 
-                            Notification::make()
-                                ->title('Catatan diperbarui')
-                                ->body('Catatan untuk pergerakan ini berhasil diperbarui.')
-                                ->success()
-                                ->send();
+                            $this->notifySuccess(
+                                'Catatan Diperbarui',
+                                'Catatan untuk pergerakan stok ini berhasil diperbarui.'
+                            );
 
                             return;
                         }
@@ -133,13 +134,12 @@ class HistoryRelationManager extends RelationManager
                             }
                         });
 
-                        Notification::make()
-                            ->title($record->type === 'in' ? 'Stok masuk diperbarui' : 'Stok keluar diperbarui')
-                            ->body($record->type === 'in'
+                        $this->notifySuccess(
+                            $record->type === 'in' ? 'Stok Masuk Diperbarui' : 'Stok Keluar Diperbarui',
+                            $record->type === 'in'
                                 ? 'Catatan stok masuk telah diperbarui menjadi '.$newQty.' unit.'
-                                : 'Catatan stok keluar telah diperbarui menjadi '.$newQty.' unit.')
-                            ->success()
-                            ->send();
+                                : 'Catatan stok keluar telah diperbarui menjadi '.$newQty.' unit.'
+                        );
                     }),
             ])
             ->defaultSort('created_at', 'desc');

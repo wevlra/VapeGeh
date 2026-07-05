@@ -2,6 +2,7 @@
 
 namespace App\Filament\Staff\Pages;
 
+use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\Stock;
@@ -13,7 +14,6 @@ use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Schema;
@@ -31,6 +31,7 @@ class Pos extends Page implements HasTable
 {
     use InteractsWithActions;
     use InteractsWithTable;
+    use NotifiesWithDetail;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
 
@@ -163,14 +164,14 @@ class Pos extends Page implements HasTable
         if ($existingIndex !== false) {
             $currentQty = (int) $this->cart[$existingIndex]['qty'] + 1;
             if (! $this->isStockAvailable($productId, $currentQty)) {
-                Notification::make()->warning()->title('Stok tidak mencukupi.')->send();
+                $this->notifyWarning('Stok Tidak Mencukupi');
 
                 return;
             }
             $this->cart[$existingIndex]['qty'] = $currentQty;
         } else {
             if (! $this->isStockAvailable($productId, 1)) {
-                Notification::make()->warning()->title('Stok habis.')->send();
+                $this->notifyWarning('Stok Habis');
 
                 return;
             }
@@ -197,7 +198,7 @@ class Pos extends Page implements HasTable
         }
 
         if (! $this->isStockAvailable($this->cart[$index]['product_id'], $qty)) {
-            Notification::make()->warning()->title('Stok tidak mencukupi.')->send();
+            $this->notifyWarning('Stok Tidak Mencukupi');
 
             return;
         }
@@ -375,21 +376,16 @@ class Pos extends Page implements HasTable
                 return $sale;
             });
         } catch (DomainException $e) {
-            Notification::make()
-                ->title('Penjualan gagal')
-                ->body($e->getMessage())
-                ->danger()
-                ->send();
+            $this->notifyError('Penjualan Gagal', $e->getMessage());
 
             return;
         } catch (\Throwable $e) {
             report($e);
 
-            Notification::make()
-                ->title('Terjadi kesalahan')
-                ->body('Silakan coba lagi atau hubungi administrator.')
-                ->danger()
-                ->send();
+            $this->notifyError(
+                'Terjadi Kesalahan',
+                'Silakan coba lagi atau hubungi administrator.'
+            );
 
             return;
         }
@@ -399,10 +395,10 @@ class Pos extends Page implements HasTable
 
         $printUrl = route('admin.sales.receipt', $sale);
 
-        Notification::make()
-            ->title('Penjualan selesai')
-            ->body("Invoice \"{$sale->invoice_number}\" berhasil dibuat. Total: Rp ".number_format($sale->total, 0, ',', '.'))
-            ->success()
+        static::buildSuccessNotification(
+            'Penjualan Selesai',
+            "Invoice \"{$sale->invoice_number}\" berhasil dibuat. Total: Rp ".number_format($sale->total, 0, ',', '.')
+        )
             ->actions([
                 Action::make('print')
                     ->label('Cetak Nota')

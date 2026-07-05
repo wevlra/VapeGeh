@@ -4,10 +4,10 @@ namespace App\Filament\Admin\Resources\StockTransfers\Tables;
 
 use App\Actions\CompleteStockTransfer;
 use App\Filament\Admin\Resources\StockTransfers\StockTransferResource;
+use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\StockTransfer;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
-use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -82,17 +82,15 @@ class StockTransfersTable
                                 auth()->user(),
                             );
 
-                            Notification::make()
-                                ->title('Transfer selesai')
-                                ->body("Transfer \"{$record->transfer_number}\" telah selesai. Stok telah dipindahkan antar lokasi.")
-                                ->success()
-                                ->send();
+                            NotifiesWithDetail::buildSuccessNotification(
+                                'Transfer Selesai',
+                                "Transfer \"{$record->transfer_number}\" telah selesai. Stok telah dipindahkan antar lokasi."
+                            )->send();
                         } catch (\DomainException $e) {
-                            Notification::make()
-                                ->title('Transfer gagal')
-                                ->body($e->getMessage())
-                                ->danger()
-                                ->send();
+                            NotifiesWithDetail::buildErrorNotification(
+                                'Transfer Gagal',
+                                $e->getMessage()
+                            )->send();
                         }
                     }),
             ])

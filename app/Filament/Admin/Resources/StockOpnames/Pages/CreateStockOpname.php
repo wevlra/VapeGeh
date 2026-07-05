@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\StockOpnames\Pages;
 
 use App\Filament\Admin\Resources\StockOpnames\StockOpnameResource;
+use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\Product;
 use App\Models\Stock;
 use Filament\Resources\Pages\CreateRecord;
@@ -10,6 +11,8 @@ use Illuminate\Support\Str;
 
 class CreateStockOpname extends CreateRecord
 {
+    use NotifiesWithDetail;
+
     protected static string $resource = StockOpnameResource::class;
 
     protected function mutateFormDataBeforeCreate(array $data): array

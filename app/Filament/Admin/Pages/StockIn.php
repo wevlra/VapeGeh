@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Pages;
 
 use App\Filament\Admin\Resources\History\HistoryResource;
+use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\Expense;
 use App\Models\Location;
 use App\Models\Product;
@@ -19,7 +20,6 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\EmbeddedTable;
@@ -44,6 +44,7 @@ class StockIn extends Page implements HasForms, HasTable
 {
     use InteractsWithForms;
     use InteractsWithTable;
+    use NotifiesWithDetail;
 
     protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedArrowUpTray;
 
@@ -279,11 +280,10 @@ class StockIn extends Page implements HasForms, HasTable
         $location = Location::find($data['location_id']);
 
         if (empty($items)) {
-            Notification::make()
-                ->title('Tidak ada produk')
-                ->body('Tambahkan minimal satu produk.')
-                ->danger()
-                ->send();
+            $this->notifyError(
+                'Tidak Ada Produk',
+                'Tambahkan minimal satu produk.'
+            );
 
             return;
         }
@@ -383,11 +383,10 @@ class StockIn extends Page implements HasForms, HasTable
         } catch (\Throwable $e) {
             report($e);
 
-            Notification::make()
-                ->title('Stok masuk gagal')
-                ->body($e->getMessage() ?: 'Terjadi kesalahan tak terduga.')
-                ->danger()
-                ->send();
+            $this->notifyError(
+                'Stok Masuk Gagal',
+                $e->getMessage() ?: 'Terjadi kesalahan tak terduga.'
+            );
 
             return;
         }
@@ -395,11 +394,10 @@ class StockIn extends Page implements HasForms, HasTable
         $this->form->fill();
         $this->items = [];
 
-        Notification::make()
-            ->title('Stok ditambahkan')
-            ->body(count($items).' produk ditambahkan ke '.($location?->name ?? 'lokasi yang dipilih').'.')
-            ->success()
-            ->send();
+        $this->notifySuccess(
+            'Stok Ditambahkan',
+            count($items).' produk ditambahkan ke '.($location?->name ?? 'lokasi yang dipilih').'.'
+        );
 
         $this->redirect(HistoryResource::getUrl('view', ['record' => $movement->id]));
     }

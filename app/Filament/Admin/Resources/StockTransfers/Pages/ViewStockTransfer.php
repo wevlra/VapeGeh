@@ -4,14 +4,16 @@ namespace App\Filament\Admin\Resources\StockTransfers\Pages;
 
 use App\Actions\CompleteStockTransfer;
 use App\Filament\Admin\Resources\StockTransfers\StockTransferResource;
+use App\Filament\Concerns\NotifiesWithDetail;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
-use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 
 class ViewStockTransfer extends ViewRecord
 {
+    use NotifiesWithDetail;
+
     protected static string $resource = StockTransferResource::class;
 
     protected function getHeaderActions(): array
@@ -29,19 +31,17 @@ class ViewStockTransfer extends ViewRecord
                     try {
                         app(CompleteStockTransfer::class)->execute($record, auth()->user());
 
-                        Notification::make()
-                            ->title('Transfer selesai')
-                            ->body("Transfer \"{$record->transfer_number}\" telah selesai. Stok telah dipindahkan antar lokasi.")
-                            ->success()
-                            ->send();
+                        $this->notifySuccess(
+                            'Transfer Selesai',
+                            "Transfer \"{$record->transfer_number}\" telah selesai. Stok telah dipindahkan antar lokasi."
+                        );
 
                         $this->refreshFormData(['status', 'completed_at']);
                     } catch (\DomainException $e) {
-                        Notification::make()
-                            ->title('Gagal')
-                            ->body($e->getMessage())
-                            ->danger()
-                            ->send();
+                        $this->notifyError(
+                            'Gagal Menyelesaikan Transfer Stok',
+                            $e->getMessage()
+                        );
                     }
                 }),
             EditAction::make()

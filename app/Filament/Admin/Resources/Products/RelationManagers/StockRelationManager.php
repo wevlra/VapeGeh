@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Products\RelationManagers;
 
 use App\Actions\AdjustStock;
+use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\Location;
 use App\Models\ProductPrice;
 use App\Models\Stock;
@@ -10,7 +11,6 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class StockRelationManager extends RelationManager
 {
+    use NotifiesWithDetail;
+
     protected static string $relationship = 'stocks';
 
     protected static ?string $title = 'Stok';
@@ -137,11 +139,10 @@ class StockRelationManager extends RelationManager
                             $data['notes'] ?? null,
                         );
 
-                        Notification::make()
-                            ->title('Stok disesuaikan')
-                            ->body('Jumlah untuk '.Location::find($record->location_id)?->name.' telah disetel menjadi '.$data['qty'].' unit.')
-                            ->success()
-                            ->send();
+                        $this->notifySuccess(
+                            'Stok Disesuaikan',
+                            'Jumlah untuk '.Location::find($record->location_id)?->name.' telah disetel menjadi '.$data['qty'].' unit.'
+                        );
                     }),
             ]);
     }

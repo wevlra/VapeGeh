@@ -4,12 +4,12 @@ namespace App\Filament\Admin\Resources\Sales\Tables;
 
 use App\Actions\DeleteSale;
 use App\Filament\Admin\Resources\Sales\SaleResource;
+use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\Sale;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
-use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -89,10 +89,10 @@ class SalesTable
                     DeleteAction::make()
                         ->action(fn (Sale $record) => app(DeleteSale::class)->execute($record))
                         ->successNotification(
-                            Notification::make()
-                                ->title('Penjualan dihapus')
-                                ->body('Penjualan telah dihapus permanen.')
-                                ->danger()
+                            NotifiesWithDetail::buildErrorNotification(
+                                'Data Berhasil Dihapus',
+                                'Data transaksi penjualan telah berhasil dihapus dari sistem.'
+                            )
                         ),
                 ]),
             ])

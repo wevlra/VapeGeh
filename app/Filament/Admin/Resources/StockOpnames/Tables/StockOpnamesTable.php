@@ -4,10 +4,10 @@ namespace App\Filament\Admin\Resources\StockOpnames\Tables;
 
 use App\Actions\CompleteStockOpname;
 use App\Filament\Admin\Resources\StockOpnames\StockOpnameResource;
+use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\StockOpname;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
-use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -85,17 +85,15 @@ class StockOpnamesTable
                         try {
                             app(CompleteStockOpname::class)->execute($record);
 
-                            Notification::make()
-                                ->title('Stock Opname selesai')
-                                ->body("Opname \"{$record->opname_number}\" telah selesai.")
-                                ->success()
-                                ->send();
+                            NotifiesWithDetail::buildSuccessNotification(
+                                'Stock Opname Selesai',
+                                "Opname \"{$record->opname_number}\" telah selesai."
+                            )->send();
                         } catch (\DomainException $e) {
-                            Notification::make()
-                                ->title('Gagal')
-                                ->body($e->getMessage())
-                                ->danger()
-                                ->send();
+                            NotifiesWithDetail::buildErrorNotification(
+                                'Gagal Menyelesaikan Stock Opname',
+                                $e->getMessage()
+                            )->send();
                         }
                     }),
             ])

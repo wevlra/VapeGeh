@@ -3,12 +3,12 @@
 namespace App\Filament\Admin\Resources\Users\Tables;
 
 use App\Filament\Admin\Resources\Users\UserResource;
+use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\User;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -85,10 +85,10 @@ class UsersTable
                 EditAction::make(),
                 DeleteAction::make()
                     ->successNotification(
-                        Notification::make()
-                            ->title('Staf dihapus')
-                            ->body('Staf telah dihapus permanen.')
-                            ->danger()
+                        NotifiesWithDetail::buildErrorNotification(
+                            'Data Berhasil Dihapus',
+                            'Data pengguna/staf telah berhasil dihapus dari sistem.'
+                        )
                     ),
             ])
             ->toolbarActions([

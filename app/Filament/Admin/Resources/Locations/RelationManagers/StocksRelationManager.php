@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Locations\RelationManagers;
 
 use App\Actions\AdjustStock;
+use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\Product;
 use App\Models\ProductPrice;
 use App\Models\Stock;
@@ -10,13 +11,14 @@ use Filament\Actions\EditAction as TableEditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class StocksRelationManager extends RelationManager
 {
+    use NotifiesWithDetail;
+
     protected static string $relationship = 'stocks';
 
     public function isReadOnly(): bool
@@ -131,11 +133,10 @@ class StocksRelationManager extends RelationManager
                             $data['notes'] ?? null,
                         );
 
-                        Notification::make()
-                            ->title('Stok disesuaikan')
-                            ->body('Jumlah untuk '.Product::find($record->product_id)?->name.' telah disetel menjadi '.$data['qty'].' unit.')
-                            ->success()
-                            ->send();
+                        $this->notifySuccess(
+                            'Stok Disesuaikan',
+                            'Jumlah untuk '.Product::find($record->product_id)?->name.' telah disetel menjadi '.$data['qty'].' unit.'
+                        );
                     }),
             ]);
     }

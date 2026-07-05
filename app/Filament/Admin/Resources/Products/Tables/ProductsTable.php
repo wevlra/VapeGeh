@@ -3,10 +3,10 @@
 namespace App\Filament\Admin\Resources\Products\Tables;
 
 use App\Filament\Admin\Resources\Products\ProductResource;
+use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\Product;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
-use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -40,10 +40,10 @@ class ProductsTable
                 EditAction::make(),
                 DeleteAction::make()
                     ->successNotification(
-                        Notification::make()
-                            ->title('Produk dihapus')
-                            ->body('Produk telah dihapus permanen.')
-                            ->danger()
+                        NotifiesWithDetail::buildErrorNotification(
+                            'Data Berhasil Dihapus',
+                            'Data produk telah berhasil dihapus dari sistem.'
+                        )
                     ),
             ]);
     }

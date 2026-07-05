@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Pages;
 
+use App\Filament\Concerns\NotifiesWithDetail;
 use App\Filament\Staff\Pages\Pos as StaffPos;
 use App\Models\Location;
 use App\Models\Product;
@@ -12,7 +13,6 @@ use BackedEnum;
 use DomainException;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
-use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -21,6 +21,8 @@ use Illuminate\Support\Facades\DB;
 
 class Pos extends StaffPos
 {
+    use NotifiesWithDetail;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
 
     protected static ?string $navigationLabel = 'Kasir';
@@ -145,14 +147,14 @@ class Pos extends StaffPos
         if ($existingIndex !== false) {
             $currentQty = (int) $this->cart[$existingIndex]['qty'] + 1;
             if (! $this->isStockAvailable($productId, $currentQty)) {
-                Notification::make()->warning()->title('Stok tidak mencukupi.')->send();
+                $this->notifyWarning('Stok Tidak Mencukupi');
 
                 return;
             }
             $this->cart[$existingIndex]['qty'] = $currentQty;
         } else {
             if (! $this->isStockAvailable($productId, 1)) {
-                Notification::make()->warning()->title('Stok habis.')->send();
+                $this->notifyWarning('Stok Habis');
 
                 return;
             }
@@ -315,21 +317,16 @@ class Pos extends StaffPos
                 return $sale;
             });
         } catch (DomainException $e) {
-            Notification::make()
-                ->title('Penjualan gagal')
-                ->body($e->getMessage())
-                ->danger()
-                ->send();
+            $this->notifyError('Penjualan Gagal', $e->getMessage());
 
             return;
         } catch (\Throwable $e) {
             report($e);
 
-            Notification::make()
-                ->title('Terjadi kesalahan')
-                ->body('Silakan coba lagi atau hubungi administrator.')
-                ->danger()
-                ->send();
+            $this->notifyError(
+                'Terjadi Kesalahan',
+                'Silakan coba lagi atau hubungi administrator.'
+            );
 
             return;
         }
@@ -339,10 +336,10 @@ class Pos extends StaffPos
 
         $printUrl = route('admin.sales.receipt', $sale);
 
-        Notification::make()
-            ->title('Penjualan selesai')
-            ->body("Invoice \"{$sale->invoice_number}\" berhasil dibuat. Total: Rp ".number_format($sale->total, 0, ',', '.'))
-            ->success()
+        static::buildSuccessNotification(
+            'Penjualan Selesai',
+            "Invoice \"{$sale->invoice_number}\" berhasil dibuat. Total: Rp ".number_format($sale->total, 0, ',', '.')
+        )
             ->actions([
                 Action::make('print')
                     ->label('Cetak Nota')

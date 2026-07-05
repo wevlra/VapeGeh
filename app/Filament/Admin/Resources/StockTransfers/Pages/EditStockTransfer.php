@@ -26,11 +26,10 @@ class EditStockTransfer extends EditRecord
         parent::mount($record);
 
         if ($this->record->status !== 'pending') {
-            Notification::make()
-                ->warning()
-                ->title('Transfer tidak dapat diedit')
-                ->body("Transfer \"{$this->record->transfer_number}\" saat ini \"{$this->record->status}\". Hanya transfer tertunda yang dapat diedit.")
-                ->send();
+            $this->notifyWarning(
+                'Transfer Tidak Dapat Diedit',
+                "Transfer \"{$this->record->transfer_number}\" saat ini \"{$this->record->status}\". Hanya transfer tertunda yang dapat diedit."
+            );
 
             $this->redirect(static::getResource()::getUrl('index'));
         }
@@ -55,11 +54,10 @@ class EditStockTransfer extends EditRecord
                 ->action(function (StockTransfer $record): void {
                     app(CompleteStockTransfer::class)->execute($record, auth()->user());
 
-                    Notification::make()
-                        ->title('Transfer selesai')
-                        ->body("Transfer \"{$record->transfer_number}\" telah selesai. Stok telah dipindahkan antar lokasi.")
-                        ->success()
-                        ->send();
+                    $this->notifySuccess(
+                        'Transfer Selesai',
+                        "Transfer \"{$record->transfer_number}\" telah selesai. Stok telah dipindahkan antar lokasi."
+                    );
                 }),
             Action::make('cancel')
                 ->label('Batal')
@@ -90,11 +88,10 @@ class EditStockTransfer extends EditRecord
                         $record->save();
                     });
 
-                    Notification::make()
-                        ->title('Transfer dibatalkan')
-                        ->body("Transfer \"{$record->transfer_number}\" telah dibatalkan. Tidak ada stok yang terpengaruh.")
-                        ->warning()
-                        ->send();
+                    $this->notifyWarning(
+                        'Transfer Dibatalkan',
+                        "Transfer \"{$record->transfer_number}\" telah dibatalkan. Tidak ada stok yang terpengaruh."
+                    );
                 }),
             DeleteAction::make()
                 ->successNotification(fn (Notification $notification): Notification => $this->getDeletedNotification()),

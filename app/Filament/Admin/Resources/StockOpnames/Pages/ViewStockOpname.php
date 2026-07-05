@@ -4,14 +4,16 @@ namespace App\Filament\Admin\Resources\StockOpnames\Pages;
 
 use App\Actions\CompleteStockOpname;
 use App\Filament\Admin\Resources\StockOpnames\StockOpnameResource;
+use App\Filament\Concerns\NotifiesWithDetail;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
-use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 
 class ViewStockOpname extends ViewRecord
 {
+    use NotifiesWithDetail;
+
     protected static string $resource = StockOpnameResource::class;
 
     protected function getHeaderActions(): array
@@ -29,19 +31,17 @@ class ViewStockOpname extends ViewRecord
                     try {
                         app(CompleteStockOpname::class)->execute($record);
 
-                        Notification::make()
-                            ->title('Stock Opname selesai')
-                            ->body("Opname \"{$record->opname_number}\" telah selesai.")
-                            ->success()
-                            ->send();
+                        $this->notifySuccess(
+                            'Stock Opname Selesai',
+                            "Opname \"{$record->opname_number}\" telah selesai."
+                        );
 
                         $this->refreshFormData(['status', 'completed_at']);
                     } catch (\DomainException $e) {
-                        Notification::make()
-                            ->title('Gagal')
-                            ->body($e->getMessage())
-                            ->danger()
-                            ->send();
+                        $this->notifyError(
+                            'Gagal Menyelesaikan Stock Opname',
+                            $e->getMessage()
+                        );
                     }
                 }),
             EditAction::make()
