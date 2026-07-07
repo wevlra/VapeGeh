@@ -22,11 +22,14 @@ class StockTransfersTable
                 TextColumn::make('transfer_number')
                     ->label('No. Transfer')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->view('filament.columns.admin-stock-transfer'),
                 TextColumn::make('fromLocation.name')
-                    ->label('Dari'),
+                    ->label('Dari')
+                    ->visibleFrom('md'),
                 TextColumn::make('toLocation.name')
-                    ->label('Ke'),
+                    ->label('Ke')
+                    ->visibleFrom('md'),
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
@@ -48,14 +51,18 @@ class StockTransfersTable
                         'cancelled' => 'danger',
                         default => 'gray',
                     })
-                    ->sortable(),
+                    ->sortable()
+                    ->visibleFrom('md'),
                 TextColumn::make('creator.name')
-                    ->label('Dibuat oleh'),
+                    ->label('Dibuat oleh')
+                    ->visibleFrom('md'),
                 TextColumn::make('created_at')
                     ->label('Tanggal')
                     ->dateTime()
-                    ->sortable(),
+                    ->sortable()
+                    ->visibleFrom('md'),
             ])
+            ->stackedOnMobile()
             ->filters([
                 SelectFilter::make('status')
                     ->options([
