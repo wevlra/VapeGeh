@@ -20,9 +20,8 @@ class StockTransfersTable
             ->recordUrl(fn (StockTransfer $record): string => StockTransferResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('transfer_number')
-                    ->label('No. Transfer')
+                    ->label('')
                     ->searchable()
-                    ->sortable()
                     ->view('filament.columns.admin-stock-transfer'),
                 TextColumn::make('fromLocation.name')
                     ->label('Dari')
@@ -51,7 +50,6 @@ class StockTransfersTable
                         'cancelled' => 'danger',
                         default => 'gray',
                     })
-                    ->sortable()
                     ->visibleFrom('md'),
                 TextColumn::make('creator.name')
                     ->label('Dibuat oleh')
@@ -59,7 +57,6 @@ class StockTransfersTable
                 TextColumn::make('created_at')
                     ->label('Tanggal')
                     ->dateTime()
-                    ->sortable()
                     ->visibleFrom('md'),
             ])
             ->stackedOnMobile()
