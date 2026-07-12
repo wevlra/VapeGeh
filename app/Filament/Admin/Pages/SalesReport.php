@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Pages;
 
+use App\Models\Location;
 use App\Models\Sale;
 use BackedEnum;
 use Filament\Pages\Page;
@@ -156,6 +157,9 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
                         'pos' => 'POS',
                         'stock_out' => 'Stok Keluar',
                     ]),
+                Tables\Filters\SelectFilter::make('location_name')
+                    ->label('Lokasi')
+                    ->options(fn (): array => Location::query()->orderBy('name')->pluck('name', 'name')->all()),
                 Tables\Filters\SelectFilter::make('payment_method')
                     ->options([
                         'cash' => 'Tunai',
