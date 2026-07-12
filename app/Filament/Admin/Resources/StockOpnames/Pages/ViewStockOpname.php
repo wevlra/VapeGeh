@@ -44,6 +44,12 @@ class ViewStockOpname extends ViewRecord
                         );
                     }
                 }),
+            Action::make('print')
+                ->label('Cetak Laporan')
+                ->icon('heroicon-o-printer')
+                ->color('gray')
+                ->url(fn (): string => route('admin.stock-opnames.print', $this->record))
+                ->openUrlInNewTab(),
             EditAction::make()
                 ->hidden(fn ($record) => $record->status !== 'draft'),
             DeleteAction::make()
