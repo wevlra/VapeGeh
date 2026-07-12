@@ -57,10 +57,12 @@ class ReceiptController extends Controller
         $products = [];
         // Support for sales with related stock movements (multiple items)
         $items = $movement->related?->items ?? collect([$movement]);
-        
+
         foreach ($items as $item) {
-            if (!$item->product) continue;
-            
+            if (! $item->product) {
+                continue;
+            }
+
             $products[] = [
                 'id' => (string) $item->product_id,
                 'name' => $item->product->name,
@@ -75,7 +77,7 @@ class ReceiptController extends Controller
                 'storeName' => 'VapeGeh',
                 'address' => 'Jl. Merdeka No. 123', // Hardcoded as per receipt blade
                 'phone' => '081234567890',
-                'receiptNo' => $movement->reference ?? 'TX-' . $movement->id,
+                'receiptNo' => $movement->reference ?? 'TX-'.$movement->id,
                 'date' => $movement->created_at->format('Y-m-d H:i'),
                 'cashier' => $movement->creator->name ?? 'Kasir',
             ],
@@ -83,7 +85,9 @@ class ReceiptController extends Controller
             'taxPercent' => 0,
             'globalDiscount' => 0,
             'paymentMethod' => 'CASH',
-            'amountPaid' => $items->sum(function($item) { return abs($item->qty) * ($item->price ?? 0); }),
+            'amountPaid' => $items->sum(function ($item) {
+                return abs($item->qty) * ($item->price ?? 0);
+            }),
         ];
     }
 }
