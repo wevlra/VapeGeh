@@ -45,6 +45,11 @@ class SalesTable
                     ->label('Tanggal')
                     ->dateTime()
                     ->sortable(),
+                TextColumn::make('notes')
+                    ->label('Catatan')
+                    ->searchable()
+                    ->limit(50)
+                    ->toggleable(),
             ])
             ->filters([
                 SelectFilter::make('payment_method')

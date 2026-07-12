@@ -67,6 +67,7 @@ class StockOpnameEdit extends Page implements HasForms, HasTable
 
         $this->form->fill([
             'location_id' => $this->record->location_id,
+            'price_type' => $this->record->price_type,
             'notes' => $this->record->notes,
         ]);
 
@@ -132,15 +133,16 @@ class StockOpnameEdit extends Page implements HasForms, HasTable
                                             ->afterStateUpdated(function (callable $set) {
                                                 $this->items = [];
                                             }),
-                                        Select::make('price_id')
-                                            ->label('Tipe Harga (Info)')
+                                        Select::make('price_type')
+                                            ->label('Gunakan Harga (Jika Stok Kurang)')
                                             ->options([
-                                                'default' => 'Harga Default',
-                                                'reseller' => 'Harga Reseller',
+                                                'purchase_price' => 'Harga Beli',
+                                                'selling_price' => 'Harga Jual',
+                                                'reseller_price' => 'Harga Reseller',
                                                 'price_1' => 'Harga 1',
                                                 'price_2' => 'Harga 2',
                                             ])
-                                            ->default('default')
+                                            ->default('purchase_price')
                                             ->required()
                                             ->live()
                                             ->afterStateUpdated(function (callable $set) {
@@ -180,8 +182,43 @@ class StockOpnameEdit extends Page implements HasForms, HasTable
             'qty' => $actualQty, // alias for preview rendering
             'difference' => $difference,
             'notes' => $existing['notes'] ?? null,
-            'price_id' => $this->data['price_id'] ?? 'default',
         ];
+    }
+
+    protected function getItemQty(int $productId): int
+    {
+        $existing = collect($this->items)->firstWhere('product_id', $productId);
+        if ($existing) {
+            return (int) ($existing['qty'] ?? 0);
+        }
+
+        $locationId = $this->data['location_id'] ?? null;
+
+        return $locationId
+            ? (int) Stock::where('product_id', $productId)->where('location_id', $locationId)->value('qty')
+            : 0;
+    }
+
+    public function updateItemQty(int $productId, $qty): void
+    {
+        $qty = (int) $qty;
+        if ($qty < 0) {
+            $qty = 0;
+        }
+
+        $record = Product::find($productId);
+        if (! $record) {
+            return;
+        }
+
+        $existingIndex = collect($this->items)->search(fn ($item) => $item['product_id'] === $productId);
+        $itemData = $this->buildItemData($record, $qty, $existingIndex !== false ? $this->items[$existingIndex] : null);
+
+        if ($existingIndex !== false) {
+            $this->items[$existingIndex] = $itemData;
+        } else {
+            $this->items[] = $itemData;
+        }
     }
 
     public function table(Table $table): Table
@@ -196,17 +233,6 @@ class StockOpnameEdit extends Page implements HasForms, HasTable
                             ->label('Nama Produk')
                             ->weight('bold')
                             ->searchable(),
-                        TextColumn::make('system_qty')
-                            ->label('Stok Sistem')
-                            ->formatStateUsing(function ($record) {
-                                $locationId = $this->data['location_id'] ?? null;
-                                $systemQty = $locationId
-                                    ? (int) Stock::where('product_id', $record->id)->where('location_id', $locationId)->value('qty')
-                                    : 0;
-
-                                return 'Stok Sistem: '.$systemQty;
-                            })
-                            ->color('gray'),
                     ]),
                     ViewColumn::make('controls')
                         ->label('Kontrol Fisik')
@@ -214,6 +240,7 @@ class StockOpnameEdit extends Page implements HasForms, HasTable
                         ->extraAttributes(['class' => 'w-full md:w-auto flex justify-end'])
                         ->state(fn () => [
                             'showPrice' => false,
+                            'showDifference' => true,
                             'qtyLabel' => 'Fisik:',
                             'defaultQty' => function (Product $record) {
                                 $locationId = $this->data['location_id'] ?? null;
@@ -250,6 +277,7 @@ class StockOpnameEdit extends Page implements HasForms, HasTable
             DB::transaction(function () use ($data, $items) {
                 $this->record->update([
                     'location_id' => $data['location_id'],
+                    'price_type' => $data['price_type'],
                     'notes' => $data['notes'] ?? null,
                 ]);
 

@@ -133,6 +133,14 @@ class HistoryTable
                 TextColumn::make('creator.name')
                     ->label('Staf')
                     ->sortable(),
+                TextColumn::make('notes')
+                    ->label('Catatan')
+                    ->getStateUsing(function (StockMovement $record): ?string {
+                        return $record->notes ?? $record->related?->notes;
+                    })
+                    ->searchable()
+                    ->limit(50)
+                    ->toggleable(),
             ])
             ->filters([
                 SelectFilter::make('type')

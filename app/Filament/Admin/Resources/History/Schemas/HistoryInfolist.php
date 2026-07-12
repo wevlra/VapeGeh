@@ -56,6 +56,10 @@ class HistoryInfolist
                             ->label('Lokasi'),
                         TextEntry::make('creator.name')
                             ->label('Staf'),
+                        TextEntry::make('notes')
+                            ->label('Catatan Pergerakan')
+                            ->columnSpanFull()
+                            ->default('-'),
                     ]),
 
                 Section::make('Detail Transaksi')
@@ -75,6 +79,10 @@ class HistoryInfolist
                                         'cash' => 'Tunai',
                                         default => ucfirst($state),
                                     }),
+                                TextEntry::make('related.notes')
+                                    ->label('Catatan')
+                                    ->columnSpanFull()
+                                    ->default('-'),
                                 RepeatableEntry::make('related.items')
                                     ->hiddenLabel()
                                     ->table([
@@ -125,6 +133,10 @@ class HistoryInfolist
                                         'cancelled' => 'danger',
                                         default => 'gray',
                                     }),
+                                TextEntry::make('related.notes')
+                                    ->label('Catatan')
+                                    ->columnSpanFull()
+                                    ->default('-'),
                                 RepeatableEntry::make('related.items')
                                     ->hiddenLabel()
                                     ->table([
@@ -181,7 +193,7 @@ class HistoryInfolist
                                 TextEntry::make('related.notes')
                                     ->label('Catatan')
                                     ->columnSpanFull()
-                                    ->hidden(fn ($state): bool => blank($state)),
+                                    ->default('-'),
                                 TextEntry::make('stock_entry_total')
                                     ->label('Total Harga')
                                     ->state(fn () => $total)

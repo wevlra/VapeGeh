@@ -18,6 +18,7 @@ class StockOpname extends Model
     protected $fillable = [
         'opname_number',
         'location_id',
+        'price_type',
         'created_by',
         'status',
         'notes',
@@ -42,7 +43,13 @@ class StockOpname extends Model
     public function getTotalDifferenceValueAttribute(): float
     {
         return $this->items->sum(function (StockOpnameItem $item) {
-            return $item->difference * ($item->product?->selling_price ?? 0);
+            if ($item->difference > 0) {
+                $priceField = 'purchase_price';
+            } else {
+                $priceField = $this->price_type ?? 'purchase_price';
+            }
+
+            return $item->difference * ($item->product?->{$priceField} ?? 0);
         });
     }
 

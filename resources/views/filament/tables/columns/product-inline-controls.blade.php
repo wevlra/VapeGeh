@@ -14,6 +14,10 @@
     
     $priceField = $priceField ?? 'price';
     $price = $existing[$priceField] ?? ($defaultPriceCallable ? $defaultPriceCallable($record) : 0);
+    
+    $showDifference = $showDifference ?? $state['showDifference'] ?? false;
+    $systemQty = $defaultQty ? $defaultQty($record) : 0;
+    $diff = $qty - $systemQty;
 @endphp
 
 <div class="flex flex-col gap-2 min-w-[200px] p-2">
@@ -72,4 +76,19 @@
             wire:click="incrementItem({{ $record->id }})" 
         />
     </div>
+
+    @if(isset($showDifference) && $showDifference)
+    <div class="flex items-center space-x-2 mt-2 border-t pt-2 border-gray-200 dark:border-gray-700">
+        <label class="text-sm font-medium text-gray-500 whitespace-nowrap w-24">Stok Sistem:</label>
+        <span class="font-bold text-sm text-gray-700 dark:text-gray-300">
+            {{ $systemQty }}
+        </span>
+    </div>
+    <div class="flex items-center space-x-2">
+        <label class="text-sm font-medium text-gray-500 whitespace-nowrap w-24">Selisih:</label>
+        <span class="font-bold text-sm {{ $diff > 0 ? 'text-success-600 dark:text-success-400' : ($diff < 0 ? 'text-danger-600 dark:text-danger-400' : 'text-gray-500') }}">
+            {{ $diff > 0 ? '+'.$diff : $diff }}
+        </span>
+    </div>
+    @endif
 </div>

@@ -45,6 +45,10 @@ class SaleInfolist
                         TextEntry::make('created_at')
                             ->label('Tanggal')
                             ->dateTime(),
+                        TextEntry::make('notes')
+                            ->label('Catatan')
+                            ->columnSpanFull()
+                            ->default('-'),
                     ]),
 
                 Section::make('Item')

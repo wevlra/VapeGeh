@@ -14,7 +14,7 @@ class StockOpnameItem extends Model
     /** @use HasFactory<StockOpnameItemFactory> */
     use HasFactory;
 
-    protected $with = ['product'];
+    protected $with = ['product', 'stockOpname'];
 
     protected $fillable = [
         'stock_opname_id',
@@ -37,7 +37,13 @@ class StockOpnameItem extends Model
 
     public function getDifferenceValueAttribute(): float
     {
-        return (float) ($this->difference * ($this->product?->purchase_price ?? 0));
+        if ($this->difference > 0) {
+            $priceField = 'purchase_price';
+        } else {
+            $priceField = $this->stockOpname?->price_type ?? 'purchase_price';
+        }
+
+        return (float) ($this->difference * ($this->product?->{$priceField} ?? 0));
     }
 
     protected function casts(): array
