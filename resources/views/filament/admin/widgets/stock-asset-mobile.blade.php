@@ -6,7 +6,7 @@
             <div class="rounded-md bg-gray-50 p-2.5 dark:bg-gray-900/40">
                 <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Total Stok</dt>
                 <dd class="mt-0.5 text-base font-semibold text-warning-600 dark:text-warning-400">
-                    {{ number_format($totalStock) }}
+                    {{ number_format($totalStock, 0, ',', '.') }}
                 </dd>
             </div>
             <div class="rounded-md bg-gray-50 p-2.5 dark:bg-gray-900/40">
