@@ -2,8 +2,6 @@
 
 namespace App\Filament\Admin\Resources\StockOpnames;
 
-use App\Filament\Admin\Resources\StockOpnames\Pages\CreateStockOpname;
-use App\Filament\Admin\Resources\StockOpnames\Pages\EditStockOpname;
 use App\Filament\Admin\Resources\StockOpnames\Pages\ListStockOpnames;
 use App\Filament\Admin\Resources\StockOpnames\Pages\ViewStockOpname;
 use App\Filament\Admin\Resources\StockOpnames\Schemas\StockOpnameForm;
@@ -63,8 +61,8 @@ class StockOpnameResource extends Resource
     {
         return [
             'index' => ListStockOpnames::route('/'),
-            'create' => CreateStockOpname::route('/create'),
-            'edit' => EditStockOpname::route('/{record}/edit'),
+            'create' => Pages\StockOpnameCreate::route('/create'),
+            'edit' => Pages\StockOpnameEdit::route('/{record}/edit'),
             'view' => ViewStockOpname::route('/{record}'),
         ];
     }

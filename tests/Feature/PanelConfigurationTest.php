@@ -31,7 +31,7 @@ it('has staff history page accessible for logged in staff user', function () {
         'location_id' => Location::factory(),
         'status' => 'active',
     ]);
-    $this->actingAs($staff);
+    $this->actingAs($staff, 'staff');
 
     $response = $this->get('/staff/history');
 

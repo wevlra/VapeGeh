@@ -33,6 +33,7 @@ class StaffPanelProvider extends PanelProvider
         return $panel
             ->id('staff')
             ->path('staff')
+            ->authGuard('staff')
             ->viteTheme('resources/css/filament/staff/theme.css')
             ->login()
             ->profile()

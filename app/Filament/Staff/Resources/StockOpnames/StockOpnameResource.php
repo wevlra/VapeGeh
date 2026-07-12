@@ -37,7 +37,8 @@ class StockOpnameResource extends Resource
     {
         return parent::getEloquentQuery()
             ->with(['location', 'creator', 'items.product'])
-            ->where('location_id', auth()->user()->location_id);
+            ->where('location_id', auth()->user()->location_id)
+            ->where('status', 'completed');
     }
 
     public static function table(Table $table): Table
