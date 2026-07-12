@@ -13,6 +13,10 @@ class ReceiptController extends Controller
 
         $stockMovement->load(['product', 'location', 'creator', 'buyer', 'related', 'related.items.product']);
 
+        if (request()->query('format') === 'text') {
+            return view('receipts.receipt_text', ['movement' => $stockMovement]);
+        }
+
         return view('receipts.receipt', ['movement' => $stockMovement]);
     }
 
@@ -23,6 +27,10 @@ class ReceiptController extends Controller
         $this->authorizeAccess($movement);
 
         $movement->load(['product', 'location', 'creator', 'buyer', 'related']);
+
+        if (request()->query('format') === 'text') {
+            return view('receipts.receipt_text', ['movement' => $movement]);
+        }
 
         return view('receipts.receipt', ['movement' => $movement]);
     }

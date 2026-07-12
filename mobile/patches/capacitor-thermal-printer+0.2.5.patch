@@ -1,0 +1,152 @@
+diff --git a/node_modules/capacitor-thermal-printer/android/src/main/java/com/malik12tree/bluetooth_print/CapacitorThermalPrinterPlugin.java b/node_modules/capacitor-thermal-printer/android/src/main/java/com/malik12tree/bluetooth_print/CapacitorThermalPrinterPlugin.java
+index 7f46e54..e48bf15 100644
+--- a/node_modules/capacitor-thermal-printer/android/src/main/java/com/malik12tree/bluetooth_print/CapacitorThermalPrinterPlugin.java
++++ b/node_modules/capacitor-thermal-printer/android/src/main/java/com/malik12tree/bluetooth_print/CapacitorThermalPrinterPlugin.java
+@@ -105,10 +105,10 @@ public class CapacitorThermalPrinterPlugin extends Plugin implements PrinterObse
+                 } else {
+                     device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                 }
+-                if (device == null) return;
++                if (device == null) // return;
+                 int devType = device.getBluetoothClass().getMajorDeviceClass();
+-                if (devType != BluetoothClass.Device.Major.IMAGING) {
+-                    return;
++                // if (devType != BluetoothClass.Device.Major.IMAGING) {
++                    // return;
+                 }
+ 
+                 if (!devices.contains(device)) {
+@@ -173,6 +173,24 @@ public class CapacitorThermalPrinterPlugin extends Plugin implements PrinterObse
+         }
+ 
+         devices = new ArrayList<>();
++        
++        java.util.Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
++        if (pairedDevices != null && pairedDevices.size() > 0) {
++            for (BluetoothDevice device : pairedDevices) {
++                if (!devices.contains(device)) {
++                    devices.add(device);
++                }
++            }
++            notifyListeners(
++                    "discoverDevices",
++                    new JSObject() {
++                        {
++                            put("devices", getJsonDevices());
++                        }
++                    }
++            );
++        }
++
+         boolean success = mBluetoothAdapter.startDiscovery();
+         mRegistered = success;
+ 
+@@ -192,7 +210,7 @@ public class CapacitorThermalPrinterPlugin extends Plugin implements PrinterObse
+     @PluginMethod
+     @SuppressLint("MissingPermission")
+     public void stopScan(PluginCall call) {
+-        if (!bluetoothCheck(call)) return;
++        if (!bluetoothCheck(call)) // return;
+ 
+         boolean success = mBluetoothAdapter.cancelDiscovery();
+ 
+@@ -225,16 +243,16 @@ public class CapacitorThermalPrinterPlugin extends Plugin implements PrinterObse
+     @SuppressLint("MissingPermission")
+     @PluginMethod
+     public void connect(PluginCall call) {
+-        if (!bluetoothCheck(call)) return;
++        if (!bluetoothCheck(call)) // return;
+         if (currentConnectCallbacks != null) {
+             call.reject("Printer already connecting!");
+-            return;
++            // return;
+         }
+ 
+         String address = call.getString("address");
+         if (address == null) {
+             call.reject("Please provide address!");
+-            return;
++            // return;
+         }
+ 
+         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+@@ -362,7 +380,7 @@ public class CapacitorThermalPrinterPlugin extends Plugin implements PrinterObse
+         int alignment = alignments.indexOf(alignmentName);
+         if (alignment == -1) {
+             call.reject("Invalid Alignment");
+-            return;
++            // return;
+         }
+ 
+         this.align(alignment);
+@@ -389,7 +407,7 @@ public class CapacitorThermalPrinterPlugin extends Plugin implements PrinterObse
+         int font = fonts.indexOf(fontName);
+         if (font == -1) {
+             call.reject("Invalid Font");
+-            return;
++            // return;
+         }
+ 
+         textSetting.setEscFontType(fontEnumValues[font]);
+@@ -436,7 +454,7 @@ public class CapacitorThermalPrinterPlugin extends Plugin implements PrinterObse
+         int placement = placements.indexOf(placementName);
+         if (placement == -1) {
+             call.reject("Invalid Placement");
+-            return;
++            // return;
+         }
+ 
+         dataCodeSetting.setBarcodeStringPosition(placementEnumValues[placement]);
+@@ -481,16 +499,16 @@ public class CapacitorThermalPrinterPlugin extends Plugin implements PrinterObse
+                 cmd.append(Base64.getDecoder().decode(base64));
+             } catch (Exception ignored) {
+                 call.reject("Invalid Base64");
+-                return;
++                // return;
+             }
+             call.resolve();
+-            return;
++            // return;
+         }
+ 
+         JSArray dataArray = call.getArray("data");
+         if (dataArray == null) {
+             call.reject("Invalid Data");
+-            return;
++            // return;
+         }
+ 
+         byte[] data = new byte[dataArray.length()];
+@@ -499,7 +517,7 @@ public class CapacitorThermalPrinterPlugin extends Plugin implements PrinterObse
+                 data[i] = (byte) (dataArray.getInt(i) & 0xff);
+             } catch (JSONException e) {
+                 call.reject("Invalid Data");
+-                return;
++                // return;
+             }
+         }
+ 
+@@ -525,12 +543,12 @@ public class CapacitorThermalPrinterPlugin extends Plugin implements PrinterObse
+             type = BarcodeType.valueOf(typeName);
+         } catch (Exception ignored) {
+             call.reject("Invalid Type");
+-            return;
++            // return;
+         }
+ 
+         if (type == BarcodeType.QR_CODE) {
+             call.reject("Invalid Type");
+-            return;
++            // return;
+         }
+         String data = call.getString("data", "");
+ 
+@@ -605,7 +623,7 @@ public class CapacitorThermalPrinterPlugin extends Plugin implements PrinterObse
+     private void _writeRaw(PluginCall call, byte[] data) {
+         if (rtPrinter.getPrinterInterface() == null || rtPrinter.getPrinterInterface().getConnectState() != ConnectStateEnum.Connected) {
+             call.reject("Printer is not connected!");
+-            return;
++            // return;
+         }
+ 
+         CmdFactory escFac = new EscFactory();

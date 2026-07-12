@@ -78,7 +78,24 @@ class SalesTable
                         ->icon('heroicon-o-printer')
                         ->color('gray')
                         ->url(fn (Sale $record): string => route('admin.sales.receipt', $record))
-                        ->openUrlInNewTab(),
+                        ->openUrlInNewTab()
+                        ->extraAttributes(function (Sale $record) {
+                            return [
+                                'x-on:click' => "
+                                    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                                        \$event.preventDefault();
+                                        const url = '".route('admin.sales.receipt', ['sale' => $record->id, 'format' => 'text'])."';
+                                        
+                                        const savedPrinter = localStorage.getItem('savedPrinter');
+                                        if (savedPrinter) {
+                                            window.dispatchEvent(new CustomEvent('print-native', { detail: { url } }));
+                                        } else {
+                                            window.dispatchEvent(new CustomEvent('open-printer-modal', { detail: { url } }));
+                                        }
+                                    }
+                                ",
+                            ];
+                        }),
                     Action::make('print_invoice')
                         ->label('Cetak Invoice')
                         ->icon('heroicon-o-document-text')

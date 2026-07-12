@@ -344,7 +344,24 @@ class Pos extends StaffPos
                 Action::make('print')
                     ->label('Cetak Nota')
                     ->icon('heroicon-o-printer')
-                    ->url($printUrl, shouldOpenInNewTab: true),
+                    ->url($printUrl, shouldOpenInNewTab: true)
+                    ->extraAttributes(function () use ($sale) {
+                        return [
+                            'x-on:click' => "
+                                if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+                                    \$event.preventDefault();
+                                    const url = '".route('admin.sales.receipt', ['sale' => $sale->id, 'format' => 'text'])."';
+                                    
+                                    const savedPrinter = localStorage.getItem('savedPrinter');
+                                    if (savedPrinter) {
+                                        window.dispatchEvent(new CustomEvent('print-native', { detail: { url } }));
+                                    } else {
+                                        window.dispatchEvent(new CustomEvent('open-printer-modal', { detail: { url } }));
+                                    }
+                                }
+                            ",
+                        ];
+                    }),
             ])
             ->send();
     }
