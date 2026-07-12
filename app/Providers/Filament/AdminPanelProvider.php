@@ -11,6 +11,7 @@ use App\Filament\Admin\Widgets\AdminPaymentMethodChart;
 use App\Filament\Admin\Widgets\AdminSalesChart;
 use App\Filament\Admin\Widgets\AdminStatsOverview;
 use App\Filament\Admin\Widgets\AdminStatsOverviewMobile;
+use App\Filament\Admin\Widgets\AdminStockAssetMobile;
 use App\Filament\Admin\Widgets\OperationalQuickActionsWidget;
 use App\Filament\Admin\Widgets\StockQuickActionsWidget;
 use App\Filament\Middleware\RedirectPanelUser;
@@ -86,6 +87,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 AdminStatsOverview::class,
                 AdminStatsOverviewMobile::class,
+                AdminStockAssetMobile::class,
                 StockQuickActionsWidget::class,
                 OperationalQuickActionsWidget::class,
                 AdminSalesChart::class,

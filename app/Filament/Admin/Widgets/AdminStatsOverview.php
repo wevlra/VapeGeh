@@ -125,7 +125,7 @@ class AdminStatsOverview extends StatsOverviewWidget
             Stat::make('Stok Keluar', number_format($stockOut))
                 ->description('Unit terjual/dikirim')
                 ->color('danger'),
-            Stat::make('Total Stok', number_format((int) Stock::sum('qty')))
+            Stat::make('Total Stok', number_format((int) Stock::sum('qty'), 0, ',', '.'))
                 ->description('Unit di semua lokasi')
                 ->color('warning'),
             Stat::make('Total Aset', 'Rp '.number_format((float) Location::getTotalAssetOfAll(), 0, ',', '.'))

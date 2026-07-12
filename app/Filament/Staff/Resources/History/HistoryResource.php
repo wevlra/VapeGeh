@@ -22,7 +22,7 @@ class HistoryResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClock;
 
-    protected static ?string $navigationLabel = 'Riwayat';
+    protected static ?string $navigationLabel = 'Riwayat Transfer Stok';
 
     protected static \UnitEnum|string|null $navigationGroup = 'Inventaris';
 
@@ -30,12 +30,12 @@ class HistoryResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return 'Riwayat';
+        return 'Riwayat Transfer Stok';
     }
 
     public static function getPluralModelLabel(): string
     {
-        return 'Riwayat';
+        return 'Riwayat Transfer Stok';
     }
 
     public static function getEloquentQuery(): Builder

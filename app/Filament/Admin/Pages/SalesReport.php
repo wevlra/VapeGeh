@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Pages;
 
+use App\Models\Location;
 use App\Models\Sale;
 use BackedEnum;
 use Filament\Pages\Page;
@@ -35,6 +36,21 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
     public function updatedPeriod(): void
     {
         $this->resetTable();
+    }
+
+    public function printReport(): void
+    {
+        $params = ['period' => $this->period];
+
+        foreach (['source_type', 'location_name', 'payment_method'] as $filter) {
+            $value = $this->getTableFilterState($filter)['value'] ?? null;
+
+            if (filled($value)) {
+                $params[$filter] = $value;
+            }
+        }
+
+        $this->js('window.open(\''.route('admin.sales-report.print', $params).'\', \'_blank\')');
     }
 
     public function content(Schema $schema): Schema
@@ -156,6 +172,9 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
                         'pos' => 'POS',
                         'stock_out' => 'Stok Keluar',
                     ]),
+                Tables\Filters\SelectFilter::make('location_name')
+                    ->label('Lokasi')
+                    ->options(fn (): array => Location::query()->orderBy('name')->pluck('name', 'name')->all()),
                 Tables\Filters\SelectFilter::make('payment_method')
                     ->options([
                         'cash' => 'Tunai',
