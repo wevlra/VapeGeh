@@ -38,6 +38,21 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
         $this->resetTable();
     }
 
+    public function printReport(): void
+    {
+        $params = ['period' => $this->period];
+
+        foreach (['source_type', 'location_name', 'payment_method'] as $filter) {
+            $value = $this->getTableFilterState($filter)['value'] ?? null;
+
+            if (filled($value)) {
+                $params[$filter] = $value;
+            }
+        }
+
+        $this->js('window.open(\''.route('admin.sales-report.print', $params).'\', \'_blank\')');
+    }
+
     public function content(Schema $schema): Schema
     {
         return $schema
