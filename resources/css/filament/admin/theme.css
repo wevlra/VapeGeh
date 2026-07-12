@@ -3,3 +3,4 @@
 @source '../../../../app/Filament/Admin/**/*';
 @source '../../../../resources/views/filament/admin/**/*';
 @source '../../../../resources/views/filament/admin/*';
+@source '../../../../resources/views/components/*';

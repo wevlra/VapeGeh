@@ -18,17 +18,14 @@ class PrintReceiptAction extends Action
             ->openUrlInNewTab()
             ->extraAttributes(function (StockMovement $record) {
                 return [
-                    'x-on:click' => "
-                        if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-                            \$event.preventDefault();
-                            const url = '".route('admin.history.receipt', ['stockMovement' => $record->id, 'format' => 'text'])."';
-                            
-                            const savedPrinter = localStorage.getItem('savedPrinter');
-                            if (savedPrinter) {
-                                window.dispatchEvent(new CustomEvent('print-native', { detail: { url } }));
-                            } else {
-                                window.dispatchEvent(new CustomEvent('open-printer-modal', { detail: { url } }));
-                            }
+                    'x-on:click.prevent' => "
+                        const url = '".route('admin.history.receipt', ['stockMovement' => $record->id, 'format' => 'json'])."';
+                        
+                        const savedPrinter = localStorage.getItem('savedPrinter');
+                        if (savedPrinter) {
+                            window.dispatchEvent(new CustomEvent('print-native', { detail: { url } }));
+                        } else {
+                            window.dispatchEvent(new CustomEvent('open-printer-modal', { detail: { url } }));
                         }
                     ",
                 ];

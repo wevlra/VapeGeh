@@ -26,5 +26,29 @@ class AppServiceProvider extends ServiceProvider
 
         DeleteAction::configureUsing(fn (DeleteAction $action) => $action->icon('heroicon-o-trash'));
         DeleteBulkAction::configureUsing(fn (DeleteBulkAction $action) => $action->icon('heroicon-o-trash'));
+
+        \Filament\Support\Facades\FilamentView::registerRenderHook(
+            \Filament\View\PanelsRenderHook::USER_MENU_BEFORE,
+            fn (): string => \Illuminate\Support\Facades\Blade::render('
+                <div class="px-2" x-data="{
+                    savedPrinter: null,
+                    init() {
+                        this.savedPrinter = JSON.parse(localStorage.getItem(\'savedPrinter\'));
+                        window.addEventListener(\'printer-connected\', () => {
+                            this.savedPrinter = JSON.parse(localStorage.getItem(\'savedPrinter\'));
+                        });
+                    }
+                }">
+                    <x-filament::button
+                        color="gray"
+                        icon="heroicon-o-printer"
+                        x-on:click.prevent="$dispatch(\'open-printer-modal\')"
+                        size="sm"
+                    >
+                        <span x-text="savedPrinter ? (savedPrinter.name || \'Printer Terhubung\') : \'Pilih Printer\'"></span>
+                    </x-filament::button>
+                </div>
+            '),
+        );
     }
 }
