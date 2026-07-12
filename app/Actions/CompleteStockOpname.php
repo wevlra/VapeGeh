@@ -56,7 +56,7 @@ class CompleteStockOpname
             if ($totalDifferenceValue < 0) {
                 Expense::create([
                     'location_id' => $lockedOpname->location_id,
-                    'category' => 'Penyesuaian Stok',
+                    'category' => 'other',
                     'description' => "Rugi penyesuaian stok (opname {$lockedOpname->opname_number})",
                     'amount' => abs($totalDifferenceValue),
                     'date' => now(),
@@ -64,7 +64,7 @@ class CompleteStockOpname
             } elseif ($totalDifferenceValue > 0) {
                 Income::create([
                     'location_id' => $lockedOpname->location_id,
-                    'category' => 'Penyesuaian Stok',
+                    'category' => 'other',
                     'description' => "Untung penyesuaian stok (opname {$lockedOpname->opname_number})",
                     'amount' => $totalDifferenceValue,
                     'date' => now(),
