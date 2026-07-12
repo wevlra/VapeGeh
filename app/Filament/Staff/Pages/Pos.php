@@ -58,7 +58,7 @@ class Pos extends Page implements HasTable
                         ->where('location_id', $locationId)
                         ->where('qty', '>', 0),
                     )
-                    ->with(['stocks' => fn ($q) => $q->where('location_id', $locationId), 'prices'])
+                    ->with(['stocks' => fn ($q) => $q->where('location_id', $locationId)])
             )
             ->columns([
                 TextColumn::make('name')
@@ -68,9 +68,9 @@ class Pos extends Page implements HasTable
                     ->searchable()
                     ->sortable()
                     ->visibleFrom('md'),
-                TextColumn::make('default_price')
+                TextColumn::make('selling_price')
                     ->label('Harga')
-                    ->getStateUsing(fn (Product $record): float => $record->stocks->first()?->price > 0 ? (float) $record->stocks->first()?->price : (float) $record->default_price)
+                    ->getStateUsing(fn (Product $record): float => $record->stocks->first()?->price > 0 ? (float) $record->stocks->first()?->price : (float) $record->selling_price)
                     ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
                     ->visibleFrom('md'),
                 TextColumn::make('stock_qty')
@@ -90,8 +90,8 @@ class Pos extends Page implements HasTable
                             ->label('Produk')
                             ->formatStateUsing(fn (string $state): string => mb_strimwidth($state, 0, 30, '...'))
                             ->weight('bold'),
-                        TextColumn::make('default_price_mobile')
-                            ->state(fn (Product $record): float => $record->stocks->first()?->price > 0 ? (float) $record->stocks->first()?->price : (float) $record->default_price)
+                        TextColumn::make('selling_price_mobile')
+                            ->state(fn (Product $record): float => $record->stocks->first()?->price > 0 ? (float) $record->stocks->first()?->price : (float) $record->selling_price)
                             ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
                             ->color('gray'),
                     ]),
@@ -145,7 +145,7 @@ class Pos extends Page implements HasTable
             }
             $item['name'] = $product->name;
             $stock = $stocks->get($item['product_id']);
-            $item['price'] = $stock && $stock->price > 0 ? (float) $stock->price : (float) $product->default_price;
+            $item['price'] = $stock && $stock->price > 0 ? (float) $stock->price : (float) $product->selling_price;
             $item['subtotal'] = $item['price'] * (int) $item['qty'];
 
             return $item;
@@ -326,7 +326,7 @@ class Pos extends Page implements HasTable
                         );
                     }
 
-                    $price = $stock && $stock->price > 0 ? (float) $stock->price : (float) $product->default_price;
+                    $price = $stock && $stock->price > 0 ? (float) $stock->price : (float) $product->selling_price;
                     $subtotal = $price * $qty;
                     $total += $subtotal;
 

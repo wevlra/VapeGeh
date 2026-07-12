@@ -3,25 +3,19 @@
 namespace App\Filament\Admin\Resources\StockOpnames\Pages;
 
 use App\Filament\Admin\Resources\StockOpnames\StockOpnameResource;
+use App\Filament\Concerns\InteractsWithStockItems;
 use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\Location;
 use App\Models\Product;
 use App\Models\Stock;
 use App\Models\StockOpname;
-use Filament\Actions\Action;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Resources\Pages\Page;
-use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Components\View;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
@@ -29,16 +23,17 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 class StockOpnameCreate extends Page implements HasForms, HasTable
 {
     use InteractsWithForms;
+    use InteractsWithStockItems;
     use InteractsWithTable;
     use NotifiesWithDetail;
 
@@ -85,7 +80,8 @@ class StockOpnameCreate extends Page implements HasForms, HasTable
                                             }),
                                         Textarea::make('notes')
                                             ->label('Catatan')
-                                            ->rows(2),
+                                            ->rows(2)
+                                            ->columnSpanFull(),
                                     ]),
                             ]),
                         Step::make('Input Stok Fisik')
@@ -93,97 +89,34 @@ class StockOpnameCreate extends Page implements HasForms, HasTable
                             ->icon(Heroicon::OutlinedClipboardDocumentCheck)
                             ->schema([
                                 EmbeddedTable::make(),
-                                View::make('filament.admin.pages.selected-items-preview'),
                             ]),
                     ]),
             ]);
     }
 
+    protected function buildItemData(Product $record, int $qty, ?array $existing): array
+    {
+        $locationId = $this->data['location_id'] ?? null;
+        $systemQty = $locationId
+            ? (int) Stock::where('product_id', $record->id)->where('location_id', $locationId)->value('qty')
+            : 0;
+
+        $actualQty = $qty;
+        $difference = $actualQty - $systemQty;
+
+        return [
+            'product_id' => $record->id,
+            'name' => $record->name,
+            'system_qty' => $systemQty,
+            'actual_qty' => $actualQty,
+            'qty' => $actualQty, // alias for preview rendering
+            'difference' => $difference,
+            'notes' => $existing['notes'] ?? null,
+        ];
+    }
+
     public function table(Table $table): Table
     {
-        $addItemAction = Action::make('addItem')
-            ->modalHeading('Masukkan Stok Fisik')
-            ->modalDescription(fn (Product $record): string => $record->name)
-            ->modalSubmitActionLabel('Simpan')
-            ->modalIcon(null)
-            ->form(function (Product $record) {
-                $locationId = $this->data['location_id'] ?? null;
-                $existing = collect($this->items)->firstWhere('product_id', $record->id);
-                $systemQty = $locationId
-                    ? (int) Stock::where('product_id', $record->id)->where('location_id', $locationId)->value('qty')
-                    : 0;
-
-                return [
-                    Placeholder::make('system_qty_display')
-                        ->label('Stok Sistem Saat Ini')
-                        ->content(new HtmlString("<div class='text-2xl font-bold'>{$systemQty}</div>")),
-                    Grid::make(['default' => 3])
-                        ->schema([
-                            Actions::make([
-                                Action::make('decrement')
-                                    ->button()
-                                    ->label('')
-                                    ->icon('heroicon-m-minus')
-                                    ->color('gray')
-                                    ->action(fn (Set $set, Get $get) => $set('actual_qty', max(0, (int) $get('actual_qty') - 1))),
-                            ])->alignCenter(),
-                            TextInput::make('actual_qty')
-                                ->hiddenLabel()
-                                ->integer()
-                                ->minValue(0)
-                                ->default($existing['actual_qty'] ?? $systemQty)
-                                ->required()
-                                ->live()
-                                ->extraAttributes(['class' => 'text-center text-3xl font-bold border-none bg-transparent focus:ring-0']),
-                            Actions::make([
-                                Action::make('increment')
-                                    ->button()
-                                    ->label('')
-                                    ->icon('heroicon-m-plus')
-                                    ->action(fn (Set $set, Get $get) => $set('actual_qty', (int) $get('actual_qty') + 1)),
-                            ])->alignCenter(),
-                        ]),
-                    Placeholder::make('difference')
-                        ->hiddenLabel()
-                        ->content(function (Get $get) use ($systemQty) {
-                            $actualQty = (int) ($get('actual_qty') ?? 0);
-                            $diff = $actualQty - $systemQty;
-                            $color = $diff > 0 ? 'text-green-500' : ($diff < 0 ? 'text-red-500' : 'text-gray-500');
-                            $sign = $diff > 0 ? '+' : '';
-
-                            return new HtmlString("<div class='text-center text-lg {$color} font-medium'>Selisih: {$sign}{$diff}</div>");
-                        }),
-                    TextInput::make('notes')
-                        ->label('Catatan Item')
-                        ->default($existing['notes'] ?? null),
-                ];
-            })
-            ->action(function (array $data, Product $record) {
-                $locationId = $this->data['location_id'] ?? null;
-                $systemQty = $locationId
-                    ? (int) Stock::where('product_id', $record->id)->where('location_id', $locationId)->value('qty')
-                    : 0;
-                $actualQty = (int) $data['actual_qty'];
-                $difference = $actualQty - $systemQty;
-
-                $existingIndex = collect($this->items)->search(fn ($item) => $item['product_id'] === $record->id);
-
-                $itemData = [
-                    'product_id' => $record->id,
-                    'name' => $record->name,
-                    'system_qty' => $systemQty,
-                    'actual_qty' => $actualQty,
-                    'qty' => $actualQty, // alias for preview rendering
-                    'difference' => $difference,
-                    'notes' => $data['notes'] ?? null,
-                ];
-
-                if ($existingIndex !== false) {
-                    $this->items[$existingIndex] = $itemData;
-                } else {
-                    $this->items[] = $itemData;
-                }
-            });
 
         return $table
             ->query(Product::query()->orderBy('name'))
@@ -193,8 +126,7 @@ class StockOpnameCreate extends Page implements HasForms, HasTable
                         TextColumn::make('name')
                             ->label('Nama Produk')
                             ->weight('bold')
-                            ->searchable()
-                            ->action($addItemAction),
+                            ->searchable(),
                         TextColumn::make('system_qty')
                             ->label('Stok Sistem')
                             ->formatStateUsing(function ($record) {
@@ -205,9 +137,23 @@ class StockOpnameCreate extends Page implements HasForms, HasTable
 
                                 return 'Stok Sistem: '.$systemQty;
                             })
-                            ->color('gray')
-                            ->action($addItemAction),
+                            ->color('gray'),
                     ]),
+                    ViewColumn::make('controls')
+                        ->label('Kontrol Fisik')
+                        ->view('filament.tables.columns.product-inline-controls')
+                        ->extraAttributes(['class' => 'w-full md:w-auto flex justify-end'])
+                        ->state(fn () => [
+                            'showPrice' => false,
+                            'qtyLabel' => 'Fisik:',
+                            'defaultQty' => function (Product $record) {
+                                $locationId = $this->data['location_id'] ?? null;
+
+                                return $locationId
+                                    ? (int) Stock::where('product_id', $record->id)->where('location_id', $locationId)->value('qty')
+                                    : 0;
+                            },
+                        ]),
                 ]),
             ]);
     }

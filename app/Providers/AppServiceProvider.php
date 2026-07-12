@@ -4,7 +4,10 @@ namespace App\Providers;
 
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -27,9 +30,9 @@ class AppServiceProvider extends ServiceProvider
         DeleteAction::configureUsing(fn (DeleteAction $action) => $action->icon('heroicon-o-trash'));
         DeleteBulkAction::configureUsing(fn (DeleteBulkAction $action) => $action->icon('heroicon-o-trash'));
 
-        \Filament\Support\Facades\FilamentView::registerRenderHook(
-            \Filament\View\PanelsRenderHook::USER_MENU_BEFORE,
-            fn (): string => \Illuminate\Support\Facades\Blade::render('
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::USER_MENU_BEFORE,
+            fn (): string => Blade::render('
                 <div class="px-2" x-data="{
                     savedPrinter: null,
                     init() {

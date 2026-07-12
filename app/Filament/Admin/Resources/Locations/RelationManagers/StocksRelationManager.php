@@ -5,7 +5,6 @@ namespace App\Filament\Admin\Resources\Locations\RelationManagers;
 use App\Actions\AdjustStock;
 use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\Product;
-use App\Models\ProductPrice;
 use App\Models\Stock;
 use Filament\Actions\EditAction as TableEditAction;
 use Filament\Forms\Components\Select;
@@ -66,13 +65,19 @@ class StocksRelationManager extends RelationManager
                                 $product = $record->product;
                                 $options = [];
 
-                                $defaultPrice = (float) $product->default_price;
+                                $defaultPrice = (float) $product->selling_price;
                                 if ($defaultPrice > 0) {
                                     $options['default'] = 'Default: Rp '.number_format($defaultPrice, 0, ',', '.');
                                 }
 
-                                foreach ($product->prices as $price) {
-                                    $options['pp_'.$price->id] = "{$price->label}: Rp ".number_format((float) $price->price, 0, ',', '.');
+                                if ((float) $product->reseller_price > 0) {
+                                    $options['reseller'] = 'Reseller: Rp '.number_format((float) $product->reseller_price, 0, ',', '.');
+                                }
+                                if ((float) $product->price_1 > 0) {
+                                    $options['price_1'] = 'Harga 1: Rp '.number_format((float) $product->price_1, 0, ',', '.');
+                                }
+                                if ((float) $product->price_2 > 0) {
+                                    $options['price_2'] = 'Harga 2: Rp '.number_format((float) $product->price_2, 0, ',', '.');
                                 }
 
                                 $options['custom'] = 'Harga Kustom...';
@@ -84,15 +89,14 @@ class StocksRelationManager extends RelationManager
                                     return null;
                                 }
                                 $product = $record->product;
-                                $prices = $product->prices->pluck('price')->map(fn ($p) => (string) $p)->toArray();
-                                if ((float) $record->price == (float) $product->default_price) {
+                                if ((float) $record->price == (float) $product->selling_price) {
                                     return 'default';
-                                }
-
-                                foreach ($product->prices as $p) {
-                                    if ((float) $record->price == (float) $p->price) {
-                                        return 'pp_'.$p->id;
-                                    }
+                                } elseif ((float) $record->price == (float) $product->reseller_price && (float) $product->reseller_price > 0) {
+                                    return 'reseller';
+                                } elseif ((float) $record->price == (float) $product->price_1 && (float) $product->price_1 > 0) {
+                                    return 'price_1';
+                                } elseif ((float) $record->price == (float) $product->price_2 && (float) $product->price_2 > 0) {
+                                    return 'price_2';
                                 }
 
                                 return 'custom';
@@ -116,11 +120,13 @@ class StocksRelationManager extends RelationManager
                         if ($priceType === 'custom') {
                             $priceValue = (float) ($data['custom_price'] ?? 0);
                         } elseif ($priceType === 'default') {
-                            $priceValue = (float) $record->product->default_price;
-                        } elseif ($priceType && str_starts_with($priceType, 'pp_')) {
-                            $priceId = (int) str_replace('pp_', '', $priceType);
-                            $priceModel = ProductPrice::find($priceId);
-                            $priceValue = $priceModel ? (float) $priceModel->price : null;
+                            $priceValue = (float) $record->product->selling_price;
+                        } elseif ($priceType === 'reseller') {
+                            $priceValue = (float) $record->product->reseller_price;
+                        } elseif ($priceType === 'price_1') {
+                            $priceValue = (float) $record->product->price_1;
+                        } elseif ($priceType === 'price_2') {
+                            $priceValue = (float) $record->product->price_2;
                         } else {
                             $priceValue = null;
                         }

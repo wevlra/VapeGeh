@@ -75,6 +75,11 @@ class CompleteStockOpname
                 'status' => 'completed',
                 'completed_at' => now(),
             ]);
+
+            // Update original instance so Filament form sees the changes
+            $opname->status = 'completed';
+            $opname->completed_at = $lockedOpname->completed_at;
+            $opname->load('items.product');
         });
     }
 }

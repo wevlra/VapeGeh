@@ -2,8 +2,6 @@
 
 namespace App\Filament\Admin\Resources\Products\Schemas;
 
-use Filament\Infolists\Components\RepeatableEntry;
-use Filament\Infolists\Components\RepeatableEntry\TableColumn;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -26,24 +24,15 @@ class ProductInfolist
                         TextEntry::make('selling_price')
                             ->money('IDR')
                             ->label('Harga Jual (Default)'),
-                    ]),
-
-                Section::make('Harga Jual')
-                    ->columnSpanFull()
-                    ->schema([
-                        RepeatableEntry::make('prices')
-                            ->hiddenLabel()
-                            ->table([
-                                TableColumn::make('Label'),
-                                TableColumn::make('Harga'),
-                            ])
-                            ->schema([
-                                TextEntry::make('label')
-                                    ->label('Label'),
-                                TextEntry::make('price')
-                                    ->label('Harga')
-                                    ->money('IDR'),
-                            ]),
+                        TextEntry::make('reseller_price')
+                            ->money('IDR')
+                            ->label('Reseller Price'),
+                        TextEntry::make('price_1')
+                            ->money('IDR')
+                            ->label('Harga 1'),
+                        TextEntry::make('price_2')
+                            ->money('IDR')
+                            ->label('Harga 2'),
                     ]),
             ]);
     }

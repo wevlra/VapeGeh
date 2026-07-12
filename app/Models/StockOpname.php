@@ -42,7 +42,7 @@ class StockOpname extends Model
     public function getTotalDifferenceValueAttribute(): float
     {
         return $this->items->sum(function (StockOpnameItem $item) {
-            return $item->difference * ($item->product?->default_price ?? 0);
+            return $item->difference * ($item->product?->selling_price ?? 0);
         });
     }
 

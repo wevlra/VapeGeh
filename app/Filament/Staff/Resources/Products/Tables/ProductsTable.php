@@ -21,6 +21,11 @@ class ProductsTable
                     ->searchable()
                     ->sortable()
                     ->view('filament.columns.staff-product-name'),
+                TextColumn::make('category.name')
+                    ->label('Kategori')
+                    ->searchable()
+                    ->sortable()
+                    ->badge(),
                 TextColumn::make('selling_price')
                     ->label('Harga')
                     ->getStateUsing(function (Product $record) use ($locationId): float {

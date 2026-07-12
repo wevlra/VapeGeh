@@ -22,7 +22,7 @@ class CompleteStockTransfer
         }
 
         DB::transaction(function () use ($transfer, $completedBy) {
-            $transfer->load('items');
+            $transfer->load('items.product');
 
             foreach ($transfer->items as $item) {
                 $sourceStock = Stock::where('product_id', $item->product_id)

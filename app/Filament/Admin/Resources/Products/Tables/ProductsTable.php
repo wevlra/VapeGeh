@@ -22,6 +22,11 @@ class ProductsTable
                     ->searchable()
                     ->sortable()
                     ->view('filament.columns.admin-product-name'),
+                TextColumn::make('category.name')
+                    ->label('Kategori')
+                    ->searchable()
+                    ->sortable()
+                    ->badge(),
                 TextColumn::make('purchase_price')
                     ->label('Harga Beli')
                     ->formatStateUsing(fn ($state) => 'Rp '.number_format($state, 0, ',', '.'))

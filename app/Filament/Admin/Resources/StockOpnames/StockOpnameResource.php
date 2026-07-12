@@ -4,7 +4,6 @@ namespace App\Filament\Admin\Resources\StockOpnames;
 
 use App\Filament\Admin\Resources\StockOpnames\Pages\ListStockOpnames;
 use App\Filament\Admin\Resources\StockOpnames\Pages\ViewStockOpname;
-use App\Filament\Admin\Resources\StockOpnames\Schemas\StockOpnameForm;
 use App\Filament\Admin\Resources\StockOpnames\Schemas\StockOpnameInfolist;
 use App\Filament\Admin\Resources\StockOpnames\Tables\StockOpnamesTable;
 use App\Models\StockOpname;
@@ -31,7 +30,7 @@ class StockOpnameResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return StockOpnameForm::configure($schema);
+        return $schema;
     }
 
     public static function table(Table $table): Table

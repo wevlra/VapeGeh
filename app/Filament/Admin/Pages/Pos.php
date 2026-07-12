@@ -56,8 +56,8 @@ class Pos extends StaffPos
                     ->label('Produk')
                     ->formatStateUsing(fn (Stock $record): string => mb_strimwidth($record->product->name, 0, 30, '...'))
                     ->description(fn (Stock $record): string => $record->price > 0
-                        ? 'Harga Outlet: Rp '.number_format((float) $record->price, 0, ',', '.').' (Default: Rp '.number_format((float) $record->product->default_price, 0, ',', '.').')'
-                        : 'Rp '.number_format((float) $record->product->default_price, 0, ',', '.'))
+                        ? 'Harga Outlet: Rp '.number_format((float) $record->price, 0, ',', '.').' (Default: Rp '.number_format((float) $record->product->selling_price, 0, ',', '.').')'
+                        : 'Rp '.number_format((float) $record->product->selling_price, 0, ',', '.'))
                     ->searchable()
                     ->sortable(),
 
@@ -106,8 +106,14 @@ class Pos extends StaffPos
                             $options['default'] = 'Default: Rp '.number_format((float) $product->selling_price, 0, ',', '.');
                         }
 
-                        foreach ($product->prices as $price) {
-                            $options['pp_'.$price->id] = "{$price->label}: Rp ".number_format((float) $price->price, 0, ',', '.');
+                        if ((float) $product->reseller_price > 0) {
+                            $options['reseller'] = 'Reseller: Rp '.number_format((float) $product->reseller_price, 0, ',', '.');
+                        }
+                        if ((float) $product->price_1 > 0) {
+                            $options['price_1'] = 'Harga 1: Rp '.number_format((float) $product->price_1, 0, ',', '.');
+                        }
+                        if ((float) $product->price_2 > 0) {
+                            $options['price_2'] = 'Harga 2: Rp '.number_format((float) $product->price_2, 0, ',', '.');
                         }
 
                         if (empty($options)) {
@@ -124,16 +130,23 @@ class Pos extends StaffPos
                 $selected = $data['selected_price'];
 
                 if ($selected === 'default') {
-                    $price = (float) $product->default_price;
+                    $price = (float) $product->selling_price;
                     $label = 'Default';
                 } elseif ($selected === 'stock') {
                     $price = (float) $record->price;
                     $label = 'Harga Outlet';
+                } elseif ($selected === 'reseller') {
+                    $price = (float) $product->reseller_price;
+                    $label = 'Reseller';
+                } elseif ($selected === 'price_1') {
+                    $price = (float) $product->price_1;
+                    $label = 'Harga 1';
+                } elseif ($selected === 'price_2') {
+                    $price = (float) $product->price_2;
+                    $label = 'Harga 2';
                 } else {
-                    $priceId = (int) str_replace('pp_', '', $selected);
-                    $priceModel = $product->prices()->find($priceId);
-                    $price = (float) ($priceModel->price ?? 0);
-                    $label = $priceModel->label ?? 'Tidak Diketahui';
+                    $price = 0;
+                    $label = 'Tidak Diketahui';
                 }
 
                 $this->addToCart($product->id, $price, $label);

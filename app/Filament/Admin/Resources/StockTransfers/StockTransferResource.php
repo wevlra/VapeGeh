@@ -4,7 +4,6 @@ namespace App\Filament\Admin\Resources\StockTransfers;
 
 use App\Filament\Admin\Resources\StockTransfers\Pages\ListStockTransfers;
 use App\Filament\Admin\Resources\StockTransfers\Pages\ViewStockTransfer;
-use App\Filament\Admin\Resources\StockTransfers\Schemas\StockTransferForm;
 use App\Filament\Admin\Resources\StockTransfers\Schemas\StockTransferInfolist;
 use App\Filament\Admin\Resources\StockTransfers\Tables\StockTransfersTable;
 use App\Models\StockTransfer;
@@ -37,7 +36,7 @@ class StockTransferResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return StockTransferForm::configure($schema);
+        return $schema;
     }
 
     public static function getEloquentQuery(): Builder

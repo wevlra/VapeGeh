@@ -2,8 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Products\Schemas;
 
-use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Repeater\TableColumn;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use Filament\Support\RawJs;
@@ -18,6 +17,21 @@ class ProductForm
                     ->label('Nama')
                     ->required()
                     ->maxLength(255),
+                Select::make('category_id')
+                    ->label('Kategori')
+                    ->relationship('category', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->createOptionForm([
+                        TextInput::make('name')
+                            ->label('Nama Kategori')
+                            ->required()
+                            ->maxLength(255)
+                            ->unique('categories', 'name'),
+                        TextInput::make('description')
+                            ->label('Deskripsi (opsional)')
+                            ->maxLength(255),
+                    ]),
                 TextInput::make('purchase_price')
                     ->label('Harga Beli')
                     ->required()
@@ -34,31 +48,33 @@ class ProductForm
                     ->prefix('Rp')
                     ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
                     ->stripCharacters('.'),
-                Repeater::make('prices')
-                    ->relationship()
-                    ->columnSpanFull()
-                    ->label('Harga Jual')
-                    ->defaultItems(1)
-                    ->addActionLabel('Tambah Harga')
-                    ->table([
-                        TableColumn::make('Label'),
-                        TableColumn::make('Price'),
-                    ])
-                    ->schema([
-                        TextInput::make('label')
-                            ->label('Label')
-                            ->required()
-                            ->maxLength(50)
-                            ->placeholder('Misal: Reseller, Toko, Grosir'),
-                        TextInput::make('price')
-                            ->label('Harga')
-                            ->required()
-                            ->numeric()
-                            ->minValue(0)
-                            ->prefix('Rp')
-                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
-                            ->stripCharacters('.'),
-                    ]),
+                TextInput::make('reseller_price')
+                    ->label('Reseller Price')
+                    ->required()
+                    ->numeric()
+                    ->default(0)
+                    ->minValue(0)
+                    ->prefix('Rp')
+                    ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                    ->stripCharacters('.'),
+                TextInput::make('price_1')
+                    ->label('Harga 1')
+                    ->required()
+                    ->numeric()
+                    ->default(0)
+                    ->minValue(0)
+                    ->prefix('Rp')
+                    ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                    ->stripCharacters('.'),
+                TextInput::make('price_2')
+                    ->label('Harga 2')
+                    ->required()
+                    ->numeric()
+                    ->default(0)
+                    ->minValue(0)
+                    ->prefix('Rp')
+                    ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                    ->stripCharacters('.'),
             ]);
     }
 }
