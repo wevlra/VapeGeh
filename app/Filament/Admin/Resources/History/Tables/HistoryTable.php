@@ -10,6 +10,7 @@ use App\Models\StockEntry;
 use App\Models\StockMovement;
 use App\Models\StockOpname;
 use App\Models\StockTransfer;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -158,6 +159,13 @@ class HistoryTable
             ->recordActions([
                 PrintReceiptAction::make('print_receipt'),
                 PrintInvoiceAction::make('print_invoice'),
+                Action::make('print_opname')
+                    ->label('Cetak Laporan')
+                    ->icon('heroicon-o-printer')
+                    ->color('gray')
+                    ->url(fn (StockMovement $record): string => route('admin.stock-opnames.print', $record->related))
+                    ->openUrlInNewTab()
+                    ->visible(fn (StockMovement $record): bool => $record->related instanceof StockOpname),
             ])
             ->defaultSort('created_at', 'desc');
     }
