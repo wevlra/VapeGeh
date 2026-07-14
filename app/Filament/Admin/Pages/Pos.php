@@ -14,6 +14,7 @@ use DomainException;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -52,23 +53,35 @@ class Pos extends StaffPos
         return $table
             ->query($query)
             ->columns([
-                TextColumn::make('product.name')
-                    ->label('Produk')
-                    ->formatStateUsing(fn (Stock $record): string => mb_strimwidth($record->product->name, 0, 30, '...'))
-                    ->description(fn (Stock $record): string => $record->price > 0
-                        ? 'Harga Outlet: Rp '.number_format((float) $record->price, 0, ',', '.').' (Default: Rp '.number_format((float) $record->product->selling_price, 0, ',', '.').')'
-                        : 'Rp '.number_format((float) $record->product->selling_price, 0, ',', '.'))
-                    ->searchable()
-                    ->sortable(),
+                Stack::make([
+                    TextColumn::make('product.name')
+                        ->searchable()
+                        ->sortable()
+                        ->weight('bold')
+                        ->formatStateUsing(fn (Stock $record): string => mb_strimwidth($record->product->name, 0, 40, '...')),
+                    TextColumn::make('price_display')
+                        ->state(fn (Stock $record) => $record)
+                        ->formatStateUsing(function (Stock $record): string {
+                            if ($record->price > 0) {
+                                return 'Rp '.number_format((float) $record->price, 0, ',', '.').' (Outlet)';
+                            }
 
-                TextColumn::make('qty')
-                    ->label('Stok')
-                    ->badge()
-                    ->color(fn (int $state): string => match (true) {
-                        $state <= 0 => 'danger',
-                        $state < 10 => 'warning',
-                        default => 'success',
-                    }),
+                            return 'Rp '.number_format((float) $record->product->selling_price, 0, ',', '.');
+                        })
+                        ->color('primary'),
+                    TextColumn::make('qty')
+                        ->badge()
+                        ->color(fn (int $state): string => match (true) {
+                            $state <= 0 => 'danger',
+                            $state < 10 => 'warning',
+                            default => 'success',
+                        })
+                        ->formatStateUsing(fn (int $state, Stock $record): string => 'Stok: '.$state.' • '.$record->location->name),
+                ])->space(2),
+            ])
+            ->contentGrid([
+                'md' => 2,
+                'xl' => 3,
             ])
             ->filters([
                 SelectFilter::make('location_id')
@@ -91,6 +104,8 @@ class Pos extends StaffPos
             ->label('Tambah')
             ->icon('heroicon-m-plus')
             ->color('primary')
+            ->button()
+            ->extraAttributes(['class' => 'w-full justify-center'])
             ->form([
                 Select::make('selected_price')
                     ->label('Harga')

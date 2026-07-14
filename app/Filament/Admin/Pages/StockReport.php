@@ -2,6 +2,8 @@
 
 namespace App\Filament\Admin\Pages;
 
+use App\Exports\StockReportExport;
+use App\Filament\Concerns\HasExportActions;
 use App\Models\Stock;
 use BackedEnum;
 use Filament\Pages\Page;
@@ -16,6 +18,7 @@ use Wezlo\FilamentResponsiveTable\ResponsiveTableConfiguration;
 
 class StockReport extends Page implements Tables\Contracts\HasTable
 {
+    use HasExportActions;
     use HasResponsiveTable;
     use Tables\Concerns\InteractsWithTable;
 
@@ -78,6 +81,17 @@ class StockReport extends Page implements Tables\Contracts\HasTable
     {
         return [
             StockReportStats::class,
+        ];
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            $this->getExportActionGroup(
+                StockReportExport::class,
+                'exports.pdf.stock-report',
+                'laporan-stok'
+            ),
         ];
     }
 }

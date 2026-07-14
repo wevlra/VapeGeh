@@ -49,7 +49,7 @@ class ProductForm
                     ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
                     ->stripCharacters('.'),
                 TextInput::make('reseller_price')
-                    ->label('Reseller Price')
+                    ->label('Harga Jual Reseller')
                     ->required()
                     ->numeric()
                     ->default(0)
@@ -58,7 +58,7 @@ class ProductForm
                     ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
                     ->stripCharacters('.'),
                 TextInput::make('price_1')
-                    ->label('Harga 1')
+                    ->label('Harga Jual 1')
                     ->required()
                     ->numeric()
                     ->default(0)
@@ -67,7 +67,7 @@ class ProductForm
                     ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
                     ->stripCharacters('.'),
                 TextInput::make('price_2')
-                    ->label('Harga 2')
+                    ->label('Harga Jual 2')
                     ->required()
                     ->numeric()
                     ->default(0)

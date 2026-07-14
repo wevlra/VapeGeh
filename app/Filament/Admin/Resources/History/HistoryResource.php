@@ -6,13 +6,18 @@ use App\Filament\Admin\Resources\History\Pages\ListHistory;
 use App\Filament\Admin\Resources\History\Pages\ViewHistory;
 use App\Filament\Admin\Resources\History\Schemas\HistoryInfolist;
 use App\Filament\Admin\Resources\History\Tables\HistoryTable;
+use App\Models\Sale;
+use App\Models\StockEntry;
 use App\Models\StockMovement;
+use App\Models\StockOpname;
+use App\Models\StockTransfer;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class HistoryResource extends Resource
 {
@@ -41,7 +46,19 @@ class HistoryResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['product', 'location', 'creator', 'related'])
+            ->with([
+                'product',
+                'location',
+                'creator',
+                'related' => function (MorphTo $morphTo) {
+                    $morphTo->morphWith([
+                        Sale::class => ['items.product'],
+                        StockEntry::class => ['items.product'],
+                        StockOpname::class => ['items.product'],
+                        StockTransfer::class => ['items.product'],
+                    ]);
+                },
+            ])
             ->whereIn('id', function ($sub) {
                 $sub->selectRaw('MIN(id)')
                     ->from('stock_movements')

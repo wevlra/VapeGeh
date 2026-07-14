@@ -52,8 +52,8 @@ class CompleteStockTransfer
                     ]);
                 } else {
                     $destinationStock->increment('qty', $item->qty);
-                    if ($item->price > 0) {
-                        $destinationStock->update(['price' => $item->price]);
+                    if ($item->price !== null) {
+                        $destinationStock->update(['price' => $item->price > 0 ? $item->price : null]);
                     }
                 }
 

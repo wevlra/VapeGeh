@@ -19,36 +19,32 @@ class ProductsTable
                 TextColumn::make('name')
                     ->label('Nama Produk')
                     ->searchable()
-                    ->sortable()
-                    ->view('filament.columns.staff-product-name'),
+                    ->sortable(),
                 TextColumn::make('category.name')
                     ->label('Kategori')
                     ->searchable()
                     ->sortable()
                     ->badge(),
                 TextColumn::make('selling_price')
-                    ->label('Harga')
+                    ->label('Harga Jual')
                     ->getStateUsing(function (Product $record) use ($locationId): float {
                         $stock = $record->stocks->firstWhere('location_id', $locationId);
 
                         return $stock && $stock->price > 0 ? (float) $stock->price : (float) $record->selling_price;
                     })
                     ->money('IDR')
-                    ->sortable()
-                    ->visibleFrom('md'),
-                TextColumn::make('stok_saat_ini')
+                    ->color('primary')
+                    ->sortable(),
+                TextColumn::make('current_stock')
                     ->label('Stok')
                     ->badge()
-                    ->alignCenter()
                     ->color(fn (int $state): string => match (true) {
                         $state <= 0 => 'danger',
                         $state < 10 => 'warning',
                         default => 'success',
                     })
-                    ->getStateUsing(fn (Product $record): int => (int) ($record->stocks->firstWhere('location_id', $locationId)?->qty ?? 0))
-                    ->visibleFrom('md'),
+                    ->getStateUsing(fn (Product $record): int => (int) ($record->stocks->firstWhere('location_id', $locationId)?->qty ?? 0)),
             ])
-            ->stackedOnMobile()
             ->filters([])
             ->recordActions([])
             ->toolbarActions([]);

@@ -87,8 +87,6 @@ class StockRelationManager extends RelationManager
                                     $options['price_2'] = 'Harga 2: Rp '.number_format((float) $product->price_2, 0, ',', '.');
                                 }
 
-                                $options['custom'] = 'Harga Kustom...';
-
                                 return $options;
                             })
                             ->default(function (Stock $record): ?string {
@@ -106,17 +104,9 @@ class StockRelationManager extends RelationManager
                                     return 'price_2';
                                 }
 
-                                return 'custom';
+                                return 'default';
                             })
-                            ->live()
                             ->nullable(),
-                        TextInput::make('custom_price')
-                            ->label('Harga Jual Kustom')
-                            ->numeric()
-                            ->prefix('Rp')
-                            ->default(fn (Stock $record): ?float => $record->price)
-                            ->visible(fn (callable $get) => $get('price_type') === 'custom')
-                            ->required(fn (callable $get) => $get('price_type') === 'custom'),
                         Textarea::make('notes')
                             ->label('Catatan')
                             ->rows(2),
@@ -126,7 +116,7 @@ class StockRelationManager extends RelationManager
                         if ($priceType === 'custom') {
                             $priceValue = (float) ($data['custom_price'] ?? 0);
                         } elseif ($priceType === 'default') {
-                            $priceValue = (float) $record->product->selling_price;
+                            $priceValue = null;
                         } elseif ($priceType === 'reseller') {
                             $priceValue = (float) $record->product->reseller_price;
                         } elseif ($priceType === 'price_1') {

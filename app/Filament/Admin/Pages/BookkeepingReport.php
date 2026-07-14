@@ -2,6 +2,8 @@
 
 namespace App\Filament\Admin\Pages;
 
+use App\Exports\BookkeepingExport;
+use App\Filament\Concerns\HasExportActions;
 use App\Models\Expense;
 use App\Models\Income;
 use BackedEnum;
@@ -20,6 +22,7 @@ use Wezlo\FilamentResponsiveTable\ResponsiveTableConfiguration;
 
 class BookkeepingReport extends Page implements Tables\Contracts\HasTable
 {
+    use HasExportActions;
     use HasResponsiveTable;
     use Tables\Concerns\InteractsWithTable;
 
@@ -179,5 +182,58 @@ class BookkeepingReport extends Page implements Tables\Contracts\HasTable
             'month' => now()->subDays(30)->startOfDay()->toDateString(),
             default => null,
         };
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            $this->getExportActionGroup(
+                BookkeepingExport::class,
+                'exports.pdf.bookkeeping',
+                'laporan-pembukuan-'.$this->activeTab
+            ),
+        ];
+    }
+
+    public function getExportInstance(string $exportClass, $query)
+    {
+        return new $exportClass($query, $this->activeTab);
+    }
+
+    public function buildExportQuery()
+    {
+        $query = $this->activeTab === 'expenses'
+            ? Expense::query()->with(['location', 'creator'])
+            : Income::query()->with(['location', 'creator']);
+
+        if ($this->period !== 'all') {
+            $query->where('date', '>=', $this->getPeriodStart());
+        }
+
+        $locationId = $this->getTableFilterState('location_id')['value'] ?? null;
+        $category = $this->getTableFilterState('category')['value'] ?? null;
+
+        if (filled($locationId)) {
+            $query->where('location_id', $locationId);
+        }
+        if (filled($category)) {
+            $query->where('category', $category);
+        }
+
+        $sort = $this->getTableSortColumn() ?? 'date';
+        $dir = $this->getTableSortDirection() ?? 'desc';
+        $query->orderBy($sort, $dir);
+
+        return $query;
+    }
+
+    public function getExportTitle(): string
+    {
+        return $this->activeTab === 'income' ? 'Laporan Pendapatan' : 'Laporan Pengeluaran';
+    }
+
+    public function getFilterInfo(): string
+    {
+        return 'Periode: '.ucfirst($this->period);
     }
 }

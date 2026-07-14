@@ -16,7 +16,7 @@ class IncomeFactory extends Factory
     {
         return [
             'location_id' => Location::factory(),
-            'category' => fake()->randomElement(['sale', 'debt_payment', 'other']),
+            'category' => fake()->randomElement(['sale', 'debt_payment', 'opname', 'other']),
             'description' => fake()->sentence(),
             'amount' => fake()->randomFloat(2, 10000, 500000),
             'date' => fake()->date(),

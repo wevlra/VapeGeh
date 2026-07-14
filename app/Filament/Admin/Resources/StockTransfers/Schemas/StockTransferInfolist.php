@@ -65,12 +65,24 @@ class StockTransferInfolist
                                 TableColumn::make('Produk'),
                                 TableColumn::make('Jumlah')
                                     ->width(100),
+                                TableColumn::make('Harga')
+                                    ->width(150),
+                                TableColumn::make('Subtotal')
+                                    ->width(150),
                             ])
                             ->schema([
                                 TextEntry::make('product.name')
                                     ->label('Produk'),
                                 TextEntry::make('qty')
                                     ->label('Jumlah'),
+                                TextEntry::make('price')
+                                    ->label('Harga')
+                                    ->money('IDR')
+                                    ->state(fn ($record) => empty($record->price) ? $record->product->selling_price : $record->price),
+                                TextEntry::make('subtotal')
+                                    ->label('Subtotal')
+                                    ->money('IDR')
+                                    ->state(fn ($record) => $record->qty * (empty($record->price) ? $record->product->selling_price : $record->price)),
                             ]),
                     ]),
             ]);

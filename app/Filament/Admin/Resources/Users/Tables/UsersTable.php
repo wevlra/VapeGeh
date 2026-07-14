@@ -5,9 +5,7 @@ namespace App\Filament\Admin\Resources\Users\Tables;
 use App\Filament\Admin\Resources\Users\UserResource;
 use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\User;
-use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -84,6 +82,7 @@ class UsersTable
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make()
+                    ->hidden(fn (User $record): bool => $record->id === auth()->id())
                     ->successNotification(
                         NotifiesWithDetail::buildErrorNotification(
                             'Data Berhasil Dihapus',
@@ -92,9 +91,7 @@ class UsersTable
                     ),
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+                //
             ]);
     }
 }

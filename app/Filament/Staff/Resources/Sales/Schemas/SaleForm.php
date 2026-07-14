@@ -26,6 +26,22 @@ class SaleForm
                                 ->where('qty', '>', 0),
                             )->pluck('name', 'id'))
                             ->searchable()
+                            ->live()
+                            ->afterStateUpdated(function (callable $set, $state) {
+                                if (! $state) {
+                                    $set('price', null);
+
+                                    return;
+                                }
+                                $product = Product::with(['stocks' => function ($q) {
+                                    $q->where('location_id', auth()->user()->location_id);
+                                }])->find($state);
+                                if ($product) {
+                                    $stock = $product->stocks->first();
+                                    $price = $stock && $stock->price > 0 ? $stock->price : $product->selling_price;
+                                    $set('price', (int) $price);
+                                }
+                            })
                             ->required(),
                         TextInput::make('qty')
                             ->label('Jumlah')

@@ -10,16 +10,7 @@
             </x-filament::button>
         @endforeach
 
-        <div class="ml-auto">
-            <x-filament::button
-                color="gray"
-                size="sm"
-                icon="heroicon-o-printer"
-                wire:click="printReport"
-            >
-                Cetak Laporan
-            </x-filament::button>
-        </div>
+
     </div>
 
     {{ $this->content }}

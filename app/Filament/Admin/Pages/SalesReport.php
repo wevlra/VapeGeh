@@ -2,6 +2,8 @@
 
 namespace App\Filament\Admin\Pages;
 
+use App\Exports\SalesReportExport;
+use App\Filament\Concerns\HasExportActions;
 use App\Models\Location;
 use App\Models\Sale;
 use BackedEnum;
@@ -19,6 +21,7 @@ use Wezlo\FilamentResponsiveTable\ResponsiveTableConfiguration;
 
 class SalesReport extends Page implements Tables\Contracts\HasTable
 {
+    use HasExportActions;
     use HasResponsiveTable;
     use Tables\Concerns\InteractsWithTable;
 
@@ -38,19 +41,15 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
         $this->resetTable();
     }
 
-    public function printReport(): void
+    protected function getHeaderActions(): array
     {
-        $params = ['period' => $this->period];
-
-        foreach (['source_type', 'location_name', 'payment_method'] as $filter) {
-            $value = $this->getTableFilterState($filter)['value'] ?? null;
-
-            if (filled($value)) {
-                $params[$filter] = $value;
-            }
-        }
-
-        $this->js('window.open(\''.route('admin.sales-report.print', $params).'\', \'_blank\')');
+        return [
+            $this->getExportActionGroup(
+                SalesReportExport::class,
+                'exports.pdf.sales-report',
+                'laporan-penjualan'
+            ),
+        ];
     }
 
     public function content(Schema $schema): Schema

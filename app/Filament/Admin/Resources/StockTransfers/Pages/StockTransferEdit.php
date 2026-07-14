@@ -214,7 +214,7 @@ class StockTransferEdit extends Page implements HasForms, HasTable
         $sellingPriceType = $this->data['price_id'] ?? null;
         $resolvedPrice = null;
         if ($sellingPriceType === 'default') {
-            $resolvedPrice = (float) $record->selling_price;
+            $resolvedPrice = 0;
         } elseif ($sellingPriceType === 'reseller') {
             $resolvedPrice = (float) $record->reseller_price;
         } elseif ($sellingPriceType === 'price_1') {
@@ -314,7 +314,7 @@ class StockTransferEdit extends Page implements HasForms, HasTable
                     $this->record->items()->create([
                         'product_id' => $item['product_id'],
                         'qty' => $item['qty'],
-                        'price' => $item['price'] > 0 ? $item['price'] : null,
+                        'price' => $item['price'] !== null ? (float) $item['price'] : null,
                     ]);
                 }
             });

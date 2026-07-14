@@ -82,10 +82,10 @@ class StockOpnameCreate extends Page implements HasForms, HasTable
                                             ->label('Gunakan Harga (Jika Stok Kurang)')
                                             ->options([
                                                 'purchase_price' => 'Harga Beli',
-                                                'selling_price' => 'Harga Jual',
-                                                'reseller_price' => 'Harga Reseller',
-                                                'price_1' => 'Harga 1',
-                                                'price_2' => 'Harga 2',
+                                                'selling_price' => 'Harga Jual (Default)',
+                                                'reseller_price' => 'Harga Jual Reseller',
+                                                'price_1' => 'Harga Jual 1',
+                                                'price_2' => 'Harga Jual 2',
                                             ])
                                             ->default('purchase_price')
                                             ->required(),

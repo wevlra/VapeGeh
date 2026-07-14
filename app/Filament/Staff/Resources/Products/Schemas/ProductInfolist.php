@@ -16,10 +16,22 @@ class ProductInfolist
             ->schema([
                 Section::make('Detail Produk')
                     ->columnSpanFull()
-                    ->columns(3)
+                    ->columns(2)
                     ->schema([
                         TextEntry::make('name')
                             ->label('Nama'),
+                        TextEntry::make('category.name')
+                            ->label('Kategori')
+                            ->badge(),
+                        TextEntry::make('selling_price')
+                            ->label('Harga Jual')
+                            ->getStateUsing(function ($record) use ($locationId): float {
+                                $stock = $record->stocks->firstWhere('location_id', $locationId);
+
+                                return $stock && $stock->price > 0 ? (float) $stock->price : (float) $record->selling_price;
+                            })
+                            ->money('IDR')
+                            ->color('primary'),
                         TextEntry::make('stocks')
                             ->label('Stok')
                             ->getStateUsing(fn ($record): int => $record->stocks->firstWhere('location_id', $locationId)?->qty ?? 0)

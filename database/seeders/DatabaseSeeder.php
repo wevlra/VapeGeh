@@ -170,7 +170,7 @@ class DatabaseSeeder extends Seeder
             for ($i = 0; $i < rand(1, 3); $i++) {
                 $product = $products->random();
                 $qty = rand(1, 2);
-                $subtotal = $product->store_price * $qty;
+                $subtotal = $product->selling_price * $qty;
 
                 try {
                     $sale = app(CreateSale::class)->execute(
@@ -198,6 +198,7 @@ class DatabaseSeeder extends Seeder
             ['category' => 'sale', 'description' => 'Pembelian online via QRIS', 'amount' => 180000],
             ['category' => 'debt_payment', 'description' => 'Pembayaran hutang pelanggan', 'amount' => 500000],
             ['category' => 'debt_payment', 'description' => 'Pelunasan cicilan stok', 'amount' => 350000],
+            ['category' => 'opname', 'description' => 'Surplus Opname Stok Barang', 'amount' => 50000],
             ['category' => 'other', 'description' => 'Refund dari vendor', 'amount' => 120000],
             ['category' => 'sale', 'description' => 'Biaya penjualan restock', 'amount' => 200000],
             ['category' => 'sale', 'description' => 'Penjualan POD mingguan', 'amount' => 320000],
@@ -227,6 +228,7 @@ class DatabaseSeeder extends Seeder
             ['category' => 'salary', 'description' => 'Gaji karyawan bulanan', 'amount' => 4500000],
             ['category' => 'utilities', 'description' => 'Listrik dan air bulanan', 'amount' => 750000],
             ['category' => 'utilities', 'description' => 'Internet dan WiFi', 'amount' => 350000],
+            ['category' => 'opname', 'description' => 'Penyusutan / Selisih Opname', 'amount' => 125000],
             ['category' => 'transport', 'description' => 'Ongkos kirim ke cabang', 'amount' => 150000],
             ['category' => 'transport', 'description' => 'Bensin jemput barang', 'amount' => 85000],
             ['category' => 'purchase', 'description' => 'Restock device Uwell Caliburn', 'amount' => 660000],

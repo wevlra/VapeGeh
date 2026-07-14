@@ -19,7 +19,6 @@ use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Support\RawJs;
-use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -61,59 +60,37 @@ class Pos extends Page implements HasTable
                     ->with(['stocks' => fn ($q) => $q->where('location_id', $locationId)])
             )
             ->columns([
-                TextColumn::make('name')
-                    ->label('Produk')
-                    ->formatStateUsing(fn (Product $record): string => mb_strimwidth($record->name, 0, 30, '...'))
-                    ->weight('bold')
-                    ->searchable()
-                    ->sortable()
-                    ->visibleFrom('md'),
-                TextColumn::make('selling_price')
-                    ->label('Harga')
-                    ->getStateUsing(fn (Product $record): float => $record->stocks->first()?->price > 0 ? (float) $record->stocks->first()?->price : (float) $record->selling_price)
-                    ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
-                    ->visibleFrom('md'),
-                TextColumn::make('stock_qty')
-                    ->label('Stok')
-                    ->badge()
-                    ->color(fn (int $state): string => match (true) {
-                        $state <= 0 => 'danger',
-                        $state < 10 => 'warning',
-                        default => 'success',
-                    })
-                    ->getStateUsing(fn (Product $record): int => $record->stocks->first()?->qty ?? 0)
-                    ->visibleFrom('md'),
-                Split::make([
-                    Stack::make([
-                        TextColumn::make('name_mobile')
-                            ->state(fn (Product $record): string => $record->name)
-                            ->label('Produk')
-                            ->formatStateUsing(fn (string $state): string => mb_strimwidth($state, 0, 30, '...'))
-                            ->weight('bold'),
-                        TextColumn::make('selling_price_mobile')
-                            ->state(fn (Product $record): float => $record->stocks->first()?->price > 0 ? (float) $record->stocks->first()?->price : (float) $record->selling_price)
-                            ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
-                            ->color('gray'),
-                    ]),
-                    Stack::make([
-                        TextColumn::make('stock_qty_mobile')
-                            ->label('Stok')
-                            ->badge()
-                            ->alignEnd()
-                            ->color(fn (int $state): string => match (true) {
-                                $state <= 0 => 'danger',
-                                $state < 10 => 'warning',
-                                default => 'success',
-                            })
-                            ->getStateUsing(fn (Product $record): int => $record->stocks->first()?->qty ?? 0),
-                    ])->space(1),
-                ])->hiddenFrom('md'),
+                Stack::make([
+                    TextColumn::make('name')
+                        ->searchable()
+                        ->sortable()
+                        ->weight('bold')
+                        ->formatStateUsing(fn (string $state): string => mb_strimwidth($state, 0, 40, '...')),
+                    TextColumn::make('selling_price')
+                        ->getStateUsing(fn (Product $record): float => $record->stocks->first()?->price > 0 ? (float) $record->stocks->first()?->price : (float) $record->selling_price)
+                        ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
+                    TextColumn::make('stock_qty')
+                        ->badge()
+                        ->color(fn (int $state): string => match (true) {
+                            $state <= 0 => 'danger',
+                            $state < 10 => 'warning',
+                            default => 'success',
+                        })
+                        ->getStateUsing(fn (Product $record): int => $record->stocks->first()?->qty ?? 0)
+                        ->formatStateUsing(fn (int $state): string => 'Stok '.$state),
+                ])->space(2),
+            ])
+            ->contentGrid([
+                'md' => 2,
+                'xl' => 3,
             ])
             ->actions([
                 Action::make('addToCart')
                     ->label('Tambah')
                     ->icon('heroicon-m-plus')
                     ->color('primary')
+                    ->button()
+                    ->extraAttributes(['class' => 'w-full justify-center'])
                     ->action(fn (Product $record) => $this->addToCart($record->id)),
             ])
             ->defaultSort('name');
@@ -408,7 +385,7 @@ class Pos extends Page implements HasTable
                         return [
                             'x-on:click.prevent' => "
                                 const url = '".route('admin.sales.receipt', ['sale' => $sale->id, 'format' => 'json'])."';
-                                
+
                                 const savedPrinter = localStorage.getItem('savedPrinter');
                                 if (savedPrinter) {
                                     window.dispatchEvent(new CustomEvent('print-native', { detail: { url } }));
