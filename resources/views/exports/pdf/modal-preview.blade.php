@@ -23,24 +23,26 @@
                     if (window.Capacitor?.isNativePlatform?.()) {
                         this.isDownloading = true;
                         try {
-                            const { Share } = window.Capacitor.Plugins;
-                            if (Share) {
+                            const { Filesystem } = window.Capacitor.Plugins;
+                            if (Filesystem) {
                                 const response = await fetch(url);
                                 const blob = await response.blob();
 
-                                // Convert blob to base64 data URI so Capacitor can share it as a file
                                 const base64 = await new Promise((resolve, reject) => {
                                     const reader = new FileReader();
-                                    reader.onloadend = () => resolve(reader.result);
+                                    reader.onloadend = () => resolve(reader.result.split(',')[1]);
                                     reader.onerror = reject;
                                     reader.readAsDataURL(blob);
                                 });
 
-                                await Share.share({
-                                    title: title,
-                                    files: [base64],
-                                    dialogTitle: 'Simpan atau Bagikan ' + filename,
+                                await Filesystem.writeFile({
+                                    path: filename,
+                                    data: base64,
+                                    directory: 'DOCUMENTS'
                                 });
+                                if (typeof FilamentNotification !== 'undefined') {
+                                    new FilamentNotification().title('Laporan berhasil disimpan di folder Documents').success().send();
+                                }
                                 return;
                             }
                         } catch (error) {
@@ -101,11 +103,27 @@
 
                         // Use Capacitor Share plugin when running in Android app
                         if (window.Capacitor?.isNativePlatform?.()) {
-                            const { Share } = window.Capacitor.Plugins;
-                            if (Share) {
+                            const { Share, Filesystem } = window.Capacitor.Plugins;
+                            if (Share && Filesystem) {
+                                const response = await fetch(url);
+                                const blob = await response.blob();
+
+                                const base64 = await new Promise((resolve, reject) => {
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                                    reader.onerror = reject;
+                                    reader.readAsDataURL(blob);
+                                });
+
+                                const writeResult = await Filesystem.writeFile({
+                                    path: filename,
+                                    data: base64,
+                                    directory: 'CACHE'
+                                });
+
                                 await Share.share({
                                     title: title,
-                                    url: url,
+                                    files: [writeResult.uri],
                                     dialogTitle: title,
                                 });
                                 this.isSharing = false;

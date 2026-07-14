@@ -124,15 +124,19 @@
                     const imageDataUrl = await this._renderReceiptToImage();
                     const filename = 'nota-' + Date.now() + '.png';
 
-                    // Android: gunakan Capacitor Share agar tersimpan ke Downloads
+                    // Android: Use Capacitor Filesystem to save image
                     if (window.Capacitor?.isNativePlatform?.()) {
-                        const { Share } = window.Capacitor.Plugins;
-                        if (Share) {
-                            await Share.share({
-                                title: 'Nota Penjualan',
-                                files: [imageDataUrl],
-                                dialogTitle: 'Simpan atau Bagikan Nota',
+                        const { Filesystem } = window.Capacitor.Plugins;
+                        if (Filesystem) {
+                            const base64Data = imageDataUrl.split(',')[1];
+                            await Filesystem.writeFile({
+                                path: filename,
+                                data: base64Data,
+                                directory: 'DOCUMENTS'
                             });
+                            if (typeof FilamentNotification !== 'undefined') {
+                                new FilamentNotification().title('Nota berhasil disimpan di folder Documents').success().send();
+                            }
                             return;
                         }
                     }
@@ -166,13 +170,19 @@
                     const imageDataUrl = await this._renderReceiptToImage();
                     const filename = 'nota-' + Date.now() + '.png';
 
-                    // Android: Capacitor Share plugin
+                    // Android: Capacitor Share plugin requires file URI, not base64
                     if (window.Capacitor?.isNativePlatform?.()) {
-                        const { Share } = window.Capacitor.Plugins;
-                        if (Share) {
+                        const { Share, Filesystem } = window.Capacitor.Plugins;
+                        if (Share && Filesystem) {
+                            const base64Data = imageDataUrl.split(',')[1];
+                            const writeResult = await Filesystem.writeFile({
+                                path: filename,
+                                data: base64Data,
+                                directory: 'CACHE'
+                            });
                             await Share.share({
                                 title: 'Nota Penjualan',
-                                files: [imageDataUrl],
+                                files: [writeResult.uri],
                                 dialogTitle: 'Bagikan Nota',
                             });
                             return;
