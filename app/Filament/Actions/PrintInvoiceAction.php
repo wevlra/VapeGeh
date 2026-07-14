@@ -18,7 +18,7 @@ class PrintInvoiceAction extends Action
             ->color('primary')
             ->hidden(fn (StockMovement $record): bool => $record->type !== 'out')
             ->action(function () {
-                // Di-handle oleh mountUsing dan modal
+                // Handled by mountUsing and modal
             })
             ->mountUsing(function (StockMovement $record) {
                 $invoiceService = app(InvoiceService::class);

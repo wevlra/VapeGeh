@@ -20,8 +20,18 @@ it('can create stock opname with manually added items', function () {
 
     $component->set('data.location_id', $location->id);
 
-    // Call the table action to add an item
-    $component->callTableAction('addItem', $product, ['actual_qty' => 5, 'notes' => 'Test notes']);
+    // Set the items array directly
+    $component->set('items', [
+        [
+            'product_id' => $product->id,
+            'name' => $product->name,
+            'system_qty' => 0,
+            'actual_qty' => 5,
+            'qty' => 5,
+            'difference' => 5,
+            'notes' => 'Test notes',
+        ],
+    ]);
 
     // Call save
     $component->call('save');

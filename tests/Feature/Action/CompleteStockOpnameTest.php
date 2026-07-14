@@ -92,7 +92,7 @@ it('completes opname, adjusts stocks, and creates movements when difference exis
     // Assert Income was created (net positive)
     $this->assertDatabaseHas('incomes', [
         'location_id' => $location->id,
-        'category' => 'Penyesuaian Stok',
+        'category' => 'opname',
         'amount' => 20000,
     ]);
 });
@@ -129,7 +129,7 @@ it('creates expense when net difference is negative', function () {
     // Assert Expense was created
     $this->assertDatabaseHas('expenses', [
         'location_id' => $location->id,
-        'category' => 'Penyesuaian Stok',
+        'category' => 'opname',
         'amount' => 45000,
     ]);
 });

@@ -39,9 +39,6 @@ class Product extends Model
         return $this->hasMany(StockMovement::class);
     }
 
-    /**
-     * Get the default selling price — falls back to first ProductPrice if selling_price is 0.
-     */
     public function getDefaultPriceAttribute(): float
     {
         return (float) $this->selling_price;

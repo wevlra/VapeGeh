@@ -71,7 +71,6 @@ it('throws DomainException when sale total is zero', function () {
 
     $location = Location::factory()->create();
     $product = Product::factory()->create(['selling_price' => 0]);
-    $product->prices()->delete();
     Stock::factory()->create([
         'product_id' => $product->id,
         'location_id' => $location->id,

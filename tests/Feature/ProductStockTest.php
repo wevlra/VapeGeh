@@ -14,12 +14,6 @@ it('has the correct product columns', function () {
     ]))->toBeTrue();
 });
 
-it('has the correct product_prices columns', function () {
-    expect(Schema::hasColumns('product_prices', [
-        'product_id', 'label', 'price',
-    ]))->toBeTrue();
-});
-
 it('has the correct stock columns and unique constraint', function () {
     expect(Schema::hasColumns('stocks', [
         'product_id', 'location_id', 'qty',
@@ -46,8 +40,7 @@ it('creates a product with factory', function () {
     $product = Product::factory()->create();
 
     expect($product)->toBeInstanceOf(Product::class)
-        ->and($product->name)->not->toBeEmpty()
-        ->and($product->prices)->not->toBeEmpty();
+        ->and($product->name)->not->toBeEmpty();
 });
 
 it('creates stock for a product at a location', function () {
@@ -76,15 +69,13 @@ it('relates stock to product and location', function () {
 it('computes total asset per location and globally', function () {
     $warehouse = Location::factory()->warehouse()->create();
     $store = Location::factory()->create();
-    $product = Product::factory()->create();
+    $product1 = Product::factory()->create(['selling_price' => 100000]);
+    $product2 = Product::factory()->create(['selling_price' => 80000]);
 
-    $warehousePrice = $product->prices()->create(['label' => 'Store', 'price' => 100000]);
-    $product->prices()->create(['label' => 'Wholesale', 'price' => 80000]);
-
-    Stock::create(['product_id' => $product->id, 'location_id' => $warehouse->id, 'qty' => 5]);
-    Stock::create(['product_id' => $product->id, 'location_id' => $store->id, 'qty' => 3]);
+    Stock::create(['product_id' => $product1->id, 'location_id' => $warehouse->id, 'qty' => 5]);
+    Stock::create(['product_id' => $product2->id, 'location_id' => $store->id, 'qty' => 3]);
 
     expect((float) $warehouse->total_asset)->toBe(500000.0)
-        ->and((float) $store->total_asset)->toBe(300000.0)
-        ->and(Location::getTotalAssetOfAll())->toBe(800000.0);
+        ->and((float) $store->total_asset)->toBe(240000.0)
+        ->and(Location::getTotalAssetOfAll())->toBe(740000.0);
 });

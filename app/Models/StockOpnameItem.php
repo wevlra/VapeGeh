@@ -3,27 +3,20 @@
 namespace App\Models;
 
 use Database\Factories\StockOpnameItemFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[UseFactory(StockOpnameItemFactory::class)]
+#[Fillable(['stock_opname_id', 'product_id', 'system_qty', 'actual_qty', 'difference', 'notes'])]
 class StockOpnameItem extends Model
 {
     /** @use HasFactory<StockOpnameItemFactory> */
     use HasFactory;
 
     protected $with = ['product', 'stockOpname'];
-
-    protected $fillable = [
-        'stock_opname_id',
-        'product_id',
-        'system_qty',
-        'actual_qty',
-        'difference',
-        'notes',
-    ];
 
     public function stockOpname(): BelongsTo
     {

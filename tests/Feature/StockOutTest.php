@@ -4,7 +4,6 @@ use App\Filament\Admin\Pages\StockOut;
 use App\Models\Income;
 use App\Models\Location;
 use App\Models\Product;
-use App\Models\ProductPrice;
 use App\Models\Stock;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,11 +16,8 @@ it('can perform stock out and record income', function () {
     $this->actingAs($admin);
 
     $location = Location::factory()->create();
-    $product = Product::factory()->create();
-    $price = ProductPrice::create([
-        'product_id' => $product->id,
-        'label' => 'Harga Jual',
-        'price' => 150000.00,
+    $product = Product::factory()->create([
+        'selling_price' => 150000.00,
     ]);
 
     // Seed stock
@@ -39,8 +35,7 @@ it('can perform stock out and record income', function () {
             [
                 'product_id' => $product->id,
                 'qty' => 5,
-                'price_id' => $price->id,
-                'manual_price' => null,
+                'price' => 150000.00,
             ],
         ])
         ->call('save');

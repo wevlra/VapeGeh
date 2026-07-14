@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\StockOpnameFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,20 +11,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[UseFactory(StockOpnameFactory::class)]
+#[Fillable(['opname_number', 'location_id', 'price_type', 'created_by', 'status', 'notes', 'completed_at'])]
 class StockOpname extends Model
 {
     /** @use HasFactory<StockOpnameFactory> */
     use HasFactory;
-
-    protected $fillable = [
-        'opname_number',
-        'location_id',
-        'price_type',
-        'created_by',
-        'status',
-        'notes',
-        'completed_at',
-    ];
 
     public function items(): HasMany
     {

@@ -204,10 +204,13 @@ class StockIn extends Page implements HasForms, HasTable
                     'created_by' => auth()->id(),
                 ]);
 
+                $totalAmount = 0;
+
                 foreach ($items as $item) {
                     $product = Product::findOrFail($item['product_id']);
                     $newPrice = (float) $item['price'];
                     $newQty = (int) $item['qty'];
+                    $totalAmount += ($newPrice * $newQty);
 
                     $stock = Stock::where('product_id', $item['product_id'])
                         ->where('location_id', $data['location_id'])
@@ -239,13 +242,6 @@ class StockIn extends Page implements HasForms, HasTable
                         'qty' => $newQty,
                         'unit_price' => $newPrice,
                     ]);
-                }
-
-                $totalAmount = 0;
-                foreach ($items as $item) {
-                    $newPrice = (float) $item['price'];
-                    $newQty = (int) $item['qty'];
-                    $totalAmount += ($newPrice * $newQty);
                 }
 
                 if ($totalAmount > 0) {

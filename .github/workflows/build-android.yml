@@ -57,3 +57,24 @@ jobs:
                   name: app-debug-${{ github.sha }}
                   path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
                   retention-days: 30
+
+            - name: Build release APK
+              working-directory: mobile/android
+              run: ./gradlew assembleRelease --no-daemon
+
+            - name: Sign Release APK
+              id: sign_app
+              uses: r0adkll/sign-android-release@v1
+              with:
+                  releaseDirectory: mobile/android/app/build/outputs/apk/release
+                  signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
+                  alias: ${{ secrets.KEY_ALIAS }}
+                  keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
+                  keyPassword: ${{ secrets.KEY_PASSWORD }}
+
+            - name: Upload release APK
+              uses: actions/upload-artifact@v4
+              with:
+                  name: app-release-${{ github.sha }}
+                  path: ${{steps.sign_app.outputs.signedReleaseFile}}
+                  retention-days: 30

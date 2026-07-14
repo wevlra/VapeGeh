@@ -274,10 +274,13 @@ class StockOut extends Page implements HasForms, HasTable
                     'created_by' => auth()->id(),
                 ]);
 
+                $totalAmount = 0;
+
                 foreach ($items as $item) {
                     $productId = (int) $item['product_id'];
                     $qty = (int) $item['qty'];
                     $unitPrice = (float) $item['price'];
+                    $totalAmount += ($qty * $unitPrice);
 
                     $stock = Stock::where('product_id', $productId)
                         ->where('location_id', $locationId)
@@ -301,12 +304,6 @@ class StockOut extends Page implements HasForms, HasTable
                         'qty' => $qty,
                         'unit_price' => $unitPrice,
                     ]);
-                }
-
-                $totalAmount = 0;
-                foreach ($items as $item) {
-                    $unitPrice = (float) $item['price'];
-                    $totalAmount += ((int) $item['qty'] * $unitPrice);
                 }
 
                 $additionalCostsTotal = 0;

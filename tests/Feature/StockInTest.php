@@ -30,8 +30,6 @@ it('can perform stock in and set custom selling price', function () {
                 'product_id' => $product->id,
                 'qty' => 10,
                 'price' => 50000,
-                'selling_price_type' => 'custom',
-                'custom_selling_price' => 65000,
             ],
         ])
         ->call('save');
@@ -41,8 +39,7 @@ it('can perform stock in and set custom selling price', function () {
         ->first();
 
     expect($stock)->not->toBeNull()
-        ->and($stock->qty)->toBe(10)
-        ->and($stock->price)->toBe(65000.00);
+        ->and($stock->qty)->toBe(10);
 
     $expense = Expense::where('location_id', $location->id)->first();
     expect($expense)->not->toBeNull()

@@ -37,7 +37,7 @@ class InvoiceService
         if ($isStockEntry) {
             $related->loadMissing(['vendor', 'buyer']);
             if ($related->type === 'in') {
-                // Stok Masuk: Dari Vendor, Untuk Lokasi
+                // Stock In: From Vendor, To Location
                 if ($related->vendor) {
                     $sellerData['name'] = $related->vendor->name;
                     $sellerData['phone'] = $related->vendor->phone ?? '';
@@ -47,7 +47,7 @@ class InvoiceService
                 $buyerData['name'] = config('store.name').' - '.$location->name;
                 $buyerData['address'] = $location->address ?? config('store.address');
             } else {
-                // Stok Keluar: Dari Lokasi, Untuk Pembeli
+                // Stock Out: From Location, To Buyer
                 $sellerData['name'] = config('store.name').' - '.$location->name;
                 $sellerData['address'] = $location->address ?? config('store.address');
 

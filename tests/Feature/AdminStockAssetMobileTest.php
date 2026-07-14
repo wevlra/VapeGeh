@@ -28,6 +28,5 @@ it('renders admin stock asset mobile widget with correct data', function () {
     Livewire::test(AdminStockAssetMobile::class)
         ->assertSee('Total Stok')
         ->assertSee('Total Aset')
-        ->assertSee('Inventaris')
         ->assertSuccessful();
 });

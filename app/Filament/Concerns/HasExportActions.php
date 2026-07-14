@@ -27,7 +27,7 @@ trait HasExportActions
                 ->icon('heroicon-o-document-text')
                 ->color('danger')
                 ->action(function () {
-                    // Di-handle oleh mountUsing dan modal
+                    // Handled by mountUsing and modal
                 })
                 ->mountUsing(function () use ($pdfView, $fileNamePrefix, $exportClass, $downloadFileName) {
                     $query = method_exists($this, 'buildExportQuery')
