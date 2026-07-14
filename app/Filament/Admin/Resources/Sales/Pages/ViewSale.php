@@ -29,14 +29,12 @@ class ViewSale extends ViewRecord
                 ->extraAttributes(function () {
                     return [
                         'x-on:click.prevent' => "
-                            const url = '".route('admin.sales.receipt', ['sale' => $this->record->id, 'format' => 'json'])."';
-                            
-                            const savedPrinter = localStorage.getItem('savedPrinter');
-                            if (savedPrinter) {
-                                window.dispatchEvent(new CustomEvent('print-native', { detail: { url } }));
-                            } else {
-                                window.dispatchEvent(new CustomEvent('open-printer-modal', { detail: { url } }));
-                            }
+                            window.dispatchEvent(new CustomEvent('open-receipt-action-modal', {
+                                detail: {
+                                    jsonUrl: '".route('admin.sales.receipt', ['sale' => $this->record->id, 'format' => 'json'])."',
+                                    receiptUrl: '".route('admin.sales.receipt', $this->record)."',
+                                }
+                            }));
                         ",
                     ];
                 }),

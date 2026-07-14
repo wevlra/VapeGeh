@@ -63,12 +63,21 @@ class ReceiptController extends Controller
                 continue;
             }
 
+            $price = 0;
+            if (isset($item->unit_price)) {
+                $price = $item->unit_price;
+            } elseif (! empty($item->price)) {
+                $price = $item->price;
+            } else {
+                $price = $item->product->selling_price;
+            }
+
             $products[] = [
                 'id' => (string) $item->product_id,
                 'name' => $item->product->name,
                 'qty' => abs($item->qty),
                 'unit' => 'pcs',
-                'price' => $item->price ?? 0,
+                'price' => (float) $price,
             ];
         }
 
@@ -86,7 +95,16 @@ class ReceiptController extends Controller
             'globalDiscount' => 0,
             'paymentMethod' => 'CASH',
             'amountPaid' => $items->sum(function ($item) {
-                return abs($item->qty) * ($item->price ?? 0);
+                $price = 0;
+                if (isset($item->unit_price)) {
+                    $price = $item->unit_price;
+                } elseif (! empty($item->price)) {
+                    $price = $item->price;
+                } else {
+                    $price = $item->product?->selling_price ?? 0;
+                }
+
+                return abs($item->qty) * (float) $price;
             }),
         ];
     }

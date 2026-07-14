@@ -21,6 +21,7 @@
     "dependencies": {
         "@capacitor/core": "^7.6.7",
         "axios": "^1.18.1",
-        "capacitor-thermal-printer": "^0.2.5"
+        "capacitor-thermal-printer": "^0.2.5",
+        "html2canvas": "^1.4.1"
     }
 }

@@ -154,7 +154,7 @@ class StockIn extends Page implements HasForms, HasTable
                             ->searchable(),
                         TextColumn::make('purchase_price')
                             ->label('Harga Beli Terakhir')
-                            ->formatStateUsing(fn (float $state): string => 'Beli: Rp '.number_format($state, 0, ',', '.'))
+                            ->formatStateUsing(fn (float $state): string => 'Harga beli: Rp '.number_format($state, 0, ',', '.'))
                             ->color('gray'),
                     ]),
                     ViewColumn::make('controls')
@@ -167,7 +167,7 @@ class StockIn extends Page implements HasForms, HasTable
                             'defaultPriceCallable' => fn (Product $p) => $p->purchase_price,
                         ]),
 
-                ]),
+                ])->from('md'),
             ]);
     }
 

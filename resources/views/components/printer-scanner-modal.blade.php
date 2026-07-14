@@ -33,8 +33,20 @@
                             <p class="font-medium" x-text="device.name || 'Unknown Device'"></p>
                             <p class="text-xs text-gray-500" x-text="device.address"></p>
                         </div>
-                        <x-filament::button size="sm" x-on:click="connectToDevice(device)" x-bind:disabled="isConnecting">
-                            Connect
+                        <x-filament::button
+                            size="sm"
+                            x-on:click="connectToDevice(device)"
+                            x-bind:disabled="isConnecting"
+                        >
+                            <template x-if="connectingAddress === device.address">
+                                <span class="flex items-center gap-2">
+                                    <x-filament::loading-indicator class="w-4 h-4" />
+                                    Menghubungkan...
+                                </span>
+                            </template>
+                            <template x-if="connectingAddress !== device.address">
+                                <span>Connect</span>
+                            </template>
                         </x-filament::button>
                     </li>
                 </template>
@@ -42,8 +54,8 @@
         </div>
 
         <x-slot name="footerActions">
-            <x-filament::button color="gray" x-on:click="closeModal()">Batal</x-filament::button>
-            <x-filament::button x-on:click="startScan()" x-bind:disabled="isScanning">
+            <x-filament::button color="gray" x-on:click="closeModal()" x-bind:disabled="isConnecting">Batal</x-filament::button>
+            <x-filament::button x-on:click="startScan()" x-bind:disabled="isScanning || isConnecting">
                 <span x-text="isScanning ? 'Mencari...' : 'Scan Ulang'"></span>
             </x-filament::button>
         </x-slot>
@@ -57,6 +69,7 @@
             savedPrinter: null,
             isScanning: false,
             isConnecting: false,
+            connectingAddress: null,
             pendingReceipt: null,
             listeners: [],
 
@@ -125,21 +138,23 @@
                 if (!ThermalPrinter) return;
 
                 this.isConnecting = true;
+                this.connectingAddress = device.address;
                 try {
                     const result = await ThermalPrinter.connect({ address: device.address });
                     if (result) {
                         localStorage.setItem('savedPrinter', JSON.stringify(result));
                         window.dispatchEvent(new Event('printer-connected'));
-                        
+
                         new FilamentNotification()
                             .title('Printer terhubung!')
                             .success()
                             .send();
-                            
+
                         this.closeModal();
-                        
+
                         if (this.pendingReceipt) {
-                            this.printReceiptData(this.pendingReceipt.url);
+                            // Printer sudah terhubung — langsung print tanpa connect ulang
+                            this.printReceiptData(this.pendingReceipt.url, false);
                         }
                     }
                 } catch (e) {
@@ -149,21 +164,24 @@
                         .send();
                 } finally {
                     this.isConnecting = false;
+                    this.connectingAddress = null;
                 }
             },
 
-            async printReceiptData(url) {
+            async printReceiptData(url, shouldReconnect = true) {
                 const ThermalPrinter = window.Capacitor?.Plugins?.CapacitorThermalPrinter;
                 if (!ThermalPrinter) return;
 
                 try {
-                    // Coba connect ulang jika perlu
-                    const savedPrinter = JSON.parse(localStorage.getItem('savedPrinter'));
-                    if (savedPrinter) {
-                        try {
-                            await ThermalPrinter.connect({ address: savedPrinter.address });
-                        } catch (err) {
-                            console.error('Reconnect error', err);
+                    // Reconnect hanya jika dipanggil langsung (bukan setelah baru saja connect)
+                    if (shouldReconnect) {
+                        const savedPrinter = JSON.parse(localStorage.getItem('savedPrinter'));
+                        if (savedPrinter) {
+                            try {
+                                await ThermalPrinter.connect({ address: savedPrinter.address });
+                            } catch (err) {
+                                console.error('Reconnect error', err);
+                            }
                         }
                     }
 

@@ -9,7 +9,8 @@ export default defineConfig({
             input: [
                 "resources/css/app.css",
                 "resources/css/filament/admin/theme.css",
-                "resources/css/filament/staff/theme.css"
+                "resources/css/filament/staff/theme.css",
+                "resources/js/receipt-image.js"
             ],
             refresh: true,
             fonts: [

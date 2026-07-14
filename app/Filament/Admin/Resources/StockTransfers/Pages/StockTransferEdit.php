@@ -277,7 +277,7 @@ class StockTransferEdit extends Page implements HasForms, HasTable
                         ->state(fn () => [
                             'showPrice' => false,
                         ]),
-                ]),
+                ])->from('md'),
             ]);
     }
 

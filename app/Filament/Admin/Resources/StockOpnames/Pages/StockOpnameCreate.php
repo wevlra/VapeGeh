@@ -191,7 +191,7 @@ class StockOpnameCreate extends Page implements HasForms, HasTable
                                     : 0;
                             },
                         ]),
-                ]),
+                ])->from('md'),
             ]);
     }
 

@@ -6,7 +6,7 @@
     <style>
         @page { size: 58mm auto; margin: 0; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Courier New', monospace; font-size: 11px; width: 58mm; padding: 4px; color: #000; margin: 0 auto; }
+        body { font-family: 'Courier New', monospace; font-size: 11px; width: 58mm; padding: 4px 4px 20px; color: #000; margin: 0 auto; }
         .header { text-align: center; margin-bottom: 8px; }
         .header img { max-height: 48px; }
         .header .name { font-size: 14px; font-weight: bold; }
@@ -16,8 +16,9 @@
         .ref { font-weight: bold; font-size: 11px; margin-bottom: 2px; }
         .meta { font-size: 9px; margin-bottom: 6px; }
         table { width: 100%; border-collapse: collapse; font-size: 9px; }
-        thead th { border-bottom: 1px solid #333; padding: 3px 0; text-align: left; }
+        thead th { padding: 3px 0 6px; text-align: left; }
         thead th:last-child { text-align: right; }
+        .th-divider td { height: 1px; background: #333; padding: 0; font-size: 0; line-height: 0; }
         tbody td { padding: 2px 0; vertical-align: top; word-break: break-word; }
         tbody td:last-child { text-align: right; white-space: nowrap; }
         .totals { margin-top: 6px; text-align: right; font-size: 10px; }
@@ -73,7 +74,10 @@
 
     @if ($related instanceof \App\Models\Sale)
         <table>
-            <thead><tr><th>Item</th><th>Jumlah</th><th>Harga</th><th>Subtotal</th></tr></thead>
+            <thead>
+                <tr><th>Item</th><th>Jumlah</th><th>Harga</th><th>Subtotal</th></tr>
+                <tr class="th-divider"><td colspan="4"></td></tr>
+            </thead>
             <tbody>
                 @foreach ($related->items as $item)
                 <tr>
@@ -95,7 +99,10 @@
         </div>
     @elseif ($related instanceof \App\Models\StockTransfer)
         <table>
-            <thead><tr><th>Item</th><th>Jumlah</th></tr></thead>
+            <thead>
+                <tr><th>Item</th><th>Jumlah</th></tr>
+                <tr class="th-divider"><td colspan="2"></td></tr>
+            </thead>
             <tbody>
                 @foreach ($related->items as $item)
                 <tr>
@@ -112,7 +119,10 @@
     @elseif ($related instanceof \App\Models\StockEntry)
         @php $stockIn = $related->type === 'in'; @endphp
         <table>
-            <thead><tr><th>Item</th><th>Jumlah</th><th>Harga</th></tr></thead>
+            <thead>
+                <tr><th>Item</th><th>Jumlah</th><th>Harga</th></tr>
+                <tr class="th-divider"><td colspan="3"></td></tr>
+            </thead>
             <tbody>
                 @foreach ($related->items as $item)
                 <tr>
@@ -134,7 +144,10 @@
         </div>
     @else
         <table>
-            <thead><tr><th>Item</th><th>Jumlah</th></tr></thead>
+            <thead>
+                <tr><th>Item</th><th>Jumlah</th></tr>
+                <tr class="th-divider"><td colspan="2"></td></tr>
+            </thead>
             <tbody>
                 <tr>
                     <td>{{ $movement->product->name }}</td>
@@ -170,8 +183,10 @@
     </div>
 
     <script>
-        window.onload = function() { window.print(); }
-        window.onafterprint = function() { window.close(); }
+        if (!new URLSearchParams(location.search).has('noprint')) {
+            window.onload = function() { window.print(); }
+            window.onafterprint = function() { window.close(); }
+        }
     </script>
 </body>
 </html>

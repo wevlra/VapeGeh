@@ -11,13 +11,69 @@
 
     <div class="mt-6 flex w-full flex-col gap-3 sm:flex-row sm:w-auto sm:justify-center">
         <x-filament::button
-            tag="a"
-            href="{{ $url }}"
-            download="{{ $filename }}"
+            x-data="{
+                isDownloading: false,
+                async download() {
+                    const url = '{{ $url }}';
+                    const filename = '{{ $filename }}';
+                    const title = '{{ addslashes($title) }}';
+
+                    // On Android WebView, the 'download' attribute is ignored.
+                    // Fetch the file and share it as a real file via Capacitor Share plugin.
+                    if (window.Capacitor?.isNativePlatform?.()) {
+                        this.isDownloading = true;
+                        try {
+                            const { Share } = window.Capacitor.Plugins;
+                            if (Share) {
+                                const response = await fetch(url);
+                                const blob = await response.blob();
+
+                                // Convert blob to base64 data URI so Capacitor can share it as a file
+                                const base64 = await new Promise((resolve, reject) => {
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => resolve(reader.result);
+                                    reader.onerror = reject;
+                                    reader.readAsDataURL(blob);
+                                });
+
+                                await Share.share({
+                                    title: title,
+                                    files: [base64],
+                                    dialogTitle: 'Simpan atau Bagikan ' + filename,
+                                });
+                                return;
+                            }
+                        } catch (error) {
+                            console.error('Download via Capacitor failed:', error);
+                            if (error.name !== 'AbortError') {
+                                if (typeof FilamentNotification !== 'undefined') {
+                                    new FilamentNotification()
+                                        .title('Gagal mengunduh file')
+                                        .danger()
+                                        .send();
+                                }
+                            }
+                        } finally {
+                            this.isDownloading = false;
+                        }
+                        return;
+                    }
+
+                    // Web: trigger native anchor download
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }
+            }"
+            x-on:click.prevent="download()"
             icon="heroicon-o-arrow-down-tray"
             class="w-full sm:w-auto justify-center"
         >
-            Unduh
+            <span x-show="!isDownloading">Unduh</span>
+            <span x-show="isDownloading">Mengunduh...</span>
         </x-filament::button>
 
         <x-filament::button
@@ -27,6 +83,8 @@
             color="gray"
             icon="heroicon-o-arrow-top-right-on-square"
             class="w-full sm:w-auto justify-center"
+            x-data
+            x-show="!window.Capacitor?.isNativePlatform?.()"
         >
             Buka Tab Baru
         </x-filament::button>
@@ -39,35 +97,50 @@
                     try {
                         const url = '{{ $url }}';
                         const filename = '{{ $filename }}';
-                        
-                        // Try to fetch and share as a File if supported
+                        const title = '{{ addslashes($title) }}';
+
+                        // Use Capacitor Share plugin when running in Android app
+                        if (window.Capacitor?.isNativePlatform?.()) {
+                            const { Share } = window.Capacitor.Plugins;
+                            if (Share) {
+                                await Share.share({
+                                    title: title,
+                                    url: url,
+                                    dialogTitle: title,
+                                });
+                                this.isSharing = false;
+                                return;
+                            }
+                        }
+
+                        // Web: Try to fetch and share as a File if supported
                         if (navigator.canShare) {
                             const response = await fetch(url);
                             const blob = await response.blob();
                             const file = new File([blob], filename, { type: blob.type || 'application/pdf' });
-                            
+
                             const shareData = {
-                                title: '{{ addslashes($title) }}',
+                                title: title,
                                 files: [file]
                             };
-                            
+
                             if (navigator.canShare(shareData)) {
                                 await navigator.share(shareData);
                                 this.isSharing = false;
                                 return;
                             }
                         }
-                        
+
                         // Fallback 1: Share URL if file share not supported but navigator.share exists
                         if (navigator.share) {
                             await navigator.share({
-                                title: '{{ addslashes($title) }}',
+                                title: title,
                                 url: url
                             });
                             this.isSharing = false;
                             return;
                         }
-                        
+
                         // Fallback 2: Copy to clipboard
                         if (window.isSecureContext && navigator.clipboard) {
                             navigator.clipboard.writeText(url);
@@ -86,7 +159,7 @@
                                 textArea.remove();
                             }
                         }
-                        
+
                         // Show success notification
                         if (typeof FilamentNotification !== 'undefined') {
                             new FilamentNotification()
