@@ -63,6 +63,13 @@ class HistoryResource extends Resource
                 $sub->selectRaw('MIN(id)')
                     ->from('stock_movements')
                     ->groupBy(['related_type', 'related_id', 'location_id']);
+            })
+            ->where(function ($query) {
+                $query->where('type', '!=', 'transfer')
+                      ->orWhere(function ($q) {
+                          $q->where('type', 'transfer')
+                            ->where('quantity', '>', 0);
+                      });
             });
     }
 

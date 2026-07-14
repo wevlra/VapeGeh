@@ -3,10 +3,16 @@
 <head>
     <meta charset="utf-8">
     <title>Nota</title>
+    @php
+        $paperSize = request()->query('size', '58mm');
+        if (!in_array($paperSize, ['58mm', '80mm'])) {
+            $paperSize = '58mm';
+        }
+    @endphp
     <style>
-        @page { size: 58mm auto; margin: 0; }
+        @page { size: {{ $paperSize }} auto; margin: 0; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Courier New', monospace; font-size: 11px; width: 58mm; padding: 4px 4px 20px; color: #000; margin: 0 auto; }
+        body { font-family: 'Courier New', monospace; font-size: 11px; width: {{ $paperSize }}; padding: 4px 4px 20px; color: #000; margin: 0 auto; }
         .header { text-align: center; margin-bottom: 8px; }
         .header img { max-height: 48px; }
         .header .name { font-size: 14px; font-weight: bold; }
@@ -113,8 +119,7 @@
             </tbody>
         </table>
         <div style="margin-top: 6px; font-size: 10px;">
-            Dari: {{ $related->fromLocation?->name }}<br>
-            Ke: {{ $related->toLocation?->name }}
+            Lokasi Tujuan: {{ $related->toLocation?->name }}
         </div>
     @elseif ($related instanceof \App\Models\StockEntry)
         @php $stockIn = $related->type === 'in'; @endphp

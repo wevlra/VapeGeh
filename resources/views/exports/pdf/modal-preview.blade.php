@@ -36,12 +36,13 @@
                                 });
 
                                 await Filesystem.writeFile({
-                                    path: filename,
+                                    path: 'VapeGeh/' + filename,
                                     data: base64,
-                                    directory: 'DOCUMENTS'
+                                    directory: 'DOCUMENTS',
+                                    recursive: true
                                 });
                                 if (typeof FilamentNotification !== 'undefined') {
-                                    new FilamentNotification().title('Laporan berhasil disimpan di folder Documents').success().send();
+                                    new FilamentNotification().title('Laporan berhasil disimpan di folder Documents/VapeGeh').success().send();
                                 }
                                 return;
                             }

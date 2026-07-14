@@ -75,7 +75,7 @@
 
             init() {
                 window.addEventListener('print-native', (e) => {
-                    this.printReceiptData(e.detail.url);
+                    this.printReceiptData(e.detail.url, true, e.detail.paperSize || '58mm');
                 });
             },
 
@@ -154,7 +154,7 @@
 
                         if (this.pendingReceipt) {
                             // Printer sudah terhubung — langsung print tanpa connect ulang
-                            this.printReceiptData(this.pendingReceipt.url, false);
+                            this.printReceiptData(this.pendingReceipt.url, false, this.pendingReceipt.paperSize || '58mm');
                         }
                     }
                 } catch (e) {
@@ -168,7 +168,7 @@
                 }
             },
 
-            async printReceiptData(url, shouldReconnect = true) {
+            async printReceiptData(url, shouldReconnect = true, paperSize = '58mm') {
                 const ThermalPrinter = window.Capacitor?.Plugins?.CapacitorThermalPrinter;
                 if (!ThermalPrinter) return;
 
@@ -210,13 +210,17 @@
                         await ThermalPrinter.text({ text: `${receipt.header.phone}\n` });
                     }
 
-                    await ThermalPrinter.text({ text: "================================\n" });
+                    const charPerLine = paperSize === '80mm' ? 48 : 32;
+                    const sepEqual = "=".repeat(charPerLine) + "\n";
+                    const sepDash = "-".repeat(charPerLine) + "\n";
+
+                    await ThermalPrinter.text({ text: sepEqual });
                     await ThermalPrinter.align({ alignment: 'left' });
                     await ThermalPrinter.text({ text: `No: ${receipt.header.receiptNo} Date: ${receipt.header.date}\n` });
                     if (receipt.header.cashier) {
                         await ThermalPrinter.text({ text: `Cashier: ${receipt.header.cashier}\n` });
                     }
-                    await ThermalPrinter.text({ text: "--------------------------------\n" });
+                    await ThermalPrinter.text({ text: sepDash });
 
                     // Products
                     for (const item of receipt.products) {
@@ -230,7 +234,7 @@
                             line += ` (-${item.discountPct}%)`;
                         }
 
-                        const padding = 32 - line.length - totalStr.length;
+                        const padding = charPerLine - line.length - totalStr.length;
                         if (padding > 0) {
                             line += " ".repeat(padding);
                         } else {
@@ -240,7 +244,7 @@
                         await ThermalPrinter.text({ text: line });
                     }
 
-                    await ThermalPrinter.text({ text: "--------------------------------\n" });
+                    await ThermalPrinter.text({ text: sepDash });
 
                     // Summary
                     let subtotal = 0;
@@ -249,7 +253,7 @@
                     }
 
                     const padLeft = (label, value) => {
-                        const padding = 32 - label.length - value.length;
+                        const padding = charPerLine - label.length - value.length;
                         if (padding > 0) {
                             return label + " ".repeat(padding) + value + "\n";
                         }
@@ -271,13 +275,13 @@
                         total += tax;
                     }
 
-                    await ThermalPrinter.text({ text: "================================\n" });
+                    await ThermalPrinter.text({ text: sepEqual });
                     await ThermalPrinter.bold({ enabled: true });
                     await ThermalPrinter.text({ text: padLeft("TOTAL:", formatRupiah(total)) });
                     await ThermalPrinter.clearFormatting();
 
                     if (receipt.paymentMethod || receipt.amountPaid !== undefined) {
-                        await ThermalPrinter.text({ text: "--------------------------------\n" });
+                        await ThermalPrinter.text({ text: sepDash });
                         if (receipt.paymentMethod) {
                             await ThermalPrinter.text({ text: padLeft("Payment:", receipt.paymentMethod) });
                         }
@@ -288,7 +292,7 @@
                         }
                     }
 
-                    await ThermalPrinter.text({ text: "================================\n" });
+                    await ThermalPrinter.text({ text: sepEqual });
 
                     // Footer
                     await ThermalPrinter.align({ alignment: 'center' });

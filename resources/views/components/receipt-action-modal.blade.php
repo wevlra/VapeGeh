@@ -3,6 +3,24 @@
         <x-slot name="heading">Nota</x-slot>
 
         <div class="space-y-3">
+            {{-- Opsi Ukuran Kertas --}}
+            <div>
+                <div class="p-1 rounded-xl bg-gray-100 dark:bg-gray-800 flex w-full">
+                    <label class="flex-1 text-center cursor-pointer relative">
+                        <input type="radio" x-model="paperSize" value="58mm" class="peer sr-only">
+                        <div class="py-2 px-3 text-sm font-medium text-gray-500 dark:text-gray-400 rounded-lg transition peer-checked:bg-white peer-checked:text-primary-600 peer-checked:shadow-sm dark:peer-checked:bg-gray-700 dark:peer-checked:text-primary-400">
+                            Ukuran 58mm
+                        </div>
+                    </label>
+                    <label class="flex-1 text-center cursor-pointer relative">
+                        <input type="radio" x-model="paperSize" value="80mm" class="peer sr-only">
+                        <div class="py-2 px-3 text-sm font-medium text-gray-500 dark:text-gray-400 rounded-lg transition peer-checked:bg-white peer-checked:text-primary-600 peer-checked:shadow-sm dark:peer-checked:bg-gray-700 dark:peer-checked:text-primary-400">
+                            Ukuran 80mm
+                        </div>
+                    </label>
+                </div>
+            </div>
+
             {{-- Cetak via Bluetooth --}}
             <button
                 type="button"
@@ -81,6 +99,13 @@
             receiptUrl: null,
             isBusy: false,
             busyAction: null,
+            paperSize: localStorage.getItem('savedPaperSize') || '58mm',
+
+            init() {
+                this.$watch('paperSize', (val) => {
+                    localStorage.setItem('savedPaperSize', val);
+                });
+            },
 
             get savedPrinter() {
                 try { return JSON.parse(localStorage.getItem('savedPrinter')); } catch { return null; }
@@ -111,9 +136,9 @@
             printReceipt() {
                 this.closeModal();
                 if (this.savedPrinter) {
-                    window.dispatchEvent(new CustomEvent('print-native', { detail: { url: this.jsonUrl } }));
+                    window.dispatchEvent(new CustomEvent('print-native', { detail: { url: this.jsonUrl, paperSize: this.paperSize } }));
                 } else {
-                    window.dispatchEvent(new CustomEvent('open-printer-modal', { detail: { url: this.jsonUrl } }));
+                    window.dispatchEvent(new CustomEvent('open-printer-modal', { detail: { url: this.jsonUrl, paperSize: this.paperSize } }));
                 }
             },
 
@@ -130,12 +155,13 @@
                         if (Filesystem) {
                             const base64Data = imageDataUrl.split(',')[1];
                             await Filesystem.writeFile({
-                                path: filename,
+                                path: 'VapeGeh/' + filename,
                                 data: base64Data,
-                                directory: 'DOCUMENTS'
+                                directory: 'DOCUMENTS',
+                                recursive: true
                             });
                             if (typeof FilamentNotification !== 'undefined') {
-                                new FilamentNotification().title('Nota berhasil disimpan di folder Documents').success().send();
+                                new FilamentNotification().title('Nota berhasil disimpan di folder Documents/VapeGeh').success().send();
                             }
                             return;
                         }
@@ -232,6 +258,8 @@
             _renderReceiptToImage() {
                 return new Promise((resolve, reject) => {
                     const frame = this.$refs.receiptFrame;
+                    const widthPx = this.paperSize === '80mm' ? 302 : 220;
+                    frame.style.width = widthPx + 'px';
 
                     const onLoad = async () => {
                         frame.removeEventListener('load', onLoad);
@@ -258,9 +286,9 @@
                                 allowTaint: true,
                                 backgroundColor: '#ffffff',
                                 scale: 3,
-                                width: 220,
+                                width: widthPx,
                                 height: scrollHeight,
-                                windowWidth: 220,
+                                windowWidth: widthPx,
                                 windowHeight: scrollHeight,
                                 logging: false,
                             });
@@ -274,9 +302,11 @@
 
                     frame.addEventListener('load', onLoad);
 
-                    // Append noprint=1 so the receipt page doesn't trigger window.print()
-                    const sep = this.receiptUrl.includes('?') ? '&' : '?';
-                    frame.src = this.receiptUrl + sep + 'noprint=1';
+                    // Append noprint=1 and size
+                    const urlObj = new URL(this.receiptUrl, window.location.origin);
+                    urlObj.searchParams.set('noprint', '1');
+                    urlObj.searchParams.set('size', this.paperSize);
+                    frame.src = urlObj.toString();
                 });
             },
         }));
