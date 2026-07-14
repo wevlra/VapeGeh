@@ -3,12 +3,12 @@
 namespace App\Filament\Admin\Resources\Expenses\Tables;
 
 use App\Filament\Admin\Resources\Expenses\ExpenseResource;
+use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\Expense;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -84,10 +84,10 @@ class ExpensesTable
                 EditAction::make(),
                 DeleteAction::make()
                     ->successNotification(
-                        Notification::make()
-                            ->title('Pengeluaran dihapus')
-                            ->body('Catatan Pengeluaran telah dihapus permanen.')
-                            ->danger()
+                        NotifiesWithDetail::buildErrorNotification(
+                            'Data Berhasil Dihapus',
+                            'Data pengeluaran telah berhasil dihapus dari sistem.'
+                        )
                     ),
             ])
             ->toolbarActions([

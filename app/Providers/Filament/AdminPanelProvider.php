@@ -11,6 +11,7 @@ use App\Filament\Admin\Widgets\AdminPaymentMethodChart;
 use App\Filament\Admin\Widgets\AdminSalesChart;
 use App\Filament\Admin\Widgets\AdminStatsOverview;
 use App\Filament\Admin\Widgets\AdminStatsOverviewMobile;
+use App\Filament\Admin\Widgets\AdminStockAssetMobile;
 use App\Filament\Admin\Widgets\OperationalQuickActionsWidget;
 use App\Filament\Admin\Widgets\StockQuickActionsWidget;
 use App\Filament\Middleware\RedirectPanelUser;
@@ -22,6 +23,8 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
 use Hammadzafar05\MobileBottomNav\MobileBottomNav;
 use Hammadzafar05\MobileBottomNav\MobileBottomNavItem;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -30,6 +33,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Wezlo\FilamentResponsiveTable\FilamentResponsiveTablePlugin;
 
@@ -41,6 +45,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->authGuard('web')
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
             ->profile()
@@ -82,6 +87,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 AdminStatsOverview::class,
                 AdminStatsOverviewMobile::class,
+                AdminStockAssetMobile::class,
                 StockQuickActionsWidget::class,
                 OperationalQuickActionsWidget::class,
                 AdminSalesChart::class,
@@ -104,6 +110,11 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ], isPersistent: true)
             ->bootUsing(function (): void {
+                FilamentView::registerRenderHook(
+                    PanelsRenderHook::BODY_END,
+                    fn (): string => Blade::render('<x-printer-scanner-modal />')
+                );
+
                 app()->bind(LogoutResponse::class, fn (): \Filament\Auth\Http\Responses\LogoutResponse => new class extends \Filament\Auth\Http\Responses\LogoutResponse
                 {
                     public function toResponse($request): RedirectResponse

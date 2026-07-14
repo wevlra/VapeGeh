@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Pages;
 
+use App\Filament\Concerns\NotifiesWithDetail;
 use App\Filament\Staff\Pages\Pos as StaffPos;
 use App\Models\Location;
 use App\Models\Product;
@@ -12,8 +13,8 @@ use BackedEnum;
 use DomainException;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
-use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -21,6 +22,8 @@ use Illuminate\Support\Facades\DB;
 
 class Pos extends StaffPos
 {
+    use NotifiesWithDetail;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
 
     protected static ?string $navigationLabel = 'Kasir';
@@ -50,21 +53,35 @@ class Pos extends StaffPos
         return $table
             ->query($query)
             ->columns([
-                TextColumn::make('product.name')
-                    ->label('Produk')
-                    ->formatStateUsing(fn (Stock $record): string => mb_strimwidth($record->product->name, 0, 30, '...'))
-                    ->description(fn (Stock $record): string => 'Rp '.number_format((float) $record->product->default_price, 0, ',', '.'))
-                    ->searchable()
-                    ->sortable(),
+                Stack::make([
+                    TextColumn::make('product.name')
+                        ->searchable()
+                        ->sortable()
+                        ->weight('bold')
+                        ->formatStateUsing(fn (Stock $record): string => mb_strimwidth($record->product->name, 0, 40, '...')),
+                    TextColumn::make('price_display')
+                        ->state(fn (Stock $record) => $record)
+                        ->formatStateUsing(function (Stock $record): string {
+                            if ($record->price > 0) {
+                                return 'Rp '.number_format((float) $record->price, 0, ',', '.').' (Outlet)';
+                            }
 
-                TextColumn::make('qty')
-                    ->label('Stok')
-                    ->badge()
-                    ->color(fn (int $state): string => match (true) {
-                        $state <= 0 => 'danger',
-                        $state < 10 => 'warning',
-                        default => 'success',
-                    }),
+                            return 'Rp '.number_format((float) $record->product->selling_price, 0, ',', '.');
+                        })
+                        ->color('primary'),
+                    TextColumn::make('qty')
+                        ->badge()
+                        ->color(fn (int $state): string => match (true) {
+                            $state <= 0 => 'danger',
+                            $state < 10 => 'warning',
+                            default => 'success',
+                        })
+                        ->formatStateUsing(fn (int $state, Stock $record): string => 'Stok: '.$state.' • '.$record->location->name),
+                ])->space(2),
+            ])
+            ->contentGrid([
+                'md' => 2,
+                'xl' => 3,
             ])
             ->filters([
                 SelectFilter::make('location_id')
@@ -87,6 +104,8 @@ class Pos extends StaffPos
             ->label('Tambah')
             ->icon('heroicon-m-plus')
             ->color('primary')
+            ->button()
+            ->extraAttributes(['class' => 'w-full justify-center'])
             ->form([
                 Select::make('selected_price')
                     ->label('Harga')
@@ -94,12 +113,22 @@ class Pos extends StaffPos
                         $product = $record->product;
                         $options = [];
 
+                        if ((float) $record->price > 0) {
+                            $options['stock'] = 'Harga Outlet: Rp '.number_format((float) $record->price, 0, ',', '.');
+                        }
+
                         if ((float) $product->selling_price > 0) {
                             $options['default'] = 'Default: Rp '.number_format((float) $product->selling_price, 0, ',', '.');
                         }
 
-                        foreach ($product->prices as $price) {
-                            $options['pp_'.$price->id] = "{$price->label}: Rp ".number_format((float) $price->price, 0, ',', '.');
+                        if ((float) $product->reseller_price > 0) {
+                            $options['reseller'] = 'Reseller: Rp '.number_format((float) $product->reseller_price, 0, ',', '.');
+                        }
+                        if ((float) $product->price_1 > 0) {
+                            $options['price_1'] = 'Harga 1: Rp '.number_format((float) $product->price_1, 0, ',', '.');
+                        }
+                        if ((float) $product->price_2 > 0) {
+                            $options['price_2'] = 'Harga 2: Rp '.number_format((float) $product->price_2, 0, ',', '.');
                         }
 
                         if (empty($options)) {
@@ -108,7 +137,7 @@ class Pos extends StaffPos
 
                         return $options;
                     })
-                    ->default('default')
+                    ->default(fn (Stock $record): string => $record->price > 0 ? 'stock' : 'default')
                     ->required(),
             ])
             ->action(function (array $data, Stock $record): void {
@@ -116,13 +145,23 @@ class Pos extends StaffPos
                 $selected = $data['selected_price'];
 
                 if ($selected === 'default') {
-                    $price = (float) $product->default_price;
+                    $price = (float) $product->selling_price;
                     $label = 'Default';
+                } elseif ($selected === 'stock') {
+                    $price = (float) $record->price;
+                    $label = 'Harga Outlet';
+                } elseif ($selected === 'reseller') {
+                    $price = (float) $product->reseller_price;
+                    $label = 'Reseller';
+                } elseif ($selected === 'price_1') {
+                    $price = (float) $product->price_1;
+                    $label = 'Harga 1';
+                } elseif ($selected === 'price_2') {
+                    $price = (float) $product->price_2;
+                    $label = 'Harga 2';
                 } else {
-                    $priceId = (int) str_replace('pp_', '', $selected);
-                    $priceModel = $product->prices()->find($priceId);
-                    $price = (float) ($priceModel->price ?? 0);
-                    $label = $priceModel->label ?? 'Tidak Diketahui';
+                    $price = 0;
+                    $label = 'Tidak Diketahui';
                 }
 
                 $this->addToCart($product->id, $price, $label);
@@ -136,14 +175,14 @@ class Pos extends StaffPos
         if ($existingIndex !== false) {
             $currentQty = (int) $this->cart[$existingIndex]['qty'] + 1;
             if (! $this->isStockAvailable($productId, $currentQty)) {
-                Notification::make()->warning()->title('Stok tidak mencukupi.')->send();
+                $this->notifyWarning('Stok Tidak Mencukupi');
 
                 return;
             }
             $this->cart[$existingIndex]['qty'] = $currentQty;
         } else {
             if (! $this->isStockAvailable($productId, 1)) {
-                Notification::make()->warning()->title('Stok habis.')->send();
+                $this->notifyWarning('Stok Habis');
 
                 return;
             }
@@ -306,21 +345,16 @@ class Pos extends StaffPos
                 return $sale;
             });
         } catch (DomainException $e) {
-            Notification::make()
-                ->title('Penjualan gagal')
-                ->body($e->getMessage())
-                ->danger()
-                ->send();
+            $this->notifyError('Penjualan Gagal', $e->getMessage());
 
             return;
         } catch (\Throwable $e) {
             report($e);
 
-            Notification::make()
-                ->title('Terjadi kesalahan')
-                ->body('Silakan coba lagi atau hubungi administrator.')
-                ->danger()
-                ->send();
+            $this->notifyError(
+                'Terjadi Kesalahan',
+                'Silakan coba lagi atau hubungi administrator.'
+            );
 
             return;
         }
@@ -330,15 +364,29 @@ class Pos extends StaffPos
 
         $printUrl = route('admin.sales.receipt', $sale);
 
-        Notification::make()
-            ->title('Penjualan selesai')
-            ->body("Invoice \"{$sale->invoice_number}\" berhasil dibuat. Total: Rp ".number_format($sale->total, 0, ',', '.'))
-            ->success()
+        static::buildSuccessNotification(
+            'Penjualan Selesai',
+            "Invoice \"{$sale->invoice_number}\" berhasil dibuat. Total: Rp ".number_format($sale->total, 0, ',', '.')
+        )
             ->actions([
                 Action::make('print')
                     ->label('Cetak Nota')
                     ->icon('heroicon-o-printer')
-                    ->url($printUrl, shouldOpenInNewTab: true),
+                    ->url($printUrl, shouldOpenInNewTab: true)
+                    ->extraAttributes(function () use ($sale) {
+                        return [
+                            'x-on:click.prevent' => "
+                                const url = '".route('admin.sales.receipt', ['sale' => $sale->id, 'format' => 'json'])."';
+                                
+                                const savedPrinter = localStorage.getItem('savedPrinter');
+                                if (savedPrinter) {
+                                    window.dispatchEvent(new CustomEvent('print-native', { detail: { url } }));
+                                } else {
+                                    window.dispatchEvent(new CustomEvent('open-printer-modal', { detail: { url } }));
+                                }
+                            ",
+                        ];
+                    }),
             ])
             ->send();
     }

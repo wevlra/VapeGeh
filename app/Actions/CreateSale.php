@@ -41,15 +41,15 @@ class CreateSale
                     );
                 }
 
-                $defaultPrice = (float) $product->default_price;
-                $subtotal = $defaultPrice * $item['qty'];
+                $price = $stock && $stock->price > 0 ? (float) $stock->price : (float) $product->selling_price;
+                $subtotal = $price * $item['qty'];
                 $total += $subtotal;
 
                 $saleItems[] = [
                     'product_id' => $product->id,
                     'product_name' => $product->name,
                     'qty' => $item['qty'],
-                    'price' => $defaultPrice,
+                    'price' => $price,
                     'subtotal' => $subtotal,
                     'stock' => $stock,
                 ];

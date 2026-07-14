@@ -45,6 +45,11 @@ class SalesTable
                     ->label('Tanggal')
                     ->dateTime()
                     ->sortable(),
+                TextColumn::make('notes')
+                    ->label('Catatan')
+                    ->searchable()
+                    ->limit(50)
+                    ->toggleable(),
             ])
             ->filters([
                 SelectFilter::make('payment_method')
@@ -60,7 +65,21 @@ class SalesTable
                     ->icon('heroicon-o-printer')
                     ->color('gray')
                     ->url(fn (Sale $record): string => route('admin.sales.receipt', $record))
-                    ->openUrlInNewTab(),
+                    ->openUrlInNewTab()
+                    ->extraAttributes(function (Sale $record) {
+                        return [
+                            'x-on:click.prevent' => "
+                                const url = '".route('admin.sales.receipt', ['sale' => $record->id, 'format' => 'json'])."';
+                                
+                                const savedPrinter = localStorage.getItem('savedPrinter');
+                                if (savedPrinter) {
+                                    window.dispatchEvent(new CustomEvent('print-native', { detail: { url } }));
+                                } else {
+                                    window.dispatchEvent(new CustomEvent('open-printer-modal', { detail: { url } }));
+                                }
+                            ",
+                        ];
+                    }),
             ])
             ->defaultSort('created_at', 'desc');
     }

@@ -47,7 +47,7 @@ it('allows staff to access sales report scoped to location', function () {
         'location_id' => $location->id,
     ]);
 
-    $this->actingAs($staff);
+    $this->actingAs($staff, 'staff');
     Filament::setCurrentPanel(Filament::getPanel('staff'));
 
     $response = $this->get('/staff/sales-report');

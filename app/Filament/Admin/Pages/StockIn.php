@@ -3,6 +3,9 @@
 namespace App\Filament\Admin\Pages;
 
 use App\Filament\Admin\Resources\History\HistoryResource;
+use App\Filament\Concerns\InteractsWithStockItems;
+use App\Filament\Concerns\NotifiesWithDetail;
+use App\Models\Expense;
 use App\Models\Location;
 use App\Models\Product;
 use App\Models\Stock;
@@ -10,26 +13,33 @@ use App\Models\StockEntry;
 use App\Models\StockMovement;
 use App\Models\Vendor;
 use BackedEnum;
-use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Support\RawJs;
+use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\Layout\Stack;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ViewColumn;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
 
-class StockIn extends Page implements HasForms
+class StockIn extends Page implements HasForms, HasTable
 {
     use InteractsWithForms;
+    use InteractsWithStockItems;
+    use InteractsWithTable;
+    use NotifiesWithDetail;
 
     protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedArrowUpTray;
 
@@ -48,6 +58,8 @@ class StockIn extends Page implements HasForms
     protected string $view = 'filament.admin.pages.stock-in';
 
     public ?array $data = [];
+
+    public array $items = [];
 
     public function mount(): void
     {
@@ -112,59 +124,72 @@ class StockIn extends Page implements HasForms
                             ->description('Pilih produk dan jumlah')
                             ->icon(Heroicon::OutlinedCube)
                             ->schema([
-                                Repeater::make('items')
-                                    ->label('Produk')
-                                    ->defaultItems(1)
-                                    ->minItems(1)
-                                    ->addActionLabel('Tambah Produk')
-                                    ->table([
-                                        TableColumn::make('Produk')->width('55%'),
-                                        TableColumn::make('Jumlah')->width('20%'),
-                                        TableColumn::make('Harga Beli')->width('25%'),
-                                    ])
-                                    ->schema([
-                                        Select::make('product_id')
-                                            ->label('Produk')
-                                            ->options(fn () => Product::orderBy('name')->get()
-                                                ->mapWithKeys(fn (Product $p): array => [$p->id => "{$p->name}"])
-                                                ->toArray())
-                                            ->required()
-                                            ->searchable()
-                                            ->preload()
-                                            ->live()
-                                            ->afterStateUpdated(fn ($state, callable $set) => $set('price', Product::find($state)?->purchase_price ?? 0)),
-                                        TextInput::make('qty')
-                                            ->label('Jumlah')
-                                            ->integer()
-                                            ->minValue(1)
-                                            ->default(1)
-                                            ->required(),
-                                        TextInput::make('price')
-                                            ->label('Harga Beli')
-                                            ->numeric()
-                                            ->minValue(0)
-                                            ->prefix('Rp')
-                                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
-                                            ->stripCharacters('.')
-                                            ->required(),
-                                    ]),
+                                EmbeddedTable::make(),
                             ]),
                     ]),
             ]);
     }
 
+    protected function buildItemData(Product $record, int $qty, ?array $existing): array
+    {
+        return [
+            'product_id' => $record->id,
+            'name' => $record->name,
+            'qty' => $qty,
+            'price' => $existing ? (float) $existing['price'] : (float) $record->purchase_price,
+        ];
+    }
+
+    public function table(Table $table): Table
+    {
+
+        return $table
+            ->query(Product::query()->orderBy('name'))
+            ->columns([
+                Split::make([
+                    Stack::make([
+                        TextColumn::make('name')
+                            ->label('Nama Produk')
+                            ->weight('bold')
+                            ->searchable(),
+                        TextColumn::make('purchase_price')
+                            ->label('Harga Beli Terakhir')
+                            ->formatStateUsing(fn (float $state): string => 'Beli: Rp '.number_format($state, 0, ',', '.'))
+                            ->color('gray'),
+                    ]),
+                    ViewColumn::make('controls')
+                        ->label('Kontrol')
+                        ->view('filament.tables.columns.product-inline-controls')
+                        ->extraAttributes(['class' => 'w-full md:w-auto flex justify-end'])
+                        ->state(fn () => [
+                            'showPrice' => true,
+                            'priceLabel' => 'Harga Beli:',
+                            'defaultPriceCallable' => fn (Product $p) => $p->purchase_price,
+                        ]),
+
+                ]),
+            ]);
+    }
+
+    public function removeItem(int $productId): void
+    {
+        $this->items = collect($this->items)
+            ->reject(fn ($item) => $item['product_id'] === $productId)
+            ->values()
+            ->toArray();
+    }
+
     public function save(): void
     {
         $data = $this->form->getState();
-        $items = $data['items'] ?? [];
+        $items = $this->items;
         $location = Location::find($data['location_id']);
 
         if (empty($items)) {
-            Notification::make()
-                ->title('Tidak ada produk')
-                ->body('Tambahkan minimal satu produk.')
-                ->danger()
-                ->send();
+            $this->notifyError(
+                'Tidak Ada Produk',
+                'Tambahkan minimal satu produk.'
+            );
 
             return;
         }
@@ -205,6 +230,7 @@ class StockIn extends Page implements HasForms
                             'product_id' => $item['product_id'],
                             'location_id' => $data['location_id'],
                             'qty' => $newQty,
+                            'price' => null,
                         ]);
                     }
 
@@ -212,6 +238,25 @@ class StockIn extends Page implements HasForms
                         'product_id' => $item['product_id'],
                         'qty' => $newQty,
                         'unit_price' => $newPrice,
+                    ]);
+                }
+
+                $totalAmount = 0;
+                foreach ($items as $item) {
+                    $newPrice = (float) $item['price'];
+                    $newQty = (int) $item['qty'];
+                    $totalAmount += ($newPrice * $newQty);
+                }
+
+                if ($totalAmount > 0) {
+                    $vendor = Vendor::find($data['vendor_id']);
+                    $vendorName = $vendor ? $vendor->name : 'Vendor';
+                    Expense::create([
+                        'location_id' => $data['location_id'],
+                        'category' => 'purchase',
+                        'description' => "Stok Masuk dari {$vendorName} (Entry #{$entry->id})",
+                        'amount' => $totalAmount,
+                        'date' => now(),
                     ]);
                 }
 
@@ -228,22 +273,21 @@ class StockIn extends Page implements HasForms
         } catch (\Throwable $e) {
             report($e);
 
-            Notification::make()
-                ->title('Stok masuk gagal')
-                ->body($e->getMessage() ?: 'Terjadi kesalahan tak terduga.')
-                ->danger()
-                ->send();
+            $this->notifyError(
+                'Stok Masuk Gagal',
+                $e->getMessage() ?: 'Terjadi kesalahan tak terduga.'
+            );
 
             return;
         }
 
         $this->form->fill();
+        $this->items = [];
 
-        Notification::make()
-            ->title('Stok ditambahkan')
-            ->body(count($items).' produk ditambahkan ke '.($location?->name ?? 'lokasi yang dipilih').'.')
-            ->success()
-            ->send();
+        $this->notifySuccess(
+            'Stok Ditambahkan',
+            count($items).' produk ditambahkan ke '.($location?->name ?? 'lokasi yang dipilih').'.'
+        );
 
         $this->redirect(HistoryResource::getUrl('view', ['record' => $movement->id]));
     }

@@ -22,7 +22,7 @@ class CompleteStockTransfer
         }
 
         DB::transaction(function () use ($transfer, $completedBy) {
-            $transfer->load('items');
+            $transfer->load('items.product');
 
             foreach ($transfer->items as $item) {
                 $sourceStock = Stock::where('product_id', $item->product_id)
@@ -48,9 +48,13 @@ class CompleteStockTransfer
                         'product_id' => $item->product_id,
                         'location_id' => $transfer->to_location_id,
                         'qty' => $item->qty,
+                        'price' => $item->price > 0 ? $item->price : null,
                     ]);
                 } else {
                     $destinationStock->increment('qty', $item->qty);
+                    if ($item->price !== null) {
+                        $destinationStock->update(['price' => $item->price > 0 ? $item->price : null]);
+                    }
                 }
 
                 StockMovement::create([

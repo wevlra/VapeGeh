@@ -2,11 +2,8 @@
 
 namespace App\Filament\Admin\Resources\StockTransfers;
 
-use App\Filament\Admin\Resources\StockTransfers\Pages\CreateStockTransfer;
-use App\Filament\Admin\Resources\StockTransfers\Pages\EditStockTransfer;
 use App\Filament\Admin\Resources\StockTransfers\Pages\ListStockTransfers;
 use App\Filament\Admin\Resources\StockTransfers\Pages\ViewStockTransfer;
-use App\Filament\Admin\Resources\StockTransfers\Schemas\StockTransferForm;
 use App\Filament\Admin\Resources\StockTransfers\Schemas\StockTransferInfolist;
 use App\Filament\Admin\Resources\StockTransfers\Tables\StockTransfersTable;
 use App\Models\StockTransfer;
@@ -39,13 +36,13 @@ class StockTransferResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return StockTransferForm::configure($schema);
+        return $schema;
     }
 
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['fromLocation', 'toLocation', 'creator']);
+            ->with(['fromLocation', 'toLocation', 'creator', 'items.product']);
     }
 
     public static function table(Table $table): Table
@@ -69,8 +66,8 @@ class StockTransferResource extends Resource
     {
         return [
             'index' => ListStockTransfers::route('/'),
-            'create' => CreateStockTransfer::route('/create'),
-            'edit' => EditStockTransfer::route('/{record}/edit'),
+            'create' => Pages\StockTransferCreate::route('/create'),
+            'edit' => Pages\StockTransferEdit::route('/{record}/edit'),
             'view' => ViewStockTransfer::route('/{record}'),
         ];
     }

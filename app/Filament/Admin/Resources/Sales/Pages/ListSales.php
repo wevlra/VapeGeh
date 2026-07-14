@@ -23,7 +23,7 @@ class ListSales extends ListRecords
     public function responsiveTable(ResponsiveTableConfiguration $config): ResponsiveTableConfiguration
     {
         return $config
-            ->only(['location.name', 'total'])
+            ->only(['location.name', 'payment_method', 'total'])
             ->cardTitle(fn ($record) => $record->invoice_number);
     }
 }

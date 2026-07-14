@@ -5,7 +5,6 @@ namespace App\Filament\Admin\Widgets;
 use App\Models\Expense;
 use App\Models\Income;
 use App\Models\Location;
-use App\Models\Sale;
 use App\Models\Stock;
 use App\Models\StockMovement;
 use Carbon\Carbon;
@@ -79,21 +78,19 @@ class AdminStatsOverview extends StatsOverviewWidget
     {
         $start = $this->periodStart();
 
-        $saleQuery = Sale::query();
         $stockMovIn = StockMovement::where('type', 'in');
         $stockMovOut = StockMovement::where('type', 'out');
         $incomeQuery = Income::query();
         $expenseQuery = Expense::query();
 
         if ($start) {
-            $saleQuery->where('created_at', '>=', $start);
             $stockMovIn->where('created_at', '>=', $start);
             $stockMovOut->where('created_at', '>=', $start);
             $incomeQuery->where('date', '>=', $start->toDateString());
             $expenseQuery->where('date', '>=', $start->toDateString());
         }
 
-        $revenue = (float) $saleQuery->sum('total');
+        $revenue = (float) $incomeQuery->sum('amount');
         $stockIn = (int) $stockMovIn->sum('quantity');
         $stockOut = (int) $stockMovOut->sum(DB::raw('ABS(quantity)'));
         $profit = (float) $incomeQuery->sum('amount') - (float) $expenseQuery->sum('amount');
@@ -110,7 +107,7 @@ class AdminStatsOverview extends StatsOverviewWidget
         $chartValues = collect(range($days - 1, 0))->map(function ($i) use ($chartStart) {
             $day = $chartStart->copy()->addDays($i);
 
-            return (int) Sale::whereBetween('created_at', [$day->copy()->startOfDay(), $day->copy()->endOfDay()])->sum('total');
+            return (int) Income::where('date', $day->toDateString())->sum('amount');
         })->toArray();
 
         return [
@@ -120,7 +117,7 @@ class AdminStatsOverview extends StatsOverviewWidget
                 ->chart($chartValues)
                 ->color('success'),
             Stat::make('Laba', 'Rp '.number_format($profit, 0, ',', '.'))
-                ->description('Total pendapatan')
+                ->description('Pendapatan - Pengeluaran')
                 ->color($profit >= 0 ? 'success' : 'danger'),
             Stat::make('Stok Masuk', number_format($stockIn))
                 ->description('Unit diterima')
@@ -128,7 +125,7 @@ class AdminStatsOverview extends StatsOverviewWidget
             Stat::make('Stok Keluar', number_format($stockOut))
                 ->description('Unit terjual/dikirim')
                 ->color('danger'),
-            Stat::make('Total Stok', number_format((int) Stock::sum('qty')))
+            Stat::make('Total Stok', number_format((int) Stock::sum('qty'), 0, ',', '.'))
                 ->description('Unit di semua lokasi')
                 ->color('warning'),
             Stat::make('Total Aset', 'Rp '.number_format((float) Location::getTotalAssetOfAll(), 0, ',', '.'))

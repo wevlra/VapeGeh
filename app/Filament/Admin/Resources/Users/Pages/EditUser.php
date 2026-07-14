@@ -18,6 +18,7 @@ class EditUser extends EditRecord
     {
         return [
             DeleteAction::make()
+                ->hidden(fn () => $this->record->id === auth()->id())
                 ->successNotification(fn (Notification $notification): Notification => $this->getDeletedNotification()),
         ];
     }

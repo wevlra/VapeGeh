@@ -16,7 +16,7 @@ class ExpenseFactory extends Factory
     {
         return [
             'location_id' => Location::factory(),
-            'category' => fake()->randomElement(['purchase', 'salary', 'utilities', 'transport', 'other']),
+            'category' => fake()->randomElement(['purchase', 'salary', 'utilities', 'transport', 'opname', 'other']),
             'description' => fake()->sentence(),
             'amount' => fake()->randomFloat(2, 10000, 500000),
             'date' => fake()->date(),

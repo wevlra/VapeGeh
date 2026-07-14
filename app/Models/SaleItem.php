@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['sale_id', 'product_id', 'qty', 'price', 'subtotal'])]
 class SaleItem extends Model
 {
+    protected $with = ['product'];
+
     /**
      * @return BelongsTo<Sale, $this>
      */

@@ -1,4 +1,5 @@
 <x-filament-panels::page>
+    <x-filament-actions::modals />
     <form wire:submit="save" class="space-y-6">
         {{ $this->form }}
 

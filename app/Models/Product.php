@@ -6,21 +6,14 @@ use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'purchase_price', 'selling_price'])]
+#[Fillable(['name', 'category_id', 'purchase_price', 'selling_price', 'reseller_price', 'price_1', 'price_2'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
     use HasFactory;
-
-    /**
-     * @return HasMany<ProductPrice, $this>
-     */
-    public function prices(): HasMany
-    {
-        return $this->hasMany(ProductPrice::class);
-    }
 
     /**
      * @return HasMany<Stock, $this>
@@ -28,6 +21,14 @@ class Product extends Model
     public function stocks(): HasMany
     {
         return $this->hasMany(Stock::class);
+    }
+
+    /**
+     * @return BelongsTo<Category, $this>
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
     }
 
     /**
@@ -43,9 +44,7 @@ class Product extends Model
      */
     public function getDefaultPriceAttribute(): float
     {
-        $sellingPrice = (float) $this->selling_price;
-
-        return $sellingPrice > 0 ? $sellingPrice : (float) ($this->prices()->first()?->price ?? 0);
+        return (float) $this->selling_price;
     }
 
     protected function casts(): array
@@ -53,6 +52,9 @@ class Product extends Model
         return [
             'purchase_price' => 'float',
             'selling_price' => 'float',
+            'reseller_price' => 'float',
+            'price_1' => 'float',
+            'price_2' => 'float',
         ];
     }
 }

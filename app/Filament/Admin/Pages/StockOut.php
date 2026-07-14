@@ -3,35 +3,46 @@
 namespace App\Filament\Admin\Pages;
 
 use App\Filament\Admin\Resources\History\HistoryResource;
+use App\Filament\Concerns\InteractsWithStockItems;
+use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\Buyer;
+use App\Models\Income;
 use App\Models\Location;
 use App\Models\Product;
-use App\Models\ProductPrice;
 use App\Models\Stock;
 use App\Models\StockEntry;
 use App\Models\StockMovement;
 use BackedEnum;
 use DomainException;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Support\RawJs;
+use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\Layout\Stack;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ViewColumn;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
 
-class StockOut extends Page implements HasForms
+class StockOut extends Page implements HasForms, HasTable
 {
     use InteractsWithForms;
+    use InteractsWithStockItems;
+    use InteractsWithTable;
+    use NotifiesWithDetail;
 
     protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedArrowDownTray;
 
@@ -50,6 +61,8 @@ class StockOut extends Page implements HasForms
     protected string $view = 'filament.admin.pages.stock-out';
 
     public ?array $data = [];
+
+    public array $items = [];
 
     public function mount(): void
     {
@@ -106,6 +119,20 @@ class StockOut extends Page implements HasForms
                                             'transfer' => 'Transfer',
                                             'qris' => 'QRIS',
                                         ]),
+                                    Select::make('price_id')
+                                        ->label('Tipe Harga Jual')
+                                        ->options([
+                                            'default' => 'Harga Default',
+                                            'reseller' => 'Harga Reseller',
+                                            'price_1' => 'Harga 1',
+                                            'price_2' => 'Harga 2',
+                                        ])
+                                        ->default('default')
+                                        ->required()
+                                        ->live()
+                                        ->afterStateUpdated(function (callable $set) {
+                                            $this->items = [];
+                                        }),
                                 ]),
                                 Repeater::make('additional_costs')
                                     ->label('Biaya Tambahan (opsional)')
@@ -138,101 +165,99 @@ class StockOut extends Page implements HasForms
                             ->description('Pilih produk dan harga jual')
                             ->icon(Heroicon::OutlinedCube)
                             ->schema([
-                                Repeater::make('items')
-                                    ->label('Produk')
-                                    ->defaultItems(1)
-                                    ->minItems(1)
-                                    ->addActionLabel('Tambah Produk')
-                                    ->table([
-                                        TableColumn::make('Produk')->width('35%'),
-                                        TableColumn::make('Harga Jual')->width('25%'),
-                                        TableColumn::make('Harga Manual')->width('15%'),
-                                        TableColumn::make('Jumlah')->width('25%'),
-                                    ])
-                                    ->schema([
-                                        Select::make('product_id')
-                                            ->label('Produk')
-                                            ->options(fn () => Product::orderBy('name')->get()
-                                                ->mapWithKeys(fn (Product $p): array => [$p->id => "{$p->name}"])
-                                                ->toArray())
-                                            ->required()
-                                            ->searchable()
-                                            ->preload()
-                                            ->live()
-                                            ->afterStateUpdated(fn (callable $set) => $set('price_id', null)),
-                                        Select::make('price_id')
-                                            ->label('Harga Jual')
-                                            ->options(fn (callable $get) => $this->getPriceOptions($get('product_id')))
-                                            ->searchable()
-                                            ->live()
-                                            ->afterStateUpdated(fn ($state, callable $set) => $state === 'manual' ? $set('manual_price', null) : null),
-                                        TextInput::make('manual_price')
-                                            ->label('Harga Manual')
-                                            ->numeric()
-                                            ->minValue(0)
-                                            ->prefix('Rp')
-                                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
-                                            ->stripCharacters('.')
-                                            ->visible(fn (callable $get) => $get('price_id') === 'manual')
-                                            ->required(fn (callable $get) => $get('price_id') === 'manual'),
-                                        TextInput::make('qty')
-                                            ->label('Jumlah')
-                                            ->integer()
-                                            ->minValue(1)
-                                            ->default(1)
-                                            ->required(),
-                                    ]),
+                                EmbeddedTable::make(),
                             ]),
                     ]),
             ]);
     }
 
-    protected function getPriceOptions(?int $productId): array
+    protected function buildItemData(Product $record, int $qty, ?array $existing): array
     {
-        if (! $productId) {
-            return [];
+        $priceId = $this->data['price_id'] ?? 'default';
+        if ($priceId === 'default') {
+            $resolvedPrice = (float) $record->selling_price;
+        } elseif ($priceId === 'reseller') {
+            $resolvedPrice = (float) $record->reseller_price;
+        } elseif ($priceId === 'price_1') {
+            $resolvedPrice = (float) $record->price_1;
+        } elseif ($priceId === 'price_2') {
+            $resolvedPrice = (float) $record->price_2;
+        } else {
+            $resolvedPrice = 0;
         }
 
-        $options = Product::find($productId)
-            ?->prices()
-            ->get()
-            ->mapWithKeys(fn (ProductPrice $p): array => [
-                $p->id => "{$p->label}: Rp ".number_format((float) $p->price, 0, ',', '.'),
-            ])
-            ->toArray() ?? [];
-
-        $options['manual'] = 'Manual (isi sendiri)';
-
-        return $options;
+        return [
+            'product_id' => $record->id,
+            'name' => $record->name,
+            'qty' => $qty,
+            'price_id' => $priceId,
+            'price' => $resolvedPrice, // for the selected-items-preview
+        ];
     }
 
-    protected function getPriceHelper(int|string|null $priceId): string
+    public function table(Table $table): Table
     {
-        if (! $priceId) {
-            return '';
-        }
 
-        $price = ProductPrice::find($priceId);
+        return $table
+            ->query(Product::query()->orderBy('name'))
+            ->columns([
+                Split::make([
+                    Stack::make([
+                        TextColumn::make('name')
+                            ->label('Nama Produk')
+                            ->weight('bold')
+                            ->searchable(),
+                        TextColumn::make('selling_price')
+                            ->label('Harga Jual Default')
+                            ->getStateUsing(function (Product $record) {
+                                $priceId = $this->data['price_id'] ?? 'default';
+                                if ($priceId === 'reseller') {
+                                    return (float) $record->reseller_price;
+                                }
+                                if ($priceId === 'price_1') {
+                                    return (float) $record->price_1;
+                                }
+                                if ($priceId === 'price_2') {
+                                    return (float) $record->price_2;
+                                }
 
-        if (! $price) {
-            return '';
-        }
+                                return (float) $record->selling_price;
+                            })
+                            ->formatStateUsing(function ($state): string {
+                                return 'Harga: Rp '.number_format((float) $state, 0, ',', '.');
+                            })
+                            ->color('gray'),
+                    ]),
+                    ViewColumn::make('controls')
+                        ->label('Kontrol')
+                        ->view('filament.tables.columns.product-inline-controls')
+                        ->extraAttributes(['class' => 'w-full md:w-auto flex justify-end'])
+                        ->state(fn () => [
+                            'showPrice' => false,
+                        ]),
+                ]),
+            ]);
+    }
 
-        return 'Rp '.number_format((float) $price->price, 0, ',', '.');
+    public function removeItem(int $productId): void
+    {
+        $this->items = collect($this->items)
+            ->reject(fn ($item) => $item['product_id'] === $productId)
+            ->values()
+            ->toArray();
     }
 
     public function save(): void
     {
         $data = $this->form->getState();
-        $items = $data['items'] ?? [];
+        $items = $this->items;
         $locationId = (int) $data['location_id'];
 
         if (empty($items)) {
-            Notification::make()
-                ->title('Tidak ada produk')
-                ->body('Tambahkan minimal satu produk.')
-                ->danger()
-                ->send();
+            $this->notifyError(
+                'Tidak Ada Produk',
+                'Tambahkan minimal satu produk.'
+            );
 
             return;
         }
@@ -252,11 +277,7 @@ class StockOut extends Page implements HasForms
                 foreach ($items as $item) {
                     $productId = (int) $item['product_id'];
                     $qty = (int) $item['qty'];
-                    $priceId = $item['price_id'];
-                    $isManual = $priceId === 'manual';
-                    $unitPrice = $isManual
-                        ? (float) ($item['manual_price'] ?? 0)
-                        : (float) (ProductPrice::find((int) $priceId)?->price ?? 0);
+                    $unitPrice = (float) $item['price'];
 
                     $stock = Stock::where('product_id', $productId)
                         ->where('location_id', $locationId)
@@ -282,6 +303,32 @@ class StockOut extends Page implements HasForms
                     ]);
                 }
 
+                $totalAmount = 0;
+                foreach ($items as $item) {
+                    $unitPrice = (float) $item['price'];
+                    $totalAmount += ((int) $item['qty'] * $unitPrice);
+                }
+
+                $additionalCostsTotal = 0;
+                if (is_array($entry->additional_costs)) {
+                    foreach ($entry->additional_costs as $cost) {
+                        $additionalCostsTotal += (float) ($cost['amount'] ?? 0);
+                    }
+                }
+                $totalIncome = $totalAmount + $additionalCostsTotal;
+
+                if ($totalIncome > 0) {
+                    $buyer = Buyer::find($data['buyer_id'] ?? null);
+                    $buyerName = $buyer ? $buyer->name : 'Pelanggan';
+                    Income::create([
+                        'location_id' => $locationId,
+                        'category' => 'sale',
+                        'description' => "Stok Keluar ke {$buyerName} (Entry #{$entry->id})",
+                        'amount' => $totalIncome,
+                        'date' => now(),
+                    ]);
+                }
+
                 return StockMovement::create([
                     'product_id' => $items[0]['product_id'],
                     'location_id' => $locationId,
@@ -296,32 +343,30 @@ class StockOut extends Page implements HasForms
                 ]);
             });
         } catch (DomainException $e) {
-            Notification::make()
-                ->title('Stok keluar gagal')
-                ->body($e->getMessage())
-                ->danger()
-                ->send();
+            $this->notifyError(
+                'Stok Keluar Gagal',
+                $e->getMessage()
+            );
 
             return;
         } catch (\Throwable $e) {
             report($e);
 
-            Notification::make()
-                ->title('Terjadi kesalahan')
-                ->body('Silakan coba lagi atau hubungi administrator.')
-                ->danger()
-                ->send();
+            $this->notifyError(
+                'Terjadi Kesalahan',
+                'Silakan coba lagi atau hubungi administrator.'
+            );
 
             return;
         }
 
         $this->form->fill();
+        $this->items = [];
 
-        Notification::make()
-            ->title('Stok dikeluarkan')
-            ->body(count($items).' produk berhasil dikeluarkan.')
-            ->success()
-            ->send();
+        $this->notifySuccess(
+            'Stok Dikeluarkan',
+            count($items).' produk berhasil dikeluarkan dari sistem.'
+        );
 
         $this->redirect(HistoryResource::getUrl('view', ['record' => $movement->id]));
     }

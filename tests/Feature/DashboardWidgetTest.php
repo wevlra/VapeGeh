@@ -55,6 +55,24 @@ it('renders staff stats overview widget with scoped data', function () {
         ->assertSuccessful();
 });
 
+it('filters staff stats overview by period', function () {
+    $location = Location::factory()->create();
+    $staff = User::factory()->create([
+        'role' => 'staff',
+        'location_id' => $location->id,
+    ]);
+    $product = Product::factory()->create();
+
+    $this->actingAs($staff);
+    Filament::setCurrentPanel(Filament::getPanel('staff'));
+
+    Livewire::test(StaffStatsOverview::class)
+        ->set('period', 'today')
+        ->assertSet('period', 'today')
+        ->assertSee('Hari ini')
+        ->assertSuccessful();
+});
+
 it('renders admin sales chart widget', function () {
     $admin = User::factory()->admin()->create();
 

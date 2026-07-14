@@ -51,8 +51,8 @@ it('gates filament panel access by active status', function () {
     ]);
 
     expect($admin->canAccessPanel($adminPanel))->toBeTrue()
-        ->and($admin->canAccessPanel($staffPanel))->toBeTrue()
-        ->and($staff->canAccessPanel($adminPanel))->toBeTrue()
+        ->and($admin->canAccessPanel($staffPanel))->toBeFalse()
+        ->and($staff->canAccessPanel($adminPanel))->toBeFalse()
         ->and($staff->canAccessPanel($staffPanel))->toBeTrue()
         ->and($inactiveAdmin->canAccessPanel($adminPanel))->toBeFalse();
 });

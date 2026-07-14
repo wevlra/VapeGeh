@@ -39,12 +39,8 @@ class Location extends Model
     {
         return (float) DB::table('stocks')
             ->join('products', 'products.id', '=', 'stocks.product_id')
-            ->leftJoin('product_prices', function ($join) {
-                $join->on('product_prices.product_id', '=', 'products.id')
-                    ->whereRaw('product_prices.price = (SELECT MAX(p2.price) FROM product_prices p2 WHERE p2.product_id = products.id)');
-            })
             ->where('stocks.location_id', $this->id)
-            ->selectRaw('SUM(stocks.qty * COALESCE(product_prices.price, 0)) as total')
+            ->selectRaw('SUM(stocks.qty * COALESCE(products.selling_price, 0)) as total')
             ->value('total') ?? 0;
     }
 
@@ -52,11 +48,7 @@ class Location extends Model
     {
         return (float) DB::table('stocks')
             ->join('products', 'products.id', '=', 'stocks.product_id')
-            ->leftJoin('product_prices', function ($join) {
-                $join->on('product_prices.product_id', '=', 'products.id')
-                    ->whereRaw('product_prices.price = (SELECT MAX(p2.price) FROM product_prices p2 WHERE p2.product_id = products.id)');
-            })
-            ->selectRaw('SUM(stocks.qty * COALESCE(product_prices.price, 0)) as total')
+            ->selectRaw('SUM(stocks.qty * COALESCE(products.selling_price, 0)) as total')
             ->value('total') ?? 0;
     }
 

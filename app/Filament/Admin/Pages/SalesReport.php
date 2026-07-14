@@ -2,6 +2,9 @@
 
 namespace App\Filament\Admin\Pages;
 
+use App\Exports\SalesReportExport;
+use App\Filament\Concerns\HasExportActions;
+use App\Models\Location;
 use App\Models\Sale;
 use BackedEnum;
 use Filament\Pages\Page;
@@ -11,13 +14,14 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Url;
 use Wezlo\FilamentResponsiveTable\Concerns\HasResponsiveTable;
 use Wezlo\FilamentResponsiveTable\ResponsiveTableConfiguration;
 
 class SalesReport extends Page implements Tables\Contracts\HasTable
 {
+    use HasExportActions;
     use HasResponsiveTable;
     use Tables\Concerns\InteractsWithTable;
 
@@ -37,6 +41,17 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
         $this->resetTable();
     }
 
+    protected function getHeaderActions(): array
+    {
+        return [
+            $this->getExportActionGroup(
+                SalesReportExport::class,
+                'exports.pdf.sales-report',
+                'laporan-penjualan'
+            ),
+        ];
+    }
+
     public function content(Schema $schema): Schema
     {
         return $schema
@@ -48,51 +63,100 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
     public function responsiveTable(ResponsiveTableConfiguration $config): ResponsiveTableConfiguration
     {
         return $config
-            ->only(['location.name', 'total', 'payment_method'])
-            ->cardTitle(fn ($record) => $record->invoice_number);
+            ->only(['location_name', 'total', 'payment_method'])
+            ->cardTitle(fn ($record) => $record->reference ?: 'Stok Keluar');
     }
 
     public function table(Table $table): Table
     {
+        $salesQ = DB::table('sales')
+            ->join('users', 'users.id', '=', 'sales.user_id')
+            ->join('locations', 'locations.id', '=', 'sales.location_id')
+            ->select([
+                DB::raw("'pos' as source_type"),
+                'sales.id',
+                'sales.invoice_number as reference',
+                'locations.name as location_name',
+                'users.name as kasir_name',
+                'sales.total',
+                'sales.payment_method',
+                'sales.created_at',
+            ]);
+
+        $stockQ = DB::table('stock_entries')
+            ->join('locations', 'locations.id', '=', 'stock_entries.location_id')
+            ->join('users', 'users.id', '=', 'stock_entries.created_by')
+            ->leftJoinSub(
+                DB::table('stock_entry_items')
+                    ->select('stock_entry_id', DB::raw('SUM(qty * unit_price) as total'))
+                    ->groupBy('stock_entry_id'),
+                'totals', fn ($j) => $j->on('totals.stock_entry_id', '=', 'stock_entries.id')
+            )
+            ->where('stock_entries.type', 'out')
+            ->select([
+                DB::raw("'stock_out' as source_type"),
+                'stock_entries.id',
+                DB::raw("'' as reference"),
+                'locations.name as location_name',
+                'users.name as kasir_name',
+                DB::raw('COALESCE(totals.total, 0) as total'),
+                'stock_entries.payment_method',
+                'stock_entries.created_at',
+            ]);
+
+        $union = $salesQ->union($stockQ);
+
+        $model = new Sale;
+        $model->setTable('combined');
+
         return $table
-            ->query(Sale::query()->with(['user', 'location'])->when(
+            ->query($model->newQuery()->fromSub($union, 'combined')->when(
                 $this->period !== 'all',
-                fn (Builder $query) => $query->where('created_at', '>=', $this->getPeriodStart()),
+                fn ($query) => $query->where('created_at', '>=', $this->getPeriodStart()),
             ))
             ->columns([
-                TextColumn::make('invoice_number')
+                TextColumn::make('source_type')
+                    ->label('Tipe')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'pos' => 'POS',
+                        'stock_out' => 'Stok Keluar',
+                        default => ucfirst($state),
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'pos' => 'success',
+                        'stock_out' => 'warning',
+                        default => 'gray',
+                    }),
+                TextColumn::make('reference')
                     ->label('No. Invoice')
                     ->searchable()
-                    ->sortable(),
-                TextColumn::make('location.name')
+                    ->sortable()
+                    ->placeholder('-'),
+                TextColumn::make('location_name')
                     ->label('Lokasi')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('user.name')
+                TextColumn::make('kasir_name')
                     ->label('Kasir')
                     ->searchable(),
                 TextColumn::make('total')
                     ->label('Total')
                     ->money('IDR')
                     ->sortable(),
-                TextColumn::make('paid_amount')
-                    ->label('Jumlah Dibayar')
-                    ->money('IDR')
-                    ->sortable(),
                 TextColumn::make('payment_method')
                     ->label('Pembayaran')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
                         'qris' => 'QRIS',
                         'transfer' => 'Transfer',
                         'cash' => 'Tunai',
-                        default => ucfirst($state),
+                        default => $state ? ucfirst($state) : '-',
                     })
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn (?string $state): string => match ($state) {
                         'cash' => 'success',
                         'transfer' => 'info',
                         'qris' => 'primary',
-                        'other' => 'gray',
                         default => 'gray',
                     }),
                 TextColumn::make('created_at')
@@ -101,10 +165,15 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('location_id')
-                    ->relationship('location', 'name')
+                Tables\Filters\SelectFilter::make('source_type')
+                    ->label('Tipe')
+                    ->options([
+                        'pos' => 'POS',
+                        'stock_out' => 'Stok Keluar',
+                    ]),
+                Tables\Filters\SelectFilter::make('location_name')
                     ->label('Lokasi')
-                    ->preload(),
+                    ->options(fn (): array => Location::query()->orderBy('name')->pluck('name', 'name')->all()),
                 Tables\Filters\SelectFilter::make('payment_method')
                     ->options([
                         'cash' => 'Tunai',

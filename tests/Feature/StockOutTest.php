@@ -1,0 +1,60 @@
+<?php
+
+use App\Filament\Admin\Pages\StockOut;
+use App\Models\Income;
+use App\Models\Location;
+use App\Models\Product;
+use App\Models\ProductPrice;
+use App\Models\Stock;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
+
+uses(RefreshDatabase::class);
+
+it('can perform stock out and record income', function () {
+    $admin = User::factory()->admin()->create();
+    $this->actingAs($admin);
+
+    $location = Location::factory()->create();
+    $product = Product::factory()->create();
+    $price = ProductPrice::create([
+        'product_id' => $product->id,
+        'label' => 'Harga Jual',
+        'price' => 150000.00,
+    ]);
+
+    // Seed stock
+    Stock::factory()->create([
+        'product_id' => $product->id,
+        'location_id' => $location->id,
+        'qty' => 20,
+    ]);
+
+    Livewire::test(StockOut::class)
+        ->fillForm([
+            'location_id' => $location->id,
+        ])
+        ->set('items', [
+            [
+                'product_id' => $product->id,
+                'qty' => 5,
+                'price_id' => $price->id,
+                'manual_price' => null,
+            ],
+        ])
+        ->call('save');
+
+    // Assert stock decreased
+    $stock = Stock::where('product_id', $product->id)
+        ->where('location_id', $location->id)
+        ->first();
+
+    expect($stock->qty)->toBe(15);
+
+    // Assert Income was created
+    $income = Income::where('location_id', $location->id)->first();
+    expect($income)->not->toBeNull()
+        ->and((float) $income->amount)->toBe(750000.00) // 5 * 150000
+        ->and($income->category)->toBe('sale');
+});

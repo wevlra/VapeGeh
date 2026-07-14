@@ -15,6 +15,8 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
 use Hammadzafar05\MobileBottomNav\MobileBottomNav;
 use Hammadzafar05\MobileBottomNav\MobileBottomNavItem;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -23,6 +25,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Wezlo\FilamentResponsiveTable\FilamentResponsiveTablePlugin;
 
@@ -33,6 +36,7 @@ class StaffPanelProvider extends PanelProvider
         return $panel
             ->id('staff')
             ->path('staff')
+            ->authGuard('staff')
             ->viteTheme('resources/css/filament/staff/theme.css')
             ->login()
             ->profile()
@@ -89,6 +93,11 @@ class StaffPanelProvider extends PanelProvider
                 Authenticate::class,
             ], isPersistent: true)
             ->bootUsing(function (): void {
+                FilamentView::registerRenderHook(
+                    PanelsRenderHook::BODY_END,
+                    fn (): string => Blade::render('<x-printer-scanner-modal />')
+                );
+
                 app()->bind(LogoutResponse::class, fn (): \Filament\Auth\Http\Responses\LogoutResponse => new class extends \Filament\Auth\Http\Responses\LogoutResponse
                 {
                     public function toResponse($request): RedirectResponse

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Staff\Pages;
 
+use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\Stock;
@@ -13,13 +14,11 @@ use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Support\RawJs;
-use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -31,6 +30,7 @@ class Pos extends Page implements HasTable
 {
     use InteractsWithActions;
     use InteractsWithTable;
+    use NotifiesWithDetail;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
 
@@ -57,61 +57,40 @@ class Pos extends Page implements HasTable
                         ->where('location_id', $locationId)
                         ->where('qty', '>', 0),
                     )
-                    ->with(['stocks' => fn ($q) => $q->where('location_id', $locationId), 'prices'])
+                    ->with(['stocks' => fn ($q) => $q->where('location_id', $locationId)])
             )
             ->columns([
-                TextColumn::make('name')
-                    ->label('Produk')
-                    ->formatStateUsing(fn (Product $record): string => mb_strimwidth($record->name, 0, 30, '...'))
-                    ->weight('bold')
-                    ->searchable()
-                    ->sortable()
-                    ->visibleFrom('md'),
-                TextColumn::make('default_price')
-                    ->label('Harga')
-                    ->formatStateUsing(fn (Product $record): string => 'Rp '.number_format((float) $record->default_price, 0, ',', '.'))
-                    ->visibleFrom('md'),
-                TextColumn::make('stock_qty')
-                    ->label('Stok')
-                    ->badge()
-                    ->color(fn (int $state): string => match (true) {
-                        $state <= 0 => 'danger',
-                        $state < 10 => 'warning',
-                        default => 'success',
-                    })
-                    ->getStateUsing(fn (Product $record): int => $record->stocks->first()?->qty ?? 0)
-                    ->visibleFrom('md'),
-                Split::make([
-                    Stack::make([
-                        TextColumn::make('name_mobile')
-                            ->state(fn (Product $record): string => $record->name)
-                            ->label('Produk')
-                            ->formatStateUsing(fn (string $state): string => mb_strimwidth($state, 0, 30, '...'))
-                            ->weight('bold'),
-                        TextColumn::make('default_price_mobile')
-                            ->state(fn (Product $record): string => $record->default_price)
-                            ->formatStateUsing(fn (string $state): string => 'Rp '.number_format((float) $state, 0, ',', '.'))
-                            ->color('gray'),
-                    ]),
-                    Stack::make([
-                        TextColumn::make('stock_qty_mobile')
-                            ->label('Stok')
-                            ->badge()
-                            ->alignEnd()
-                            ->color(fn (int $state): string => match (true) {
-                                $state <= 0 => 'danger',
-                                $state < 10 => 'warning',
-                                default => 'success',
-                            })
-                            ->getStateUsing(fn (Product $record): int => $record->stocks->first()?->qty ?? 0),
-                    ])->space(1),
-                ])->hiddenFrom('md'),
+                Stack::make([
+                    TextColumn::make('name')
+                        ->searchable()
+                        ->sortable()
+                        ->weight('bold')
+                        ->formatStateUsing(fn (string $state): string => mb_strimwidth($state, 0, 40, '...')),
+                    TextColumn::make('selling_price')
+                        ->getStateUsing(fn (Product $record): float => $record->stocks->first()?->price > 0 ? (float) $record->stocks->first()?->price : (float) $record->selling_price)
+                        ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
+                    TextColumn::make('stock_qty')
+                        ->badge()
+                        ->color(fn (int $state): string => match (true) {
+                            $state <= 0 => 'danger',
+                            $state < 10 => 'warning',
+                            default => 'success',
+                        })
+                        ->getStateUsing(fn (Product $record): int => $record->stocks->first()?->qty ?? 0)
+                        ->formatStateUsing(fn (int $state): string => 'Stok '.$state),
+                ])->space(2),
+            ])
+            ->contentGrid([
+                'md' => 2,
+                'xl' => 3,
             ])
             ->actions([
                 Action::make('addToCart')
                     ->label('Tambah')
                     ->icon('heroicon-m-plus')
                     ->color('primary')
+                    ->button()
+                    ->extraAttributes(['class' => 'w-full justify-center'])
                     ->action(fn (Product $record) => $this->addToCart($record->id)),
             ])
             ->defaultSort('name');
@@ -129,14 +108,21 @@ class Pos extends Page implements HasTable
     {
         $productIds = collect($this->cart)->pluck('product_id');
         $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
+        $locationId = auth()->user()->location_id;
 
-        return collect($this->cart)->map(function ($item) use ($products) {
+        $stocks = Stock::whereIn('product_id', $productIds)
+            ->where('location_id', $locationId)
+            ->get()
+            ->keyBy('product_id');
+
+        return collect($this->cart)->map(function ($item) use ($products, $stocks) {
             $product = $products->get($item['product_id']);
             if (! $product) {
                 return null;
             }
             $item['name'] = $product->name;
-            $item['price'] = (float) $product->default_price;
+            $stock = $stocks->get($item['product_id']);
+            $item['price'] = $stock && $stock->price > 0 ? (float) $stock->price : (float) $product->selling_price;
             $item['subtotal'] = $item['price'] * (int) $item['qty'];
 
             return $item;
@@ -155,14 +141,14 @@ class Pos extends Page implements HasTable
         if ($existingIndex !== false) {
             $currentQty = (int) $this->cart[$existingIndex]['qty'] + 1;
             if (! $this->isStockAvailable($productId, $currentQty)) {
-                Notification::make()->warning()->title('Stok tidak mencukupi.')->send();
+                $this->notifyWarning('Stok Tidak Mencukupi');
 
                 return;
             }
             $this->cart[$existingIndex]['qty'] = $currentQty;
         } else {
             if (! $this->isStockAvailable($productId, 1)) {
-                Notification::make()->warning()->title('Stok habis.')->send();
+                $this->notifyWarning('Stok Habis');
 
                 return;
             }
@@ -189,7 +175,7 @@ class Pos extends Page implements HasTable
         }
 
         if (! $this->isStockAvailable($this->cart[$index]['product_id'], $qty)) {
-            Notification::make()->warning()->title('Stok tidak mencukupi.')->send();
+            $this->notifyWarning('Stok Tidak Mencukupi');
 
             return;
         }
@@ -317,7 +303,7 @@ class Pos extends Page implements HasTable
                         );
                     }
 
-                    $price = (float) $product->default_price;
+                    $price = $stock && $stock->price > 0 ? (float) $stock->price : (float) $product->selling_price;
                     $subtotal = $price * $qty;
                     $total += $subtotal;
 
@@ -367,21 +353,16 @@ class Pos extends Page implements HasTable
                 return $sale;
             });
         } catch (DomainException $e) {
-            Notification::make()
-                ->title('Penjualan gagal')
-                ->body($e->getMessage())
-                ->danger()
-                ->send();
+            $this->notifyError('Penjualan Gagal', $e->getMessage());
 
             return;
         } catch (\Throwable $e) {
             report($e);
 
-            Notification::make()
-                ->title('Terjadi kesalahan')
-                ->body('Silakan coba lagi atau hubungi administrator.')
-                ->danger()
-                ->send();
+            $this->notifyError(
+                'Terjadi Kesalahan',
+                'Silakan coba lagi atau hubungi administrator.'
+            );
 
             return;
         }
@@ -391,15 +372,29 @@ class Pos extends Page implements HasTable
 
         $printUrl = route('admin.sales.receipt', $sale);
 
-        Notification::make()
-            ->title('Penjualan selesai')
-            ->body("Invoice \"{$sale->invoice_number}\" berhasil dibuat. Total: Rp ".number_format($sale->total, 0, ',', '.'))
-            ->success()
+        static::buildSuccessNotification(
+            'Penjualan Selesai',
+            "Invoice \"{$sale->invoice_number}\" berhasil dibuat. Total: Rp ".number_format($sale->total, 0, ',', '.')
+        )
             ->actions([
                 Action::make('print')
                     ->label('Cetak Nota')
                     ->icon('heroicon-o-printer')
-                    ->url($printUrl, shouldOpenInNewTab: true),
+                    ->url($printUrl, shouldOpenInNewTab: true)
+                    ->extraAttributes(function () use ($sale) {
+                        return [
+                            'x-on:click.prevent' => "
+                                const url = '".route('admin.sales.receipt', ['sale' => $sale->id, 'format' => 'json'])."';
+
+                                const savedPrinter = localStorage.getItem('savedPrinter');
+                                if (savedPrinter) {
+                                    window.dispatchEvent(new CustomEvent('print-native', { detail: { url } }));
+                                } else {
+                                    window.dispatchEvent(new CustomEvent('open-printer-modal', { detail: { url } }));
+                                }
+                            ",
+                        ];
+                    }),
             ])
             ->send();
     }

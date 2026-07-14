@@ -46,7 +46,9 @@ class SaleInfolist
                             ->label('Jumlah Dibayar')
                             ->money('IDR'),
                         TextEntry::make('notes')
-                            ->label('Catatan'),
+                            ->label('Catatan')
+                            ->columnSpanFull()
+                            ->default('-'),
                     ]),
 
                 Section::make('Item')

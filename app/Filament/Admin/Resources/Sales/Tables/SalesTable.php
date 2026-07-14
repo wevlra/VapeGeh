@@ -2,14 +2,9 @@
 
 namespace App\Filament\Admin\Resources\Sales\Tables;
 
-use App\Actions\DeleteSale;
 use App\Filament\Admin\Resources\Sales\SaleResource;
 use App\Models\Sale;
 use Filament\Actions\Action;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\EditAction;
-use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -54,6 +49,11 @@ class SalesTable
                     ->label('Tanggal')
                     ->dateTime()
                     ->sortable(),
+                TextColumn::make('notes')
+                    ->label('Catatan')
+                    ->searchable()
+                    ->limit(50)
+                    ->toggleable(),
             ])
             ->filters([
                 SelectFilter::make('user_id')
@@ -72,29 +72,32 @@ class SalesTable
                     ]),
             ])
             ->recordActions([
-                ActionGroup::make([
-                    Action::make('print_receipt')
-                        ->label('Cetak Nota')
-                        ->icon('heroicon-o-printer')
-                        ->color('gray')
-                        ->url(fn (Sale $record): string => route('admin.sales.receipt', $record))
-                        ->openUrlInNewTab(),
-                    Action::make('print_invoice')
-                        ->label('Cetak Invoice')
-                        ->icon('heroicon-o-document-text')
-                        ->color('primary')
-                        ->url(fn (Sale $record): string => route('admin.history.invoice', $record->stockMovements()->first()))
-                        ->openUrlInNewTab(),
-                    EditAction::make(),
-                    DeleteAction::make()
-                        ->action(fn (Sale $record) => app(DeleteSale::class)->execute($record))
-                        ->successNotification(
-                            Notification::make()
-                                ->title('Penjualan dihapus')
-                                ->body('Penjualan telah dihapus permanen.')
-                                ->danger()
-                        ),
-                ]),
+                Action::make('print_receipt')
+                    ->label('Cetak Nota')
+                    ->icon('heroicon-o-printer')
+                    ->color('gray')
+                    ->url(fn (Sale $record): string => route('admin.sales.receipt', $record))
+                    ->openUrlInNewTab()
+                    ->extraAttributes(function (Sale $record) {
+                        return [
+                            'x-on:click.prevent' => "
+                                const url = '".route('admin.sales.receipt', ['sale' => $record->id, 'format' => 'json'])."';
+
+                                const savedPrinter = localStorage.getItem('savedPrinter');
+                                if (savedPrinter) {
+                                    window.dispatchEvent(new CustomEvent('print-native', { detail: { url } }));
+                                } else {
+                                    window.dispatchEvent(new CustomEvent('open-printer-modal', { detail: { url } }));
+                                }
+                            ",
+                        ];
+                    }),
+                Action::make('print_invoice')
+                    ->label('Cetak Invoice')
+                    ->icon('heroicon-o-document-text')
+                    ->color('primary')
+                    ->url(fn (Sale $record): string => route('admin.history.invoice', $record->stockMovements()->first()))
+                    ->openUrlInNewTab(),
             ])
             ->defaultSort('created_at', 'desc');
     }

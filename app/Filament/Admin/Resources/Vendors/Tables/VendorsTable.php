@@ -3,12 +3,12 @@
 namespace App\Filament\Admin\Resources\Vendors\Tables;
 
 use App\Filament\Admin\Resources\Vendors\VendorResource;
+use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\Vendor;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -38,10 +38,10 @@ class VendorsTable
                 EditAction::make(),
                 DeleteAction::make()
                     ->successNotification(
-                        Notification::make()
-                            ->title('Vendor dihapus')
-                            ->body('Vendor telah dihapus permanen.')
-                            ->danger()
+                        NotifiesWithDetail::buildErrorNotification(
+                            'Data Berhasil Dihapus',
+                            'Data vendor telah berhasil dihapus dari sistem.'
+                        )
                     ),
             ])
             ->toolbarActions([

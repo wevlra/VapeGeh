@@ -15,6 +15,20 @@ class PrintReceiptAction extends Action
             ->icon('heroicon-o-printer')
             ->color('gray')
             ->url(fn (StockMovement $record): string => route('admin.history.receipt', $record))
-            ->openUrlInNewTab();
+            ->openUrlInNewTab()
+            ->extraAttributes(function (StockMovement $record) {
+                return [
+                    'x-on:click.prevent' => "
+                        const url = '".route('admin.history.receipt', ['stockMovement' => $record->id, 'format' => 'json'])."';
+                        
+                        const savedPrinter = localStorage.getItem('savedPrinter');
+                        if (savedPrinter) {
+                            window.dispatchEvent(new CustomEvent('print-native', { detail: { url } }));
+                        } else {
+                            window.dispatchEvent(new CustomEvent('open-printer-modal', { detail: { url } }));
+                        }
+                    ",
+                ];
+            });
     }
 }

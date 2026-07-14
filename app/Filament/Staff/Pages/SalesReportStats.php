@@ -2,7 +2,9 @@
 
 namespace App\Filament\Staff\Pages;
 
+use App\Models\Income;
 use App\Models\Sale;
+use App\Models\StockEntry;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Livewire\Attributes\Reactive;
@@ -21,14 +23,18 @@ class SalesReportStats extends StatsOverviewWidget
     {
         $locationId = auth()->user()->location_id;
 
-        $query = Sale::query()->where('location_id', $locationId);
+        $saleQuery = Sale::query()->where('location_id', $locationId);
+        $stockOutQuery = StockEntry::where('type', 'out')->where('location_id', $locationId);
+        $incomeQuery = Income::where('category', 'sale')->where('location_id', $locationId);
 
         if ($this->periodStart) {
-            $query->where('created_at', '>=', $this->periodStart);
+            $saleQuery->where('created_at', '>=', $this->periodStart);
+            $stockOutQuery->where('created_at', '>=', $this->periodStart);
+            $incomeQuery->where('date', '>=', date('Y-m-d', strtotime($this->periodStart)));
         }
 
-        $totalSales = $query->count();
-        $totalRevenue = $query->sum('total');
+        $totalSales = $saleQuery->count() + $stockOutQuery->count();
+        $totalRevenue = $incomeQuery->sum('amount');
 
         $periodLabel = match ($this->period) {
             'today' => 'Hari Ini',

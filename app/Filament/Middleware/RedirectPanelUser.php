@@ -10,12 +10,12 @@ class RedirectPanelUser
 {
     public function handle(Request $request, Closure $next): mixed
     {
-        if (! auth()->check()) {
+        $panelId = Filament::getCurrentPanel()->getId();
+        $user = $panelId === 'staff' ? auth('staff')->user() : auth('web')->user();
+
+        if (! $user) {
             return $next($request);
         }
-
-        $user = auth()->user();
-        $panelId = Filament::getCurrentPanel()->getId();
 
         if ($user->role === 'admin' && $panelId !== 'admin') {
             return redirect()->to('/'.(Filament::getPanel('admin')?->getPath() ?? 'admin'));

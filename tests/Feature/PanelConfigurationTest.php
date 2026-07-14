@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Location;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -21,6 +23,19 @@ it('has staff panel accessible at /staff', function () {
     $response = $this->get('/staff');
 
     $response->assertRedirect();
+});
+
+it('has staff history page accessible for logged in staff user', function () {
+    $staff = User::factory()->create([
+        'role' => 'staff',
+        'location_id' => Location::factory(),
+        'status' => 'active',
+    ]);
+    $this->actingAs($staff, 'staff');
+
+    $response = $this->get('/staff/history');
+
+    $response->assertSuccessful();
 });
 
 it('has staff login page accessible at /staff/login', function () {

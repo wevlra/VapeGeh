@@ -1,0 +1,42 @@
+diff --git a/node_modules/capacitor-thermal-printer/android/src/main/java/com/malik12tree/bluetooth_print/CapacitorThermalPrinterPlugin.java b/node_modules/capacitor-thermal-printer/android/src/main/java/com/malik12tree/bluetooth_print/CapacitorThermalPrinterPlugin.java
+index 7f46e54..6f3b552 100644
+--- a/node_modules/capacitor-thermal-printer/android/src/main/java/com/malik12tree/bluetooth_print/CapacitorThermalPrinterPlugin.java
++++ b/node_modules/capacitor-thermal-printer/android/src/main/java/com/malik12tree/bluetooth_print/CapacitorThermalPrinterPlugin.java
+@@ -107,9 +107,9 @@ public class CapacitorThermalPrinterPlugin extends Plugin implements PrinterObse
+                 }
+                 if (device == null) return;
+                 int devType = device.getBluetoothClass().getMajorDeviceClass();
+-                if (devType != BluetoothClass.Device.Major.IMAGING) {
+-                    return;
+-                }
++                // if (devType != BluetoothClass.Device.Major.IMAGING) {
++                //     return;
++                // }
+ 
+                 if (!devices.contains(device)) {
+                     devices.add(device);
+@@ -173,6 +173,24 @@ public class CapacitorThermalPrinterPlugin extends Plugin implements PrinterObse
+         }
+ 
+         devices = new ArrayList<>();
++        
++        java.util.Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
++        if (pairedDevices != null && pairedDevices.size() > 0) {
++            for (BluetoothDevice device : pairedDevices) {
++                if (!devices.contains(device)) {
++                    devices.add(device);
++                }
++            }
++            notifyListeners(
++                    "discoverDevices",
++                    new JSObject() {
++                        {
++                            put("devices", getJsonDevices());
++                        }
++                    }
++            );
++        }
++
+         boolean success = mBluetoothAdapter.startDiscovery();
+         mRegistered = success;
+ 

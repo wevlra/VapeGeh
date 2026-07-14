@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StockEntryItem extends Model
 {
+    protected $with = ['product'];
+
     protected $fillable = [
         'stock_entry_id',
         'product_id',
