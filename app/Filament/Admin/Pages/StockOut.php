@@ -84,7 +84,7 @@ class StockOut extends Page implements HasForms, HasTable
                                 Grid::make(2)->schema([
                                     Select::make('location_id')
                                         ->label('Dari Lokasi')
-                                        ->options(fn () => Location::pluck('name', 'id'))
+                                        ->options(fn () => Location::where('status', 'active')->pluck('name', 'id'))
                                         ->searchable()
                                         ->required()
                                         ->helperText('Pilih lokasi pengambilan stok.'),

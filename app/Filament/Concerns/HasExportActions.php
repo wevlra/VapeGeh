@@ -75,7 +75,10 @@ trait HasExportActions
                 ->label('Excel')
                 ->icon('heroicon-o-table-cells')
                 ->color('success')
-                ->action(function () use ($exportClass, $downloadFileName) {
+                ->action(function () {
+                    // Handled by mountUsing and modal
+                })
+                ->mountUsing(function () use ($fileNamePrefix, $exportClass, $downloadFileName) {
                     $query = method_exists($this, 'buildExportQuery')
                         ? $this->buildExportQuery()
                         : $this->getFilteredTableQuery();
@@ -88,14 +91,34 @@ trait HasExportActions
                         ? $this->getExportInstance($exportClass, $query)
                         : new $exportClass($query);
 
-                    return Excel::download($export, "{$downloadFileName}.xlsx");
-                }),
+                    $fileName = "{$downloadFileName}.xlsx";
+                    Excel::store($export, "reports/{$fileName}", 'public');
+
+                    $this->generatedPdfUrl = asset("storage/reports/{$fileName}");
+                    $this->generatedPdfFilename = $fileName;
+                    $title = method_exists($this, 'getExportTitle')
+                        ? $this->getExportTitle()
+                        : str_replace('-', ' ', Str::title($fileNamePrefix));
+                    $this->generatedPdfTitle = $title.' Excel';
+                })
+                ->modalHeading(false)
+                ->modalWidth('sm')
+                ->modalSubmitAction(false)
+                ->modalCancelAction(false)
+                ->modalContent(fn () => view('exports.pdf.modal-preview', [
+                    'url' => $this->generatedPdfUrl,
+                    'filename' => $this->generatedPdfFilename,
+                    'title' => $this->generatedPdfTitle,
+                ])),
 
             Action::make('export_csv')
                 ->label('CSV')
                 ->icon('heroicon-o-document')
                 ->color('gray')
-                ->action(function () use ($exportClass, $downloadFileName) {
+                ->action(function () {
+                    // Handled by mountUsing and modal
+                })
+                ->mountUsing(function () use ($fileNamePrefix, $exportClass, $downloadFileName) {
                     $query = method_exists($this, 'buildExportQuery')
                         ? $this->buildExportQuery()
                         : $this->getFilteredTableQuery();
@@ -108,8 +131,25 @@ trait HasExportActions
                         ? $this->getExportInstance($exportClass, $query)
                         : new $exportClass($query);
 
-                    return Excel::download($export, "{$downloadFileName}.csv", \Maatwebsite\Excel\Excel::CSV);
-                }),
+                    $fileName = "{$downloadFileName}.csv";
+                    Excel::store($export, "reports/{$fileName}", 'public', \Maatwebsite\Excel\Excel::CSV);
+
+                    $this->generatedPdfUrl = asset("storage/reports/{$fileName}");
+                    $this->generatedPdfFilename = $fileName;
+                    $title = method_exists($this, 'getExportTitle')
+                        ? $this->getExportTitle()
+                        : str_replace('-', ' ', Str::title($fileNamePrefix));
+                    $this->generatedPdfTitle = $title.' CSV';
+                })
+                ->modalHeading(false)
+                ->modalWidth('sm')
+                ->modalSubmitAction(false)
+                ->modalCancelAction(false)
+                ->modalContent(fn () => view('exports.pdf.modal-preview', [
+                    'url' => $this->generatedPdfUrl,
+                    'filename' => $this->generatedPdfFilename,
+                    'title' => $this->generatedPdfTitle,
+                ])),
         ])
             ->label('Ekspor')
             ->icon('heroicon-o-arrow-down-tray')

@@ -70,7 +70,7 @@ class StockOpnameCreate extends Page implements HasForms, HasTable
                                     ->schema([
                                         Select::make('location_id')
                                             ->label('Lokasi')
-                                            ->options(fn () => Location::pluck('name', 'id'))
+                                            ->options(fn () => Location::where('status', 'active')->pluck('name', 'id'))
                                             ->required()
                                             ->searchable()
                                             ->preload()
