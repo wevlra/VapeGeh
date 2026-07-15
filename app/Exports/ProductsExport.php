@@ -37,7 +37,7 @@ class ProductsExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMap
 
     public function headings(): array
     {
-        return ['Nama Produk', 'Kategori', 'Harga Beli (IDR)', 'Harga Jual (IDR)'];
+        return ['Nama Produk', 'Kategori', 'Harga Beli', 'Harga Jual', 'Harga Reseller', 'Harga 1', 'Harga 2'];
     }
 
     public function map($row): array
@@ -47,6 +47,9 @@ class ProductsExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMap
             $row->category?->name ?? '-',
             $row->purchase_price,
             $row->selling_price,
+            $row->reseller_price,
+            $row->price_1,
+            $row->price_2,
         ];
     }
 

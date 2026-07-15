@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Sales\Tables;
 
+use App\Filament\Actions\PrintSaleInvoiceAction;
 use App\Filament\Admin\Resources\Sales\SaleResource;
 use App\Models\Sale;
 use Filament\Actions\Action;
@@ -90,12 +91,7 @@ class SalesTable
                             ",
                         ];
                     }),
-                Action::make('print_invoice')
-                    ->label('Cetak Invoice')
-                    ->icon('heroicon-o-document-text')
-                    ->color('primary')
-                    ->url(fn (Sale $record): string => route('admin.history.invoice', $record->stockMovements()->first()))
-                    ->openUrlInNewTab(),
+                PrintSaleInvoiceAction::make('print_invoice'),
             ])
             ->defaultSort('created_at', 'desc');
     }

@@ -4,3 +4,54 @@
 @source '../../../../resources/views/filament/admin/**/*';
 @source '../../../../resources/views/filament/admin/*';
 @source '../../../../resources/views/components/*';
+
+.fi-in-table-repeatable {
+    @apply overflow-x-auto ring-1 ring-gray-950/5 dark:bg-white/5 dark:ring-white/10 rounded-xl;
+    -webkit-overflow-scrolling: touch;
+}
+
+.fi-in-table-repeatable > table {
+    @apply !table w-auto;
+}
+
+@media (width < 480px) {
+    .fi-in-table-repeatable > table {
+        @apply min-w-[200%];
+    }
+}
+
+@media (480px <= width < 768px) {
+    .fi-in-table-repeatable > table {
+        @apply min-w-[140%];
+    }
+}
+
+@media (768px <= width < 1024px) {
+    .fi-in-table-repeatable > table {
+        @apply min-w-full;
+    }
+}
+
+.fi-in-table-repeatable > table > thead {
+    @apply !table-header-group;
+}
+
+.fi-in-table-repeatable > table > tbody {
+    @apply !table-row-group;
+}
+
+.fi-in-table-repeatable > table > tbody > tr {
+    @apply !table-row p-0 gap-0;
+}
+
+.fi-in-table-repeatable > table > tbody > tr > td {
+    @apply !table-cell p-2;
+}
+
+.fi-in-table-repeatable > table > tbody > tr > td .fi-in-entry-label {
+    @apply !hidden;
+}
+
+.fi-in-table-repeatable > table > tbody > tr > td .fi-in-entry {
+    @apply !inline;
+}

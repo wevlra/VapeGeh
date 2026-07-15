@@ -14,6 +14,7 @@ use App\Models\StockTransfer;
 use App\Models\StockTransferItem;
 use App\Models\User;
 use App\Models\Vendor;
+use App\Settings\StoreSettings;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 
@@ -25,8 +26,8 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // ── Store Settings ──────────────────────────────────────────
-        /** @var \App\Settings\StoreSettings $settings */
-        $settings = app(\App\Settings\StoreSettings::class);
+        /** @var StoreSettings $settings */
+        $settings = app(StoreSettings::class);
         $settings->name = env('STORE_NAME', 'VapeGeh');
         $settings->tagline = env('STORE_TAGLINE', 'Your Vaping Partner');
         $settings->address = env('STORE_ADDRESS', 'Perum Taman Niaga, Jl. Tanjakan, Cimuning, Kec. Mustika Jaya, Kota Bks, Jawa Barat 17158');

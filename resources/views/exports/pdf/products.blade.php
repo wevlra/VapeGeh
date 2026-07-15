@@ -8,6 +8,9 @@
                 <th>Kategori</th>
                 <th style="text-align: right;">Harga Beli</th>
                 <th style="text-align: right;">Harga Jual</th>
+                <th style="text-align: right;">Harga Reseller</th>
+                <th style="text-align: right;">Harga 1</th>
+                <th style="text-align: right;">Harga 2</th>
             </tr>
         </thead>
         <tbody>
@@ -22,10 +25,13 @@
                     </td>
                     <td style="text-align: right;">{{ number_format($record->purchase_price, 0, ',', '.') }}</td>
                     <td style="text-align: right;">{{ number_format($record->selling_price, 0, ',', '.') }}</td>
+                    <td style="text-align: right;">{{ number_format($record->reseller_price, 0, ',', '.') }}</td>
+                    <td style="text-align: right;">{{ number_format($record->price_1, 0, ',', '.') }}</td>
+                    <td style="text-align: right;">{{ number_format($record->price_2, 0, ',', '.') }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="4" style="text-align: center;">Tidak ada data produk</td>
+                    <td colspan="7" style="text-align: center;">Tidak ada data produk</td>
                 </tr>
             @endforelse
         </tbody>

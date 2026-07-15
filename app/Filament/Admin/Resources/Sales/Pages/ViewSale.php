@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Sales\Pages;
 
 use App\Actions\DeleteSale;
+use App\Filament\Actions\PrintSaleInvoiceAction;
 use App\Filament\Admin\Resources\Sales\SaleResource;
 use App\Filament\Concerns\NotifiesWithDetail;
 use Filament\Actions\Action;
@@ -38,12 +39,7 @@ class ViewSale extends ViewRecord
                         ",
                     ];
                 }),
-            Action::make('print_invoice')
-                ->label('Cetak Invoice')
-                ->icon('heroicon-o-document-text')
-                ->color('primary')
-                ->url(fn (): string => route('admin.history.invoice', $this->record?->stockMovements()->first()))
-                ->openUrlInNewTab(),
+            PrintSaleInvoiceAction::make('print_invoice'),
             EditAction::make(),
             DeleteAction::make()
                 ->action(fn () => app(DeleteSale::class)->execute($this->record))
