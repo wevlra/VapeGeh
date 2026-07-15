@@ -36,7 +36,6 @@ jobs:
                   APP_URL="${{ vars.APP_URL || secrets.APP_URL || 'https://vapegeh.wevlra.dev' }}"
                   echo "Setting Capacitor server URL to: $APP_URL"
                   jq --arg url "$APP_URL" '.server.url = $url' capacitor.config.json > tmp.json && mv tmp.json capacitor.config.json
-                  cp capacitor.config.json android/app/src/main/assets/capacitor.config.json
 
             - name: Sync Capacitor Android
               working-directory: mobile

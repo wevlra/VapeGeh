@@ -24,6 +24,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // ── Store Settings ──────────────────────────────────────────
+        /** @var \App\Settings\StoreSettings $settings */
+        $settings = app(\App\Settings\StoreSettings::class);
+        $settings->name = env('STORE_NAME', 'VapeGeh');
+        $settings->tagline = env('STORE_TAGLINE', 'Your Vaping Partner');
+        $settings->address = env('STORE_ADDRESS', 'Perum Taman Niaga, Jl. Tanjakan, Cimuning, Kec. Mustika Jaya, Kota Bks, Jawa Barat 17158');
+        $settings->phone = env('STORE_PHONE', '0812-3456-7890');
+        $settings->receipt_footer = env('STORE_RECEIPT_FOOTER', 'Terima kasih! Barang yang sudah dibeli tidak dapat dikembalikan.');
+        $settings->save();
+
         // ── Locations ──────────────────────────────────────────────
         $warehouse = Location::factory()->warehouse()->create([
             'name' => 'Main Warehouse',
