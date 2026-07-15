@@ -49,7 +49,9 @@ class SalesTable
                     ->label('Catatan')
                     ->searchable()
                     ->limit(50)
-                    ->toggleable(),
+                    ->default('Tidak ada catatan')
+                    ->color(fn ($state, $record) => blank($record->notes) ? 'gray' : null)
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('payment_method')

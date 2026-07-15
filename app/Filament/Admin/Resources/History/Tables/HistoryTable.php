@@ -149,7 +149,9 @@ class HistoryTable
                     })
                     ->searchable()
                     ->limit(50)
-                    ->toggleable(),
+                    ->default('Tidak ada catatan')
+                    ->color(fn ($state, $record) => blank($record->notes ?? $record->related?->notes) ? 'gray' : null)
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('type')

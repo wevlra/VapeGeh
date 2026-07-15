@@ -45,6 +45,7 @@ class ExpenseForm
                     ->default(now()),
                 Textarea::make('description')
                     ->label('Deskripsi')
+                    ->required()
                     ->columnSpanFull()
                     ->rows(2),
             ]);
