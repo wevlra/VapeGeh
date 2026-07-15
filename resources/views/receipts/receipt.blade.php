@@ -183,8 +183,7 @@
     <hr>
 
     <div class="footer">
-        Terima kasih!<br>
-        Barang yang sudah dibeli tidak dapat dikembalikan.
+        {!! nl2br(e(config('store.receipt_footer'))) !!}
     </div>
 
     <script>

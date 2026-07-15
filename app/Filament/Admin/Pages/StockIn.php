@@ -282,7 +282,7 @@ class StockIn extends Page implements HasForms, HasTable
 
         $this->notifySuccess(
             'Stok Ditambahkan',
-            count($items).' produk ditambahkan ke '.($location?->name ?? 'lokasi yang dipilih').'.'
+            count($items).' produk berhasil ditambahkan ke '.($location?->name ?? 'lokasi yang dipilih').'.'
         );
 
         $this->redirect(HistoryResource::getUrl('view', ['record' => $movement->id]));

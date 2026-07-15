@@ -9,6 +9,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Facades\Storage;
 
@@ -90,7 +91,8 @@ class ViewStockOpname extends ViewRecord
             EditAction::make()
                 ->hidden(fn ($record) => $record->status !== 'draft'),
             DeleteAction::make()
-                ->hidden(fn ($record) => $record->status !== 'draft'),
+                ->hidden(fn ($record) => $record->status !== 'draft')
+                ->successNotification(fn (): ?Notification => $this->getDeletedNotification()),
         ];
     }
 }

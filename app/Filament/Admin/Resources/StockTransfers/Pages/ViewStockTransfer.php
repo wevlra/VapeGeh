@@ -9,6 +9,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Facades\Storage;
 
@@ -49,7 +50,8 @@ class ViewStockTransfer extends ViewRecord
             EditAction::make()
                 ->hidden(fn ($record) => $record->status !== 'pending'),
             DeleteAction::make()
-                ->hidden(fn ($record) => $record->status !== 'pending'),
+                ->hidden(fn ($record) => $record->status !== 'pending')
+                ->successNotification(fn (): ?Notification => $this->getDeletedNotification()),
             Action::make('print_report')
                 ->label('Cetak Laporan')
                 ->icon('heroicon-o-printer')

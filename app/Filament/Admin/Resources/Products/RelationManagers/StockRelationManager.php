@@ -52,7 +52,7 @@ class StockRelationManager extends RelationManager
                     }),
                 TextColumn::make('price')
                     ->label('Harga Jual Outlet')
-                    ->money('IDR')
+                    ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
                     ->placeholder('Default')
                     ->sortable(),
             ])
@@ -135,11 +135,12 @@ class StockRelationManager extends RelationManager
                             $data['notes'] ?? null,
                         );
 
-                        $this->notifySuccess(
+                        NotifiesWithDetail::buildSuccessNotification(
                             'Stok Disesuaikan',
                             'Jumlah untuk '.Location::find($record->location_id)?->name.' telah disetel menjadi '.$data['qty'].' unit.'
-                        );
-                    }),
+                        )->send();
+                    })
+                    ->successNotification(null),
             ]);
     }
 }

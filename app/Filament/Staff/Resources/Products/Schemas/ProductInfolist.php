@@ -30,7 +30,7 @@ class ProductInfolist
 
                                 return $stock && $stock->price > 0 ? (float) $stock->price : (float) $record->selling_price;
                             })
-                            ->money('IDR')
+                            ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
                             ->color('primary'),
                         TextEntry::make('stocks')
                             ->label('Stok')

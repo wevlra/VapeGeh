@@ -45,7 +45,7 @@ class ExpenseInfolist
                             }),
                         TextEntry::make('amount')
                             ->label('Jumlah')
-                            ->money('IDR'),
+                            ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                         TextEntry::make('description')
                             ->label('Deskripsi')
                             ->columnSpanFull(),

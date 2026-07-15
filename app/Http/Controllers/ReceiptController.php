@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Sale;
+use App\Models\StockEntry;
 use App\Models\StockMovement;
+use App\Models\StockTransfer;
 
 class ReceiptController extends Controller
 {
@@ -54,58 +56,88 @@ class ReceiptController extends Controller
 
     private function formatReceiptData(StockMovement $movement)
     {
+        $related = $movement->related;
+        $isSale = $related instanceof Sale;
+        $isStockEntry = $related instanceof StockEntry;
+        $isStockTransfer = $related instanceof StockTransfer;
+
+        // Compute reference number
+        $refNumber = match (true) {
+            $isSale => $related->invoice_number,
+            $isStockTransfer => $related->transfer_number,
+            default => '#SM-'.$movement->id,
+        };
+
+        // Get all line items
+        $items = $related?->items ?? collect([$movement]);
         $products = [];
-        // Support for sales with related stock movements (multiple items)
-        $items = $movement->related?->items ?? collect([$movement]);
 
         foreach ($items as $item) {
             if (! $item->product) {
                 continue;
             }
 
-            $price = 0;
-            if (isset($item->unit_price)) {
-                $price = $item->unit_price;
-            } elseif (! empty($item->price)) {
-                $price = $item->price;
-            } else {
-                $price = $item->product->selling_price;
-            }
+            $price = (float) match (true) {
+                isset($item->unit_price) && $item->unit_price > 0 => $item->unit_price,
+                ! empty($item->price) => $item->price,
+                default => $item->product?->selling_price ?? 0,
+            };
 
             $products[] = [
                 'id' => (string) $item->product_id,
                 'name' => $item->product->name,
-                'qty' => abs($item->qty),
+                'qty' => abs((int) ($item->qty ?? $item->quantity ?? 0)),
                 'unit' => 'pcs',
-                'price' => (float) $price,
+                'price' => $price,
             ];
+        }
+
+        // Payment method
+        $paymentMethod = match (true) {
+            $isSale => $related->payment_method ?? 'cash',
+            $isStockEntry && $related->payment_method => $related->payment_method,
+            default => 'cash',
+        };
+
+        // Total
+        $total = match (true) {
+            $isSale => (float) $related->total,
+            $isStockEntry => (float) $related->items->sum(fn ($i) => $i->qty * (float) $i->unit_price),
+            $isStockTransfer => (float) $related->items->sum(fn ($i) => $i->qty * (float) ($i->price ?? 0)),
+            default => (float) collect($products)->sum(fn ($p) => $p['price'] * $p['qty']),
+        };
+
+        $paidAmount = match (true) {
+            $isSale => (float) $related->paid_amount,
+            $isStockEntry => $total,
+            default => $total,
+        };
+
+        // Logo as base64
+        $logoBase64 = null;
+        $logoPath = public_path('assets/images/logo-stacked-dark-tr.png');
+        if (file_exists($logoPath)) {
+            $logoBase64 = base64_encode(file_get_contents($logoPath));
         }
 
         return [
             'header' => [
-                'storeName' => 'VapeGeh',
-                'address' => 'Jl. Merdeka No. 123', // Hardcoded as per receipt blade
-                'phone' => '081234567890',
-                'receiptNo' => $movement->reference ?? 'TX-'.$movement->id,
+                'storeName' => config('store.name'),
+                'address' => config('store.address'),
+                'phone' => config('store.phone'),
+                'receiptNo' => $refNumber,
                 'date' => $movement->created_at->format('Y-m-d H:i'),
-                'cashier' => $movement->creator->name ?? 'Kasir',
+                'cashier' => $movement->creator?->name ?? 'Kasir',
+                'note' => config('store.receipt_footer'),
             ],
+            'logoBase64' => $logoBase64,
             'products' => $products,
             'taxPercent' => 0,
             'globalDiscount' => 0,
-            'paymentMethod' => 'CASH',
-            'amountPaid' => $items->sum(function ($item) {
-                $price = 0;
-                if (isset($item->unit_price)) {
-                    $price = $item->unit_price;
-                } elseif (! empty($item->price)) {
-                    $price = $item->price;
-                } else {
-                    $price = $item->product?->selling_price ?? 0;
-                }
-
-                return abs($item->qty) * (float) $price;
-            }),
+            'paymentMethod' => $paymentMethod,
+            'total' => $total,
+            'amountPaid' => $paidAmount,
+            'change' => max(0, $paidAmount - $total),
         ];
     }
 }

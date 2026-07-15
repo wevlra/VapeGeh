@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Settings\StoreSettings;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Support\Facades\FilamentView;
@@ -26,6 +27,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Model::preventLazyLoading(! app()->isProduction());
+
+        // Override store config from database settings
+        $this->overrideConfigFromSettings();
 
         DeleteAction::configureUsing(fn (DeleteAction $action) => $action->icon('heroicon-o-trash'));
         DeleteBulkAction::configureUsing(fn (DeleteBulkAction $action) => $action->icon('heroicon-o-trash'));
@@ -53,5 +57,25 @@ class AppServiceProvider extends ServiceProvider
                 </div>
             '),
         );
+    }
+
+    /**
+     * Override store config from database settings at runtime.
+     */
+    private function overrideConfigFromSettings(): void
+    {
+        try {
+            $settings = app(StoreSettings::class);
+            config([
+                'store.name' => $settings->name,
+                'store.tagline' => $settings->tagline,
+                'store.address' => $settings->address,
+                'store.phone' => $settings->phone,
+                'store.receipt_footer' => $settings->receipt_footer,
+            ]);
+        } catch (\Throwable) {
+            // Settings table may not exist yet (fresh install / no DB).
+            // Fallback to env-based defaults from config/store.php.
+        }
     }
 }

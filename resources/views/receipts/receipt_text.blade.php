@@ -56,4 +56,4 @@
 [L]  Jumlah:[R]{{ abs((int) $movement->quantity) }}
 @endif
 --------------------------------
-[C]Terima Kasih!
+[C]{!! nl2br(e(config('store.receipt_footer'))) !!}

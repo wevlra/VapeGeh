@@ -22,7 +22,7 @@ class SaleInfolist
                             ->label('No. Invoice'),
                         TextEntry::make('total')
                             ->label('Total')
-                            ->money('IDR'),
+                            ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                         TextEntry::make('user.name')
                             ->label('Kasir'),
                         TextEntry::make('location.name')
@@ -72,10 +72,10 @@ class SaleInfolist
                                     ->label('Jumlah'),
                                 TextEntry::make('price')
                                     ->label('Harga')
-                                    ->money('IDR'),
+                                    ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                                 TextEntry::make('subtotal')
                                     ->label('Subtotal')
-                                    ->money('IDR'),
+                                    ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                             ]),
                     ]),
             ]);

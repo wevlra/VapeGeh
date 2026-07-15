@@ -95,10 +95,10 @@ class HistoryRelationManager extends RelationManager
                         if ($newQty === $oldQty) {
                             $record->update(['notes' => $data['notes'] ?? null]);
 
-                            $this->notifySuccess(
+                            NotifiesWithDetail::buildSuccessNotification(
                                 'Catatan Diperbarui',
                                 'Catatan untuk pergerakan stok ini berhasil diperbarui.'
-                            );
+                            )->send();
 
                             return;
                         }
@@ -134,13 +134,14 @@ class HistoryRelationManager extends RelationManager
                             }
                         });
 
-                        $this->notifySuccess(
+                        NotifiesWithDetail::buildSuccessNotification(
                             $record->type === 'in' ? 'Stok Masuk Diperbarui' : 'Stok Keluar Diperbarui',
                             $record->type === 'in'
                                 ? 'Catatan stok masuk telah diperbarui menjadi '.$newQty.' unit.'
                                 : 'Catatan stok keluar telah diperbarui menjadi '.$newQty.' unit.'
-                        );
-                    }),
+                        )->send();
+                    })
+                    ->successNotification(null),
             ])
             ->defaultSort('created_at', 'desc');
     }

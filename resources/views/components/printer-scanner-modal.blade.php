@@ -194,6 +194,13 @@
                     // Raw plugin method calls require object arguments
                     await ThermalPrinter.begin();
                     
+                    // Logo
+                    if (receipt.logoBase64) {
+                        await ThermalPrinter.align({ alignment: 'center' });
+                        await ThermalPrinter.image({ image: `data:image/png;base64,${receipt.logoBase64}` });
+                        await ThermalPrinter.text({ text: `\n` });
+                    }
+
                     // Header
                     await ThermalPrinter.align({ alignment: 'center' });
                     await ThermalPrinter.bold({ enabled: true });
@@ -247,10 +254,7 @@
                     await ThermalPrinter.text({ text: sepDash });
 
                     // Summary
-                    let subtotal = 0;
-                    for (const item of receipt.products) {
-                        subtotal += item.price * item.qty * (1 - (item.discountPct || 0) / 100);
-                    }
+                    const receiptTotal = receipt.total || 0;
 
                     const padLeft = (label, value) => {
                         const padding = charPerLine - label.length - value.length;
@@ -260,9 +264,9 @@
                         return label + " " + value + "\n";
                     }
 
-                    await ThermalPrinter.text({ text: padLeft("Subtotal:", formatRupiah(subtotal)) });
+                    await ThermalPrinter.text({ text: padLeft("Subtotal:", formatRupiah(receiptTotal)) });
 
-                    let total = subtotal;
+                    let total = receiptTotal;
 
                     if (receipt.globalDiscount) {
                         await ThermalPrinter.text({ text: padLeft("Discount:", "-" + formatRupiah(receipt.globalDiscount)) });
@@ -280,15 +284,18 @@
                     await ThermalPrinter.text({ text: padLeft("TOTAL:", formatRupiah(total)) });
                     await ThermalPrinter.clearFormatting();
 
+                    const payLabel = ({ cash: 'Tunai', transfer: 'Transfer', qris: 'QRIS' })[receipt.paymentMethod] || (receipt.paymentMethod ? receipt.paymentMethod.charAt(0).toUpperCase() + receipt.paymentMethod.slice(1) : 'Tunai');
+
                     if (receipt.paymentMethod || receipt.amountPaid !== undefined) {
                         await ThermalPrinter.text({ text: sepDash });
                         if (receipt.paymentMethod) {
-                            await ThermalPrinter.text({ text: padLeft("Payment:", receipt.paymentMethod) });
+                            await ThermalPrinter.text({ text: padLeft("Pembayaran:", payLabel) });
                         }
                         if (receipt.amountPaid !== undefined) {
-                            await ThermalPrinter.text({ text: padLeft("Amount Paid:", formatRupiah(receipt.amountPaid)) });
-                            const change = receipt.amountPaid - total;
-                            await ThermalPrinter.text({ text: padLeft("Change:", formatRupiah(change)) });
+                            await ThermalPrinter.text({ text: padLeft("Dibayar:", formatRupiah(receipt.amountPaid)) });
+                            if (receipt.change > 0) {
+                                await ThermalPrinter.text({ text: padLeft("Kembali:", formatRupiah(receipt.change)) });
+                            }
                         }
                     }
 
@@ -297,9 +304,10 @@
                     // Footer
                     await ThermalPrinter.align({ alignment: 'center' });
                     if (receipt.header.note) {
-                        await ThermalPrinter.text({ text: `${receipt.header.note}\n` });
+                        await ThermalPrinter.text({ text: `${receipt.header.note}\n\n\n` });
+                    } else {
+                        await ThermalPrinter.text({ text: "Terima kasih!\nBarang yang sudah dibeli tidak dapat dikembalikan.\n\n\n" });
                     }
-                    await ThermalPrinter.text({ text: "Terima kasih!\nBarang yang sudah dibeli tidak dapat dikembalikan.\n\n\n" });
 
                     await ThermalPrinter.feedCutPaper({ half: false });
                     await ThermalPrinter.write();

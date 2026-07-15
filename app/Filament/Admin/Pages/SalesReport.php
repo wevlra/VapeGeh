@@ -142,7 +142,7 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
                     ->searchable(),
                 TextColumn::make('total')
                     ->label('Total')
-                    ->money('IDR')
+                    ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
                     ->sortable(),
                 TextColumn::make('payment_method')
                     ->label('Pembayaran')

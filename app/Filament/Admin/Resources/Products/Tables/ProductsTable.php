@@ -9,6 +9,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\QueryException;
 
 class ProductsTable
 {
@@ -57,12 +58,28 @@ class ProductsTable
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make()
-                    ->successNotification(
+                    ->action(function (Product $record) {
+                        try {
+                            $record->delete();
+                        } catch (QueryException $e) {
+                            if (str_contains($e->getMessage(), 'FOREIGN KEY constraint failed')) {
+                                NotifiesWithDetail::buildErrorNotification(
+                                    'Produk Tidak Dapat Dihapus',
+                                    'Produk "'.$record->name.'" masih memiliki data terkait (stok, penjualan, atau riwayat). Nonaktifkan atau hapus data terkait terlebih dahulu.'
+                                )->send();
+
+                                return;
+                            }
+
+                            throw $e;
+                        }
+
                         NotifiesWithDetail::buildErrorNotification(
                             'Data Berhasil Dihapus',
                             'Data produk telah berhasil dihapus dari sistem.'
-                        )
-                    ),
+                        )->send();
+                    })
+                    ->successNotification(null),
             ]);
     }
 }

@@ -140,7 +140,7 @@ class BookkeepingReport extends Page implements Tables\Contracts\HasTable
                     ->limit(40),
                 TextColumn::make('amount')
                     ->label('Jumlah')
-                    ->money('IDR')
+                    ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
                     ->sortable(),
                 TextColumn::make('creator.name')
                     ->label('Dibuat oleh'),

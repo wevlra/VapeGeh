@@ -72,11 +72,16 @@
                 }
             }"
             x-on:click.prevent="download()"
-            icon="heroicon-o-arrow-down-tray"
+            x-bind:disabled="isDownloading"
             class="w-full sm:w-auto justify-center"
         >
-            <span x-show="!isDownloading">Unduh</span>
-            <span x-show="isDownloading">Mengunduh...</span>
+            <template x-if="isDownloading">
+                <x-filament::loading-indicator class="w-5 h-5" />
+            </template>
+            <template x-if="!isDownloading">
+                <x-heroicon-o-arrow-down-tray class="w-5 h-5" />
+            </template>
+            <span>Unduh</span>
         </x-filament::button>
 
         <x-filament::button
@@ -204,12 +209,17 @@
                 }
             }"
             x-on:click.prevent="share()"
+            x-bind:disabled="isSharing"
             color="info"
-            icon="heroicon-o-share"
             class="w-full sm:w-auto justify-center"
         >
-            <span x-show="!isSharing">Bagikan</span>
-            <span x-show="isSharing">Memproses...</span>
+            <template x-if="isSharing">
+                <x-filament::loading-indicator class="w-5 h-5" />
+            </template>
+            <template x-if="!isSharing">
+                <x-heroicon-o-share class="w-5 h-5" />
+            </template>
+            <span>Bagikan</span>
         </x-filament::button>
     </div>
 </div>

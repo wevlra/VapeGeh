@@ -1,6 +1,4 @@
 <x-filament-panels::page>
-    @vite(['resources/css/app.css'])
-
     @php
         $cartItems = $this->getCartItems();
         $cartTotal = $this->getCartTotal();

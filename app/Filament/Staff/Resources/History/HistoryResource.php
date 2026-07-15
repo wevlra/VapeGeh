@@ -69,10 +69,10 @@ class HistoryResource extends Resource
             ->whereIn('type', ['in', 'transfer'])
             ->where(function ($query) {
                 $query->where('type', '!=', 'transfer')
-                      ->orWhere(function ($q) {
-                          $q->where('type', 'transfer')
+                    ->orWhere(function ($q) {
+                        $q->where('type', 'transfer')
                             ->where('quantity', '>', 0);
-                      });
+                    });
             });
 
         if ($locationId) {

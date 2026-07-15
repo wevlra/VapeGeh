@@ -40,7 +40,7 @@ class StockOpnamesTable
                     ->color('info'),
                 TextColumn::make('total_difference_value')
                     ->label('Total Selisih Nilai')
-                    ->money('idr')
+                    ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
                     ->state(fn (StockOpname $record): float => $record->total_difference_value)
                     ->color(fn (float $state): string => $state < 0 ? 'danger' : ($state > 0 ? 'success' : 'gray'))
                     ->formatStateUsing(function (float $state): string {

@@ -22,7 +22,7 @@ class SaleInfolist
                             ->label('No. Invoice'),
                         TextEntry::make('total')
                             ->label('Total')
-                            ->money('IDR'),
+                            ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                         TextEntry::make('user.name')
                             ->label('Kasir'),
                         TextEntry::make('payment_method')
@@ -44,7 +44,7 @@ class SaleInfolist
                             ->dateTime(),
                         TextEntry::make('paid_amount')
                             ->label('Jumlah Dibayar')
-                            ->money('IDR'),
+                            ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                         TextEntry::make('notes')
                             ->label('Catatan')
                             ->columnSpanFull()
@@ -72,10 +72,10 @@ class SaleInfolist
                                     ->label('Jumlah'),
                                 TextEntry::make('price')
                                     ->label('Harga')
-                                    ->money('IDR'),
+                                    ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                                 TextEntry::make('subtotal')
                                     ->label('Subtotal')
-                                    ->money('IDR'),
+                                    ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                             ]),
                     ]),
             ]);

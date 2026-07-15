@@ -77,11 +77,11 @@ class StockTransferInfolist
                                     ->label('Jumlah'),
                                 TextEntry::make('price')
                                     ->label('Harga')
-                                    ->money('IDR')
+                                    ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
                                     ->state(fn ($record) => empty($record->price) ? $record->product->selling_price : $record->price),
                                 TextEntry::make('subtotal')
                                     ->label('Subtotal')
-                                    ->money('IDR')
+                                    ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
                                     ->state(fn ($record) => $record->qty * (empty($record->price) ? $record->product->selling_price : $record->price)),
                             ]),
                     ]),

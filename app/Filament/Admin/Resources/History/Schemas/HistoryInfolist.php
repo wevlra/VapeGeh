@@ -71,7 +71,7 @@ class HistoryInfolist
                                     ->label('No. Invoice'),
                                 TextEntry::make('related.total')
                                     ->label('Total')
-                                    ->money('IDR'),
+                                    ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                                 TextEntry::make('related.payment_method')
                                     ->label('Pembayaran')
                                     ->formatStateUsing(fn ($state) => match ($state) {
@@ -102,10 +102,10 @@ class HistoryInfolist
                                             ->label('Jumlah'),
                                         TextEntry::make('price')
                                             ->label('Harga')
-                                            ->money('IDR'),
+                                            ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                                         TextEntry::make('subtotal')
                                             ->label('Subtotal')
-                                            ->money('IDR'),
+                                            ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                                     ]),
                             ];
                         }
@@ -155,11 +155,11 @@ class HistoryInfolist
                                             ->label('Jumlah'),
                                         TextEntry::make('price')
                                             ->label('Harga')
-                                            ->money('IDR')
+                                            ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
                                             ->state(fn ($record) => empty($record->price) ? $record->product->selling_price : $record->price),
                                         TextEntry::make('subtotal')
                                             ->label('Subtotal')
-                                            ->money('IDR')
+                                            ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
                                             ->state(fn ($record) => $record->qty * (empty($record->price) ? $record->product->selling_price : $record->price)),
                                     ]),
                             ];
@@ -200,7 +200,7 @@ class HistoryInfolist
                                             ->label('Deskripsi'),
                                         TextEntry::make('amount')
                                             ->label('Jumlah')
-                                            ->money('IDR'),
+                                            ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                                     ]),
                                 TextEntry::make('related.notes')
                                     ->label('Catatan')
@@ -209,7 +209,7 @@ class HistoryInfolist
                                 TextEntry::make('stock_entry_total')
                                     ->label('Total Harga')
                                     ->state(fn () => $total)
-                                    ->money('IDR'),
+                                    ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                                 RepeatableEntry::make('related.items')
                                     ->hiddenLabel()
                                     ->table([
@@ -224,7 +224,7 @@ class HistoryInfolist
                                             ->label('Jumlah'),
                                         TextEntry::make('unit_price')
                                             ->label('Harga Satuan')
-                                            ->money('IDR'),
+                                            ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                                     ]),
                             ];
                         }

@@ -29,15 +29,17 @@
                 class="w-full flex items-center gap-4 p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75v3h10.5v-3M6.75 15.75H4.5a.75.75 0 0 1-.75-.75V8.25A.75.75 0 0 1 4.5 7.5h15a.75.75 0 0 1 .75.75v6.75a.75.75 0 0 1-.75.75h-2.25M6.75 15.75H17.25M6.75 7.5V4.5h10.5V7.5" />
-                    </svg>
+                    <template x-if="isBusy && busyAction === 'print'">
+                        <x-filament::loading-indicator class="w-5 h-5" />
+                    </template>
+                    <template x-if="!(isBusy && busyAction === 'print')">
+                        <x-heroicon-o-printer class="w-5 h-5" />
+                    </template>
                 </span>
                 <div class="text-left flex-1">
                     <p class="font-semibold text-gray-900 dark:text-white text-sm" x-text="printerLabel"></p>
                     <p class="text-xs text-gray-500 dark:text-gray-400" x-text="printerSublabel"></p>
                 </div>
-                <x-filament::loading-indicator x-show="isBusy && busyAction === 'print'" class="w-5 h-5 text-primary-500" />
             </button>
 
             {{-- Unduh sebagai Foto --}}
@@ -48,15 +50,17 @@
                 class="w-full flex items-center gap-4 p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-success-100 dark:bg-success-900/40 text-success-600 dark:text-success-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                    </svg>
+                    <template x-if="isBusy && busyAction === 'download'">
+                        <x-filament::loading-indicator class="w-5 h-5" />
+                    </template>
+                    <template x-if="!(isBusy && busyAction === 'download')">
+                        <x-heroicon-o-arrow-down-tray class="w-5 h-5" />
+                    </template>
                 </span>
                 <div class="text-left flex-1">
                     <p class="font-semibold text-gray-900 dark:text-white text-sm">Unduh</p>
                     <p class="text-xs text-gray-500 dark:text-gray-400">Simpan nota sebagai gambar</p>
                 </div>
-                <x-filament::loading-indicator x-show="isBusy && busyAction === 'download'" class="w-5 h-5 text-success-500" />
             </button>
 
             {{-- Bagikan --}}
@@ -67,15 +71,17 @@
                 class="w-full flex items-center gap-4 p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-info-100 dark:bg-info-900/40 text-info-600 dark:text-info-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
-                    </svg>
+                    <template x-if="isBusy && busyAction === 'share'">
+                        <x-filament::loading-indicator class="w-5 h-5" />
+                    </template>
+                    <template x-if="!(isBusy && busyAction === 'share')">
+                        <x-heroicon-o-share class="w-5 h-5" />
+                    </template>
                 </span>
                 <div class="text-left flex-1">
                     <p class="font-semibold text-gray-900 dark:text-white text-sm">Bagikan</p>
                     <p class="text-xs text-gray-500 dark:text-gray-400">Bagikan nota sebagai gambar</p>
                 </div>
-                <x-filament::loading-indicator x-show="isBusy && busyAction === 'share'" class="w-5 h-5 text-info-500" />
             </button>
         </div>
 
