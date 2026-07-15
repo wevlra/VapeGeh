@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\StockOpnameFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class StockOpname extends Model
 {
     /** @use HasFactory<StockOpnameFactory> */
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     public function items(): HasMany
     {

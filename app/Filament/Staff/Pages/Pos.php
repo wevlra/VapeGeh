@@ -134,7 +134,7 @@ class Pos extends Page implements HasTable
         return (float) collect($this->getCartItems())->sum('subtotal');
     }
 
-    public function addToCart(int $productId): void
+    public function addToCart(string $productId): void
     {
         $existingIndex = collect($this->cart)->search(fn ($item) => $item['product_id'] === $productId);
 
@@ -194,7 +194,7 @@ class Pos extends Page implements HasTable
         $this->cart = [];
     }
 
-    protected function isStockAvailable(int $productId, int $qty): bool
+    protected function isStockAvailable(string $productId, int $qty): bool
     {
         $locationId = auth()->user()->location_id;
         $stock = Stock::where('product_id', $productId)

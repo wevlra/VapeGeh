@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->enum('role', ['admin', 'staff'])->default('staff')->after('password');
-            $table->foreignId('location_id')->nullable()->after('role')->constrained()->nullOnDelete();
+            $table->foreignUuid('location_id')->nullable()->after('role')->constrained()->nullOnDelete();
             $table->string('status')->default('active')->after('location_id');
         });
     }

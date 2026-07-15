@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\SaleFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Sale extends Model
 {
     /** @use HasFactory<SaleFactory> */
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected static function booted(): void
     {
@@ -28,7 +29,7 @@ class Sale extends Model
     {
         $prefix = 'INV-'.now()->format('ymd').'-';
         $lastSale = static::where('invoice_number', 'like', $prefix.'%')
-            ->orderByDesc('id')
+            ->orderByDesc('invoice_number')
             ->first();
 
         $sequence = 1;

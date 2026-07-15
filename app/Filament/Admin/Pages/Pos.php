@@ -168,7 +168,7 @@ class Pos extends StaffPos
             });
     }
 
-    public function addToCart(int $productId, ?float $price = null, ?string $priceLabel = null): void
+    public function addToCart(string $productId, ?float $price = null, ?string $priceLabel = null): void
     {
         $existingIndex = collect($this->cart)->search(fn ($item) => $item['product_id'] === $productId);
 
@@ -212,7 +212,7 @@ class Pos extends StaffPos
         })->filter()->values()->toArray();
     }
 
-    protected function isStockAvailable(int $productId, int $qty): bool
+    protected function isStockAvailable(string $productId, int $qty): bool
     {
         $locationId = auth()->user()->location_id;
 

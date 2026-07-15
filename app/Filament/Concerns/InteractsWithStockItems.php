@@ -6,12 +6,12 @@ use App\Models\Product;
 
 trait InteractsWithStockItems
 {
-    public function incrementItem(int $productId): void
+    public function incrementItem(string $productId): void
     {
         $this->updateItemQty($productId, ($this->getItemQty($productId) + 1));
     }
 
-    public function decrementItem(int $productId): void
+    public function decrementItem(string $productId): void
     {
         $current = $this->getItemQty($productId);
         if ($current > 0) {
@@ -19,7 +19,7 @@ trait InteractsWithStockItems
         }
     }
 
-    protected function getItemQty(int $productId): int
+    protected function getItemQty(string $productId): int
     {
         $qtyField = $this->getQtyField();
 
@@ -31,7 +31,7 @@ trait InteractsWithStockItems
         return 'qty';
     }
 
-    public function updateItemQty(int $productId, $qty): void
+    public function updateItemQty(string $productId, $qty): void
     {
         $qty = (int) $qty;
         if ($qty <= 0) {
@@ -56,7 +56,7 @@ trait InteractsWithStockItems
         }
     }
 
-    public function updateItemPrice(int $productId, $price): void
+    public function updateItemPrice(string $productId, $price): void
     {
         $existingIndex = collect($this->items)->search(fn ($item) => $item['product_id'] === $productId);
         if ($existingIndex !== false) {

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\StockTransferFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class StockTransfer extends Model
 {
     /** @use HasFactory<StockTransferFactory> */
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected static function booted(): void
     {
@@ -28,7 +29,7 @@ class StockTransfer extends Model
     {
         $prefix = 'TRF-'.now()->format('ymd').'-';
         $lastTransfer = static::where('transfer_number', 'like', $prefix.'%')
-            ->orderByDesc('id')
+            ->orderByDesc('transfer_number')
             ->first();
 
         $sequence = 1;

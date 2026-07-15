@@ -9,13 +9,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('incomes', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('location_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('location_id')->constrained()->cascadeOnDelete();
             $table->enum('category', ['sale', 'debt_payment', 'opname', 'other']);
             $table->string('description');
             $table->decimal('amount', 12, 2);
             $table->date('date');
-            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
+            $table->foreignUuid('created_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }

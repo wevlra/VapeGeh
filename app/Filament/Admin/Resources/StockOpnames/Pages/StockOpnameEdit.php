@@ -185,7 +185,7 @@ class StockOpnameEdit extends Page implements HasForms, HasTable
         ];
     }
 
-    protected function getItemQty(int $productId): int
+    protected function getItemQty(string $productId): int
     {
         $existing = collect($this->items)->firstWhere('product_id', $productId);
         if ($existing) {
@@ -199,7 +199,7 @@ class StockOpnameEdit extends Page implements HasForms, HasTable
             : 0;
     }
 
-    public function updateItemQty(int $productId, $qty): void
+    public function updateItemQty(string $productId, $qty): void
     {
         $qty = (int) $qty;
         if ($qty < 0) {
@@ -254,7 +254,7 @@ class StockOpnameEdit extends Page implements HasForms, HasTable
             ]);
     }
 
-    public function removeItem(int $productId): void
+    public function removeItem(string $productId): void
     {
         $this->items = collect($this->items)
             ->reject(fn ($item) => $item['product_id'] === $productId)
