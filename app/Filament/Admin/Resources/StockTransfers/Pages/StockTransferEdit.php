@@ -168,14 +168,14 @@ class StockTransferEdit extends Page implements HasForms, HasTable
                                     ->schema([
                                         Select::make('from_location_id')
                                             ->label('Dari Lokasi')
-                                            ->options(fn () => Location::pluck('name', 'id'))
+                                            ->options(fn () => Location::where('status', 'active')->pluck('name', 'id'))
                                             ->required()
                                             ->searchable()
                                             ->preload()
                                             ->live(),
                                         Select::make('to_location_id')
                                             ->label('Ke Lokasi')
-                                            ->options(fn () => Location::pluck('name', 'id'))
+                                            ->options(fn () => Location::where('status', 'active')->pluck('name', 'id'))
                                             ->required()
                                             ->searchable()
                                             ->preload()

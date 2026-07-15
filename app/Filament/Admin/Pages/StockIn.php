@@ -109,7 +109,7 @@ class StockIn extends Page implements HasForms, HasTable
                                         }),
                                     Select::make('location_id')
                                         ->label('Lokasi')
-                                        ->options(fn () => Location::pluck('name', 'id'))
+                                        ->options(fn () => Location::where('status', 'active')->pluck('name', 'id'))
                                         ->searchable()
                                         ->default(fn () => Location::where('type', 'warehouse')->value('id'))
                                         ->required(),

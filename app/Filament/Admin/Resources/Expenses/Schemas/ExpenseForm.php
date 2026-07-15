@@ -17,7 +17,7 @@ class ExpenseForm
             ->components([
                 Select::make('location_id')
                     ->label('Lokasi')
-                    ->relationship('location', 'name')
+                    ->relationship('location', 'name', modifyQueryUsing: fn ($query) => $query->where('status', 'active'))
                     ->required()
                     ->searchable()
                     ->preload(),

@@ -68,6 +68,11 @@ class ExpensesTable
                     ->label('Tanggal')
                     ->date()
                     ->sortable(),
+                TextColumn::make('created_at')
+                    ->label('Dibuat pada')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('location_id')
