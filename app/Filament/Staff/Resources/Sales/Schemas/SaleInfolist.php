@@ -57,7 +57,8 @@ class SaleInfolist
                         RepeatableEntry::make('items')
                             ->hiddenLabel()
                             ->table([
-                                TableColumn::make('Produk'),
+                                TableColumn::make('Produk')
+                                    ->width(350),
                                 TableColumn::make('Jumlah')
                                     ->width(80),
                                 TableColumn::make('Harga')

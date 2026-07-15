@@ -87,7 +87,7 @@ class HistoryInfolist
                                     ->hiddenLabel()
                                     ->table([
                                         TableColumn::make('Produk')
-                                            ->width(180),
+                                            ->width(350),
                                         TableColumn::make('Jumlah')
                                             ->width(80),
                                         TableColumn::make('Harga')
@@ -140,13 +140,14 @@ class HistoryInfolist
                                 RepeatableEntry::make('related.items')
                                     ->hiddenLabel()
                                     ->table([
-                                        TableColumn::make('Produk'),
+                                        TableColumn::make('Produk')
+                                            ->width(350),
                                         TableColumn::make('Jumlah')
-                                            ->width(100),
+                                            ->width(80),
                                         TableColumn::make('Harga')
-                                            ->width(150),
+                                            ->width(180),
                                         TableColumn::make('Subtotal')
-                                            ->width(150),
+                                            ->width(180),
                                     ])
                                     ->schema([
                                         TextEntry::make('product.name')
@@ -213,9 +214,12 @@ class HistoryInfolist
                                 RepeatableEntry::make('related.items')
                                     ->hiddenLabel()
                                     ->table([
-                                        TableColumn::make('Produk')->width(180),
-                                        TableColumn::make('Jumlah')->width(80),
-                                        TableColumn::make('Harga Satuan')->width(180),
+                                        TableColumn::make('Produk')
+                                            ->width(350),
+                                        TableColumn::make('Jumlah')
+                                            ->width(80),
+                                        TableColumn::make('Harga Satuan')
+                                            ->width(180),
                                     ])
                                     ->schema([
                                         TextEntry::make('product.name')
@@ -249,15 +253,16 @@ class HistoryInfolist
                                 RepeatableEntry::make('related.items')
                                     ->hiddenLabel()
                                     ->table([
-                                        TableColumn::make('Produk'),
+                                        TableColumn::make('Produk')
+                                            ->width(350),
                                         TableColumn::make('Stok Sistem')
-                                            ->width(100),
+                                            ->width(80),
                                         TableColumn::make('Stok Fisik')
-                                            ->width(100),
+                                            ->width(80),
                                         TableColumn::make('Selisih')
-                                            ->width(100),
+                                            ->width(80),
                                         TableColumn::make('Selisih Nilai')
-                                            ->width(150),
+                                            ->width(180),
                                     ])
                                     ->schema([
                                         TextEntry::make('product.name')

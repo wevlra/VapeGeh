@@ -76,16 +76,16 @@ class StockOpnameInfolist
                         RepeatableEntry::make('items')
                             ->hiddenLabel()
                             ->table([
-                                TableColumn::make('Produk'),
+                                TableColumn::make('Produk')
+                                    ->width(350),
                                 TableColumn::make('Stok Sistem')
-                                    ->width(100),
+                                    ->width(80),
                                 TableColumn::make('Stok Fisik')
-                                    ->width(100),
+                                    ->width(80),
                                 TableColumn::make('Selisih')
-                                    ->width(100),
+                                    ->width(80),
                                 TableColumn::make('Selisih Nilai')
-                                    ->width(150),
-                                TableColumn::make('Catatan'),
+                                    ->width(180),
                             ])
                             ->schema([
                                 TextEntry::make('product.name')
@@ -104,8 +104,6 @@ class StockOpnameInfolist
 
                                         return $prefix.'Rp '.number_format($state, 0, ',', '.');
                                     }),
-                                TextEntry::make('notes')
-                                    ->label('Catatan'),
                             ]),
                     ]),
             ]);

@@ -62,13 +62,14 @@ class StockTransferInfolist
                         RepeatableEntry::make('items')
                             ->hiddenLabel()
                             ->table([
-                                TableColumn::make('Produk'),
+                                TableColumn::make('Produk')
+                                    ->width(350),
                                 TableColumn::make('Jumlah')
-                                    ->width(100),
+                                    ->width(80),
                                 TableColumn::make('Harga')
-                                    ->width(150),
+                                    ->width(180),
                                 TableColumn::make('Subtotal')
-                                    ->width(150),
+                                    ->width(180),
                             ])
                             ->schema([
                                 TextEntry::make('product.name')
