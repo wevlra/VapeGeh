@@ -137,7 +137,9 @@ class BookkeepingReport extends Page implements Tables\Contracts\HasTable
                 TextColumn::make('description')
                     ->label('Deskripsi')
                     ->searchable()
-                    ->limit(40),
+                    ->limit(40)
+                    ->default('Tidak ada deskripsi')
+                    ->color(fn ($state, $record) => blank($record->description) ? 'gray' : null),
                 TextColumn::make('amount')
                     ->label('Jumlah')
                     ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))

@@ -59,7 +59,8 @@ class HistoryInfolist
                         TextEntry::make('notes')
                             ->label('Catatan Pergerakan')
                             ->columnSpanFull()
-                            ->default('-'),
+                            ->default('Tidak ada catatan')
+                            ->color(fn ($state, $record) => blank($record->notes) ? 'gray' : null),
                     ]),
 
                 Section::make('Detail Transaksi')
@@ -82,7 +83,8 @@ class HistoryInfolist
                                 TextEntry::make('related.notes')
                                     ->label('Catatan')
                                     ->columnSpanFull()
-                                    ->default('-'),
+                                    ->default('Tidak ada catatan')
+                                    ->color(fn ($state, $record) => blank($record->related?->notes) ? 'gray' : null),
                                 RepeatableEntry::make('related.items')
                                     ->hiddenLabel()
                                     ->table([
@@ -136,7 +138,8 @@ class HistoryInfolist
                                 TextEntry::make('related.notes')
                                     ->label('Catatan')
                                     ->columnSpanFull()
-                                    ->default('-'),
+                                    ->default('Tidak ada catatan')
+                                    ->color(fn ($state, $record) => blank($record->related?->notes) ? 'gray' : null),
                                 RepeatableEntry::make('related.items')
                                     ->hiddenLabel()
                                     ->table([
@@ -198,7 +201,9 @@ class HistoryInfolist
                                     ])
                                     ->schema([
                                         TextEntry::make('description')
-                                            ->label('Deskripsi'),
+                                            ->label('Deskripsi')
+                                            ->default('Tidak ada deskripsi')
+                                            ->color(fn ($state, $record) => blank($record->description) ? 'gray' : null),
                                         TextEntry::make('amount')
                                             ->label('Jumlah')
                                             ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
@@ -249,7 +254,8 @@ class HistoryInfolist
                                 TextEntry::make('related.notes')
                                     ->label('Catatan')
                                     ->columnSpanFull()
-                                    ->default('-'),
+                                    ->default('Tidak ada catatan')
+                                    ->color(fn ($state, $record) => blank($record->related?->notes) ? 'gray' : null),
                                 RepeatableEntry::make('related.items')
                                     ->hiddenLabel()
                                     ->table([

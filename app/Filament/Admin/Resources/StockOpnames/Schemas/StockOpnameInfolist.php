@@ -67,7 +67,8 @@ class StockOpnameInfolist
                         TextEntry::make('notes')
                             ->label('Catatan')
                             ->columnSpanFull()
-                            ->placeholder('-'),
+                            ->default('Tidak ada catatan')
+                            ->color(fn ($state, $record) => blank($record->notes) ? 'gray' : null),
                     ]),
 
                 Section::make('Daftar Produk')

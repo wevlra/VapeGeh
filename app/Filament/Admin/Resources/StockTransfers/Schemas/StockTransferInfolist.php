@@ -47,7 +47,8 @@ class StockTransferInfolist
                             ->label('Ke'),
                         TextEntry::make('notes')
                             ->label('Catatan')
-                            ->placeholder('Tidak ada catatan')
+                            ->default('Tidak ada catatan')
+                            ->color(fn ($state, $record) => blank($record->notes) ? 'gray' : null)
                             ->columnSpanFull(),
                         TextEntry::make('creator.name')
                             ->label('Dibuat oleh'),

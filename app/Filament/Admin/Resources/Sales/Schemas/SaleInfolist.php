@@ -48,7 +48,8 @@ class SaleInfolist
                         TextEntry::make('notes')
                             ->label('Catatan')
                             ->columnSpanFull()
-                            ->default('-'),
+                            ->default('Tidak ada catatan')
+                            ->color(fn ($state, $record) => blank($record->notes) ? 'gray' : null),
                     ]),
 
                 Section::make('Item')

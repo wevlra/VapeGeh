@@ -33,6 +33,6 @@ class ListIncomes extends ListRecords
     {
         return $config
             ->only(['location.name', 'category', 'amount'])
-            ->cardTitle(fn ($record) => $record->description);
+            ->cardTitle(fn ($record) => $record->description ?? 'Tidak ada deskripsi');
     }
 }
