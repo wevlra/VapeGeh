@@ -211,7 +211,8 @@ class HistoryInfolist
                                 TextEntry::make('related.notes')
                                     ->label('Catatan')
                                     ->columnSpanFull()
-                                    ->default('-'),
+                                    ->default('Tidak ada catatan')
+                                    ->color(fn ($state, $record) => blank($record->related?->notes) ? 'gray' : null),
                                 TextEntry::make('stock_entry_total')
                                     ->label('Total Harga')
                                     ->state(fn () => $total)

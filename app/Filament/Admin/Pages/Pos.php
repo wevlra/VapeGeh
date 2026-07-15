@@ -57,6 +57,7 @@ class Pos extends StaffPos
                     TextColumn::make('product.name')
                         ->searchable()
                         ->sortable()
+                        ->label('Produk')
                         ->weight('bold')
                         ->formatStateUsing(fn (Stock $record): string => mb_strimwidth($record->product->name, 0, 40, '...')),
                     TextColumn::make('price_display')
@@ -164,35 +165,44 @@ class Pos extends StaffPos
                     $label = 'Tidak Diketahui';
                 }
 
-                $this->addToCart($product->id, $price, $label);
+                $locationId = $record->location_id;
+
+                $existingIndex = collect($this->cart)->search(
+                    fn ($item) => $item['product_id'] === $product->id && ($item['location_id'] ?? null) === $locationId
+                );
+
+                if ($existingIndex !== false) {
+                    $currentQty = (int) $this->cart[$existingIndex]['qty'] + 1;
+                    $stock = Stock::where('product_id', $product->id)
+                        ->where('location_id', $locationId)
+                        ->first();
+
+                    if (! $stock || $stock->qty < $currentQty) {
+                        $this->notifyWarning('Stok Tidak Mencukupi');
+
+                        return;
+                    }
+                    $this->cart[$existingIndex]['qty'] = $currentQty;
+                    $this->cart[$existingIndex]['location_id'] = $locationId;
+                } else {
+                    $stock = Stock::where('product_id', $product->id)
+                        ->where('location_id', $locationId)
+                        ->first();
+
+                    if (! $stock || $stock->qty < 1) {
+                        $this->notifyWarning('Stok Habis');
+
+                        return;
+                    }
+                    $this->cart[] = [
+                        'product_id' => $product->id,
+                        'location_id' => $locationId,
+                        'qty' => 1,
+                        'price' => $price,
+                        'price_label' => $label,
+                    ];
+                }
             });
-    }
-
-    public function addToCart(string $productId, ?float $price = null, ?string $priceLabel = null): void
-    {
-        $existingIndex = collect($this->cart)->search(fn ($item) => $item['product_id'] === $productId);
-
-        if ($existingIndex !== false) {
-            $currentQty = (int) $this->cart[$existingIndex]['qty'] + 1;
-            if (! $this->isStockAvailable($productId, $currentQty)) {
-                $this->notifyWarning('Stok Tidak Mencukupi');
-
-                return;
-            }
-            $this->cart[$existingIndex]['qty'] = $currentQty;
-        } else {
-            if (! $this->isStockAvailable($productId, 1)) {
-                $this->notifyWarning('Stok Habis');
-
-                return;
-            }
-            $this->cart[] = [
-                'product_id' => $productId,
-                'qty' => 1,
-                'price' => $price ?? 0,
-                'price_label' => $priceLabel ?? 'Default',
-            ];
-        }
     }
 
     public function getCartItems(): array
@@ -212,87 +222,59 @@ class Pos extends StaffPos
         })->filter()->values()->toArray();
     }
 
-    protected function isStockAvailable(string $productId, int $qty): bool
+    public function updateQty(int $index, int $qty): void
     {
-        $locationId = auth()->user()->location_id;
+        $qty = max(0, (int) $qty);
 
-        if ($locationId) {
-            $stock = Stock::where('product_id', $productId)
-                ->where('location_id', $locationId)
-                ->first();
+        if ($qty < 1) {
+            unset($this->cart[$index]);
+            $this->cart = array_values($this->cart);
 
-            return $stock !== null && $stock->qty >= $qty;
+            return;
         }
 
-        return Stock::where('product_id', $productId)
-            ->sum('qty') >= $qty;
+        if (! isset($this->cart[$index])) {
+            return;
+        }
+
+        $item = $this->cart[$index];
+        $stock = Stock::where('product_id', $item['product_id'])
+            ->where('location_id', $item['location_id'])
+            ->first();
+
+        if (! $stock || $stock->qty < $qty) {
+            $this->notifyWarning('Stok Tidak Mencukupi');
+
+            return;
+        }
+
+        $this->cart[$index]['qty'] = $qty;
     }
 
     public function processSale(array $data): void
     {
-        $locationId = auth()->user()->location_id;
         $paidAmount = (float) ($data['paid_amount'] ?? 0);
         $paymentMethod = $data['payment_method'] ?? 'cash';
 
         try {
-            $sale = DB::transaction(function () use ($locationId, $paidAmount, $paymentMethod, $data) {
+            $sale = DB::transaction(function () use ($paidAmount, $paymentMethod, $data) {
                 $total = 0;
                 $saleItems = [];
 
                 foreach ($this->cart as $cartItem) {
                     $product = Product::findOrFail($cartItem['product_id']);
                     $qty = (int) $cartItem['qty'];
+                    $locationId = $cartItem['location_id'];
 
-                    if ($locationId) {
-                        $stock = Stock::where('product_id', $product->id)
-                            ->where('location_id', $locationId)
-                            ->lockForUpdate()
-                            ->first();
+                    $stock = Stock::where('product_id', $product->id)
+                        ->where('location_id', $locationId)
+                        ->lockForUpdate()
+                        ->first();
 
-                        if (! $stock || $stock->qty < $qty) {
-                            throw new DomainException(
-                                "Stok tidak cukup untuk produk \"{$product->name}\"."
-                            );
-                        }
-
-                        $stockLocationId = $locationId;
-                    } else {
-                        $stocks = Stock::where('product_id', $product->id)
-                            ->where('qty', '>', 0)
-                            ->lockForUpdate()
-                            ->get();
-
-                        $remaining = $qty;
-                        $stockLocations = [];
-
-                        foreach ($stocks as $s) {
-                            $take = min($s->qty, $remaining);
-                            $stockLocations[] = ['stock' => $s, 'take' => $take];
-                            $remaining -= $take;
-                            if ($remaining <= 0) {
-                                break;
-                            }
-                        }
-
-                        if ($remaining > 0) {
-                            throw new DomainException(
-                                "Stok tidak cukup untuk produk \"{$product->name}\"."
-                            );
-                        }
-
-                        $price = (float) $cartItem['price'];
-                        $subtotal = $price * $qty;
-                        $total += $subtotal;
-
-                        $saleItems[] = [
-                            'product_id' => $product->id,
-                            'qty' => $qty,
-                            'price' => $price,
-                            'subtotal' => $subtotal,
-                            'stock_locations' => $stockLocations,
-                        ];
-
-                        continue;
+                    if (! $stock || $stock->qty < $qty) {
+                        throw new DomainException(
+                            "Stok tidak cukup untuk produk \"{$product->name}\"."
+                        );
                     }
 
                     $price = (float) $cartItem['price'];
@@ -304,13 +286,13 @@ class Pos extends StaffPos
                         'qty' => $qty,
                         'price' => $price,
                         'subtotal' => $subtotal,
-                        'stock_locations' => [['stock' => $stock, 'take' => $qty]],
+                        'stock' => $stock,
                     ];
                 }
 
                 $sale = Sale::create([
                     'user_id' => auth()->id(),
-                    'location_id' => $locationId ?? $saleItems[0]['stock_locations'][0]['stock']->location_id ?? 1,
+                    'location_id' => $this->cart[0]['location_id'],
                     'total' => $total,
                     'paid_amount' => $paidAmount,
                     'payment_method' => $paymentMethod,
@@ -325,21 +307,20 @@ class Pos extends StaffPos
                         'subtotal' => $saleItem['subtotal'],
                     ]);
 
-                    foreach ($saleItem['stock_locations'] as $sl) {
-                        $sl['stock']->qty -= $sl['take'];
-                        $sl['stock']->save();
+                    $stock = $saleItem['stock'];
+                    $stock->qty -= $saleItem['qty'];
+                    $stock->save();
 
-                        StockMovement::create([
-                            'product_id' => $saleItem['product_id'],
-                            'location_id' => $sl['stock']->location_id,
-                            'type' => 'out',
-                            'quantity' => -$sl['take'],
-                            'related_type' => Sale::class,
-                            'related_id' => $sale->id,
-                            'notes' => "Sale {$sale->invoice_number}",
-                            'created_by' => auth()->id(),
-                        ]);
-                    }
+                    StockMovement::create([
+                        'product_id' => $saleItem['product_id'],
+                        'location_id' => $stock->location_id,
+                        'type' => 'out',
+                        'quantity' => -$saleItem['qty'],
+                        'related_type' => Sale::class,
+                        'related_id' => $sale->id,
+                        'notes' => "Sale {$sale->invoice_number}",
+                        'created_by' => auth()->id(),
+                    ]);
                 }
 
                 return $sale;

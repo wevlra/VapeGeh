@@ -95,7 +95,7 @@ class StaffPanelProvider extends PanelProvider
             ->bootUsing(function (): void {
                 FilamentView::registerRenderHook(
                     PanelsRenderHook::BODY_END,
-                    fn (): string => Blade::render('<x-printer-scanner-modal /><x-receipt-action-modal />').
+                    fn (): string => Blade::render('<x-printer-scanner-modal /><x-receipt-action-modal /><x-network-check-modal />').
                         Blade::render('@vite(["resources/js/receipt-image.js"])')
                 );
 
