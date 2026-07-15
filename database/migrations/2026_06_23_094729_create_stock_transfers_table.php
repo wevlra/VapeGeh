@@ -9,14 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('stock_transfers', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('transfer_number', 50)->unique();
-            $table->foreignId('from_location_id')->constrained('locations')->cascadeOnDelete();
-            $table->foreignId('to_location_id')->constrained('locations')->cascadeOnDelete();
+            $table->foreignUuid('from_location_id')->constrained('locations')->cascadeOnDelete();
+            $table->foreignUuid('to_location_id')->constrained('locations')->cascadeOnDelete();
             $table->enum('status', ['pending', 'completed', 'cancelled'])->default('pending');
             $table->text('notes')->nullable();
             $table->timestamp('completed_at')->nullable();
-            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
+            $table->foreignUuid('created_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }

@@ -52,7 +52,7 @@ class UpdateSale
             $newStockMovements = [];
 
             foreach ($newItems as $item) {
-                $productId = (int) $item['product_id'];
+                $productId = $item['product_id'];
                 $qty = (int) $item['qty'];
                 $price = (float) $item['price'];
 

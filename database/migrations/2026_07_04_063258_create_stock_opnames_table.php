@@ -9,10 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('stock_opnames', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('opname_number')->unique();
-            $table->foreignId('location_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
+            $table->foreignUuid('location_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('created_by')->constrained('users')->cascadeOnDelete();
             $table->string('status')->default('draft'); // draft, completed
             $table->text('notes')->nullable();
             $table->timestamp('completed_at')->nullable();

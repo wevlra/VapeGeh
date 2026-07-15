@@ -181,7 +181,7 @@ class StockTransferCreate extends Page implements HasForms, HasTable
             ]);
     }
 
-    public function removeItem(int $productId): void
+    public function removeItem(string $productId): void
     {
         $this->items = collect($this->items)
             ->reject(fn ($item) => $item['product_id'] === $productId)

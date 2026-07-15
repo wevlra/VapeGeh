@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('stock_movements', function (Blueprint $table) {
-            $table->foreignId('buyer_id')->nullable()->after('related_id')->constrained('buyers')->nullOnDelete();
+            $table->foreignUuid('buyer_id')->nullable()->after('related_id')->constrained('buyers')->nullOnDelete();
             $table->json('additional_costs')->nullable()->after('notes');
         });
     }

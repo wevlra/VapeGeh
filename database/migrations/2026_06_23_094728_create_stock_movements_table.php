@@ -9,15 +9,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('stock_movements', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('location_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('product_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('location_id')->constrained()->cascadeOnDelete();
             $table->string('type', 20);
             $table->integer('quantity');
             $table->string('related_type')->nullable();
-            $table->unsignedBigInteger('related_id')->nullable();
+            $table->uuid('related_id')->nullable();
             $table->text('notes')->nullable();
-            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
+            $table->foreignUuid('created_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }

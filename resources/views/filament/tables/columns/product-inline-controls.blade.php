@@ -42,7 +42,7 @@
                     }"
                     x-init="$el.value = price ? parseInt(price, 10).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''"
                     @input="format()"
-                    @change="$wire.updateItemPrice({{ $record->id }}, $el.value.replace(/\./g, ''))"
+                    @change="$wire.updateItemPrice('{{ $record->id }}', $el.value.replace(/\./g, ''))"
                     class="font-medium text-gray-900 dark:text-white"
                 />
             </x-filament::input.wrapper>
@@ -59,7 +59,7 @@
                 color="danger"
                 size="md"
                 class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 shrink-0 rounded-lg shadow-sm w-10 h-10 flex items-center justify-center"
-                wire:click="decrementItem({{ $record->id }})" 
+                wire:click="decrementItem('{{ $record->id }}')" 
             />
             
             <div class="flex-1 sm:flex-none sm:w-24 min-w-[80px]">
@@ -67,7 +67,8 @@
                     <x-filament::input 
                         type="number" 
                         value="{{ $qty }}"
-                        wire:change="updateItemQty({{ $record->id }}, $event.target.value)"
+                        wire:key="qty-input-{{ $record->id }}-{{ $qty }}"
+                        wire:change="updateItemQty('{{ $record->id }}', $event.target.value)"
                         class="text-center font-bold text-lg p-2 w-full"
                         placeholder="0"
                     />
@@ -79,7 +80,7 @@
                 color="success"
                 size="md"
                 class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 shrink-0 rounded-lg shadow-sm w-10 h-10 flex items-center justify-center"
-                wire:click="incrementItem({{ $record->id }})" 
+                wire:click="incrementItem('{{ $record->id }}')" 
             />
         </div>
     </div>

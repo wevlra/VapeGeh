@@ -14,11 +14,11 @@ use Illuminate\Support\Facades\DB;
 class CreateSale
 {
     /**
-     * @param  array<int, array{product_id: int, qty: int}>  $items
+     * @param  array<int, array{product_id: string, qty: int}>  $items
      */
     public function execute(
         User $user,
-        int $locationId,
+        string $locationId,
         array $items,
         string $paymentMethod = 'cash',
         float $paidAmount = 0,

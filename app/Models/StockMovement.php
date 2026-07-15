@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -11,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 #[Fillable(['product_id', 'location_id', 'type', 'quantity', 'unit_price', 'related_type', 'related_id', 'buyer_id', 'additional_costs', 'notes'])]
 class StockMovement extends Model
 {
+    use HasUuids;
+
     protected static function booted(): void
     {
         static::creating(function (StockMovement $movement) {

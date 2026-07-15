@@ -16,7 +16,7 @@
                     </span>
                     <button
                         type="button"
-                        wire:click="removeItem({{ $item['product_id'] }})"
+                        wire:click="removeItem('{{ $item['product_id'] }}')"
                         class="ml-1 rounded-full p-0.5 hover:bg-white/20 transition-colors"
                     >
                         <x-filament::icon

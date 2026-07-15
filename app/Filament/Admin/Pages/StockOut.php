@@ -109,7 +109,7 @@ class StockOut extends Page implements HasForms, HasTable
                                                 ->label('Alamat')
                                                 ->rows(2),
                                         ])
-                                        ->createOptionUsing(function (array $data): int {
+                                        ->createOptionUsing(function (array $data): string {
                                             return Buyer::create($data)->getKey();
                                         }),
                                     Select::make('payment_method')
@@ -239,7 +239,7 @@ class StockOut extends Page implements HasForms, HasTable
             ]);
     }
 
-    public function removeItem(int $productId): void
+    public function removeItem(string $productId): void
     {
         $this->items = collect($this->items)
             ->reject(fn ($item) => $item['product_id'] === $productId)
@@ -251,7 +251,7 @@ class StockOut extends Page implements HasForms, HasTable
     {
         $data = $this->form->getState();
         $items = $this->items;
-        $locationId = (int) $data['location_id'];
+        $locationId = $data['location_id'];
 
         if (empty($items)) {
             $this->notifyError(
@@ -277,7 +277,7 @@ class StockOut extends Page implements HasForms, HasTable
                 $totalAmount = 0;
 
                 foreach ($items as $item) {
-                    $productId = (int) $item['product_id'];
+                    $productId = $item['product_id'];
                     $qty = (int) $item['qty'];
                     $unitPrice = (float) $item['price'];
                     $totalAmount += ($qty * $unitPrice);

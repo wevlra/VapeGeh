@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\IncomeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Income extends Model
 {
     /** @use HasFactory<IncomeFactory> */
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected static function booted(): void
     {

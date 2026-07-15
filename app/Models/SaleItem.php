@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable(['sale_id', 'product_id', 'qty', 'price', 'subtotal'])]
 class SaleItem extends Model
 {
+    use HasUuids;
+
     protected $with = ['product'];
 
     /**
