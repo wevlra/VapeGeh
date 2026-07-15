@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -59,7 +60,29 @@ class StockMovement extends Model
             Stock::class => [],
             StockEntry::class => ['items.product'],
             StockOpname::class => ['items.product'],
+            Location::class => [],
         ]);
+    }
+
+    /**
+     * Get sibling movements sharing the same related_type, related_id, location_id.
+     * Used by HistoryInfolist to show all products from a batch operation (e.g. location deletion).
+     *
+     * @return Collection<int, StockMovement>
+     */
+    public function getSiblingMovementsAttribute(): Collection
+    {
+        if ($this->related_type !== Location::class) {
+            return collect();
+        }
+
+        return static::where('related_type', $this->related_type)
+            ->where('related_id', $this->related_id)
+            ->where('location_id', $this->location_id)
+            ->where('type', $this->type)
+            ->where('quantity', '>', 0)
+            ->with(['product', 'location', 'creator', 'related'])
+            ->get();
     }
 
     protected function casts(): array

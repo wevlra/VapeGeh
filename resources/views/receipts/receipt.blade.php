@@ -51,6 +51,7 @@
 
     @php
         $related = $movement->related;
+        $isLocationDeletion = $related === null && $movement->related_type === \App\Models\Location::class;
         $refNumber = match (true) {
             $related instanceof \App\Models\Sale => $related->invoice_number,
             $related instanceof \App\Models\StockTransfer => $related->transfer_number,
@@ -147,6 +148,23 @@
                 <div>Vendor: {{ $related->vendor->name }}</div>
             @endif
         </div>
+    @elseif ($isLocationDeletion)
+        @php $siblings = $movement->sibling_movements; @endphp
+        <table>
+            <thead>
+                <tr><th>Item</th><th>Jumlah</th></tr>
+                <tr class="th-divider"><td colspan="2"></td></tr>
+            </thead>
+            <tbody>
+                @foreach ($siblings as $sm)
+                <tr>
+                    <td>{{ $sm->product->name ?? 'Produk #'.$sm->product_id }}</td>
+                    <td>{{ abs((int) $sm->quantity) }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        <div style="margin-top: 6px; font-size: 10px;">Pemindahan stok otomatis saat lokasi dihapus.</div>
     @else
         <table>
             <thead>

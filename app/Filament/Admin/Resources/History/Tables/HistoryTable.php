@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\History\Tables;
 use App\Filament\Actions\PrintInvoiceAction;
 use App\Filament\Actions\PrintReceiptAction;
 use App\Filament\Admin\Resources\History\HistoryResource;
+use App\Models\Location;
 use App\Models\Sale;
 use App\Models\StockEntry;
 use App\Models\StockMovement;
@@ -103,6 +104,16 @@ class HistoryTable
                             return $items[0] ?? '-';
                         }
 
+                        if ($related === null && $record->related_type === Location::class) {
+                            $names = $record->sibling_movements->pluck('product.name')->filter()->toArray();
+                            $count = count($names);
+                            if ($count > 1) {
+                                return $names[0].' + '.($count - 1).' lainnya';
+                            }
+
+                            return $names[0] ?? $record->product?->name ?? '-';
+                        }
+
                         return $record->product?->name ?? '-';
                     }),
                 TextColumn::make('location.name')
@@ -120,6 +131,8 @@ class HistoryTable
                             $total = $related->items->sum('qty');
                         } elseif ($related instanceof StockOpname) {
                             $total = $related->items->sum('difference');
+                        } elseif ($related === null && $record->related_type === Location::class) {
+                            $total = $record->sibling_movements->sum('quantity');
                         } else {
                             $total = abs($record->quantity);
                         }
@@ -197,6 +210,21 @@ class HistoryTable
                             $view = 'exports.pdf.stock-transfer-detail';
                             $data = ['transfer' => $related, 'title' => $title, 'filterInfo' => ''];
                             $fileName = "stock-transfer-{$related->transfer_number}-{$timestamp}.pdf";
+                        } elseif ($related === null && $record->related_type === Location::class) {
+                            $siblings = $record->sibling_movements->load('product');
+                            $destLocation = $record->location?->name ?? '-';
+                            $firstNote = $siblings->first()?->notes ?? '';
+                            // Extract source name from "Transfer from {name} (location deletion)"
+                            $sourceLocation = '';
+                            if (preg_match('/^Transfer from (.+?) \(location deletion\)$/', $firstNote, $m)) {
+                                $sourceLocation = $m[1];
+                            }
+                            $title = 'Laporan Pemindahan Stok (Hapus Lokasi)';
+                            $view = 'exports.pdf.history';
+                            $data = ['records' => $siblings, 'title' => $title, 'filterInfo' => ($sourceLocation ? 'Dari: '.$sourceLocation.' | ' : '').'Ke: '.$destLocation];
+                            $fileName = "location-deletion-{$record->id}-{$timestamp}.pdf";
+                        } else {
+                            return;
                         }
 
                         $pdf = Pdf::loadView($view, $data)->setPaper('a4', 'portrait');

@@ -281,7 +281,23 @@ class HistoryInfolist
                             ];
                         }
 
-                        return [];
+                        // Fallback for unknown/unsupported related types
+                        // (e.g., Location::class from DeleteLocation action)
+                        return [
+                            RepeatableEntry::make('sibling_movements')
+                                ->hiddenLabel()
+                                ->table([
+                                    TableColumn::make('Produk'),
+                                    TableColumn::make('Jumlah'),
+                                ])
+                                ->schema([
+                                    TextEntry::make('product.name')
+                                        ->label('Produk'),
+                                    TextEntry::make('quantity_display')
+                                        ->label('Jumlah')
+                                        ->state(fn ($record): string => (int) $record->quantity > 0 ? '+'.$record->quantity : (string) $record->quantity),
+                                ]),
+                        ];
                     }),
             ]);
     }

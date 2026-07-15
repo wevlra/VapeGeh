@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\History\Pages;
 use App\Filament\Actions\PrintInvoiceAction;
 use App\Filament\Actions\PrintReceiptAction;
 use App\Filament\Admin\Resources\History\HistoryResource;
+use App\Models\Location;
 use App\Models\StockEntry;
 use App\Models\StockMovement;
 use App\Models\StockOpname;
@@ -31,6 +32,10 @@ class ViewHistory extends ViewRecord
                 ->mountUsing(function (StockMovement $record) {
                     $related = $record->related;
                     $timestamp = date('Y-m-d-H-i');
+                    $sessionKey = 'report_url_'.$record->id;
+
+                    // Clear stale key so old reports don't linger
+                    session()->forget($sessionKey);
 
                     if ($related instanceof StockOpname) {
                         $related->load(['items.product', 'location', 'creator']);
@@ -50,6 +55,20 @@ class ViewHistory extends ViewRecord
                         $view = 'exports.pdf.stock-transfer-detail';
                         $data = ['transfer' => $related, 'title' => $title, 'filterInfo' => ''];
                         $fileName = "stock-transfer-{$related->transfer_number}-{$timestamp}.pdf";
+                    } elseif ($related === null && $record->related_type === Location::class) {
+                        $siblings = $record->sibling_movements->load('product');
+                        $destLocation = $record->location?->name ?? '-';
+                        $firstNote = $siblings->first()?->notes ?? '';
+                        $sourceLocation = '';
+                        if (preg_match('/^Transfer from (.+?) \(location deletion\)$/', $firstNote, $m)) {
+                            $sourceLocation = $m[1];
+                        }
+                        $title = 'Laporan Pemindahan Stok (Hapus Lokasi)';
+                        $view = 'exports.pdf.history';
+                        $data = ['records' => $siblings, 'title' => $title, 'filterInfo' => ($sourceLocation ? 'Dari: '.$sourceLocation.' | ' : '').'Ke: '.$destLocation];
+                        $fileName = "location-deletion-{$record->id}-{$timestamp}.pdf";
+                    } else {
+                        return;
                     }
 
                     $pdf = Pdf::loadView($view, $data)->setPaper('a4', 'portrait');
@@ -58,7 +77,7 @@ class ViewHistory extends ViewRecord
 
                     $url = asset("storage/reports/{$fileName}");
 
-                    session()->put("report_url_{$record->id}", $url);
+                    session()->put($sessionKey, $url);
                     session()->put("report_filename_{$record->id}", $fileName);
                 })
                 ->modalHeading(false)
