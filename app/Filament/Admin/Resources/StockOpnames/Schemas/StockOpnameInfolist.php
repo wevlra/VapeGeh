@@ -25,6 +25,7 @@ class StockOpnameInfolist
                             ->label('Lokasi'),
                         TextEntry::make('price_type')
                             ->label('Menggunakan Harga')
+                            ->hidden(auth()->user()->role === 'staff')
                             ->formatStateUsing(fn (string $state): string => match ($state) {
                                 'purchase_price' => 'Harga Beli',
                                 'selling_price' => 'Harga Jual',

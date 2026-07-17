@@ -99,7 +99,7 @@ class StockTransferCreate extends Page implements HasForms, HasTable
                                     ->label('Catatan')
                                     ->rows(2),
                             ]),
-                        Step::make('Daftar Item')
+                        Step::make('Daftar Produk')
                             ->description('Pilih produk dan jumlah')
                             ->icon(Heroicon::OutlinedCube)
                             ->schema([

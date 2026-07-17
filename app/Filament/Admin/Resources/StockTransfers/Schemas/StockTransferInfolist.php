@@ -57,7 +57,7 @@ class StockTransferInfolist
                             ->dateTime(),
                     ]),
 
-                Section::make('Daftar Item')
+                Section::make('Daftar Produk')
                     ->columnSpanFull()
                     ->schema([
                         RepeatableEntry::make('items')
