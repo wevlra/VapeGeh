@@ -2,7 +2,7 @@
     $record = $getRecord();
     $state = $getState() ?? [];
     $existing = collect($this->items)->firstWhere('product_id', $record->id);
-    
+
     $showPrice = $showPrice ?? $state['showPrice'] ?? false;
     $priceLabel = $priceLabel ?? $state['priceLabel'] ?? 'Harga:';
     $qtyLabel = $qtyLabel ?? $state['qtyLabel'] ?? 'Jumlah:';
@@ -11,10 +11,10 @@
 
     $qtyField = $qtyField ?? 'qty';
     $qty = $existing[$qtyField] ?? ($defaultQty ? $defaultQty($record) : 0);
-    
+
     $priceField = $priceField ?? 'price';
     $price = $existing[$priceField] ?? ($defaultPriceCallable ? $defaultPriceCallable($record) : 0);
-    
+
     $showDifference = $showDifference ?? $state['showDifference'] ?? false;
     $systemQty = $defaultQty ? $defaultQty($record) : 0;
     $diff = $qty - $systemQty;
@@ -26,8 +26,8 @@
         <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden sm:block w-20 shrink-0">{{ $priceLabel ?? 'Harga' }}</label>
         <div class="w-full">
             <x-filament::input.wrapper prefix="Rp" class="shadow-sm">
-                <x-filament::input 
-                    type="text" 
+                <x-filament::input
+                    type="text"
                     placeholder="{{ $priceLabel ?? 'Harga' }}"
                     x-data="{
                         price: '{{ $price ? number_format($price, 0, '', '') : '' }}',
@@ -49,38 +49,36 @@
         </div>
     </div>
     @endif
-    
+
     <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 w-full">
         <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden sm:block w-20 shrink-0">{{ $qtyLabel ?? 'Jumlah' }}</label>
-        
-        <div class="flex items-center justify-between sm:justify-start w-full gap-3">
-            <x-filament::icon-button 
-                icon="heroicon-m-minus" 
+
+        <div class="flex items-center justify-between sm:justify-start w-full gap-4">
+            <x-filament::icon-button
+                icon="heroicon-m-minus"
                 color="danger"
-                size="md"
-                class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 shrink-0 rounded-lg shadow-sm w-10 h-10 flex items-center justify-center"
-                wire:click="decrementItem('{{ $record->id }}')" 
+                class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 shrink-0 rounded-lg shadow-sm w-9 h-9 flex items-center justify-center"
+                wire:click="decrementItem('{{ $record->id }}')"
             />
-            
+
             <div class="flex-1 sm:flex-none sm:w-24 min-w-[80px]">
                 <x-filament::input.wrapper class="shadow-sm">
-                    <x-filament::input 
-                        type="number" 
+                    <x-filament::input
+                        type="number"
                         value="{{ $qty }}"
                         wire:key="qty-input-{{ $record->id }}-{{ $qty }}"
                         wire:change="updateItemQty('{{ $record->id }}', $event.target.value)"
-                        class="text-center font-bold text-lg p-2 w-full"
+                        class="text-center font-bold text-lg p-1.5 w-full"
                         placeholder="0"
                     />
                 </x-filament::input.wrapper>
             </div>
-            
-            <x-filament::icon-button 
-                icon="heroicon-m-plus" 
+
+            <x-filament::icon-button
+                icon="heroicon-m-plus"
                 color="success"
-                size="md"
-                class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 shrink-0 rounded-lg shadow-sm w-10 h-10 flex items-center justify-center"
-                wire:click="incrementItem('{{ $record->id }}')" 
+                class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 shrink-0 rounded-lg shadow-sm w-9 h-9 flex items-center justify-center"
+                wire:click="incrementItem('{{ $record->id }}')"
             />
         </div>
     </div>
@@ -91,7 +89,7 @@
             Stok Sistem: <span class="font-bold text-gray-700 dark:text-gray-300">{{ $systemQty }}</span>
         </div>
         <div class="text-xs text-gray-500">
-            Selisih: 
+            Selisih:
             <span class="font-bold {{ $diff > 0 ? 'text-success-600 dark:text-success-400' : ($diff < 0 ? 'text-danger-600 dark:text-danger-400' : 'text-gray-500') }}">
                 {{ $diff > 0 ? '+'.$diff : $diff }}
             </span>

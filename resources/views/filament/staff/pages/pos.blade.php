@@ -48,7 +48,7 @@
                                     <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
                                         {{ $item['name'] }}
                                     </p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                    <p class="text-xs text- mt-0.5">
                                         Rp {{ number_format($item['price'], 0, ',', '.') }}
                                     </p>
                                 </div>
@@ -61,7 +61,7 @@
                                         color="gray"
                                         class="border border-gray-200 dark:border-gray-600"
                                         label="Kurangi jumlah"
-                                        wire:click="updateQty({{ $index }}, {{ $item['qty'] - 1 }})"
+                                        wire:click="decrementItem('{{ $item['product_id'] }}')"
                                     />
                                     <span class="w-8 text-center text-sm font-semibold text-gray-900 dark:text-white tabular-nums">
                                         {{ $item['qty'] }}
@@ -72,7 +72,7 @@
                                         color="gray"
                                         class="border border-gray-200 dark:border-gray-600"
                                         label="Tambah jumlah"
-                                        wire:click="updateQty({{ $index }}, {{ $item['qty'] + 1 }})"
+                                        wire:click="incrementItem('{{ $item['product_id'] }}')"
                                     />
                                 </div>
 
@@ -82,7 +82,7 @@
                                         Rp {{ number_format($item['subtotal'], 0, ',', '.') }}
                                     </p>
                                     <button
-                                        wire:click="removeCartItem({{ $index }})"
+                                        wire:click="removeItem('{{ $item['product_id'] }}')"
                                         type="button"
                                         class="text-xs text-gray-400 hover:text-danger-500 transition-colors mt-0.5"
                                     >

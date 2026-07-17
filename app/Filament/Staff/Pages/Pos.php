@@ -21,6 +21,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Support\RawJs;
 use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
@@ -44,7 +45,7 @@ class Pos extends Page implements HasTable
 
     protected string $view = 'filament.staff.pages.pos';
 
-    public array $cart = [];
+    public array $items = [];
 
     public function table(Table $table): Table
     {
@@ -67,6 +68,7 @@ class Pos extends Page implements HasTable
                         ->weight('bold')
                         ->formatStateUsing(fn (string $state): string => mb_strimwidth($state, 0, 40, '...')),
                     TextColumn::make('selling_price')
+                        ->color('primary')
                         ->getStateUsing(fn (Product $record): float => $record->stocks->first()?->price > 0 ? (float) $record->stocks->first()?->price : (float) $record->selling_price)
                         ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                     TextColumn::make('stock_qty')
@@ -78,20 +80,18 @@ class Pos extends Page implements HasTable
                         })
                         ->getStateUsing(fn (Product $record): int => $record->stocks->first()?->qty ?? 0)
                         ->formatStateUsing(fn (int $state): string => 'Stok '.$state),
+                    ViewColumn::make('controls')
+                        ->label('Kontrol')
+                        ->view('filament.tables.columns.pos-product-inline-controls')
+                        ->extraAttributes(['class' => 'w-full flex justify-end mt-4'])
+                        ->state(fn () => [
+                            'showPrice' => false,
+                        ]),
                 ])->space(2),
             ])
             ->contentGrid([
                 'md' => 2,
                 'xl' => 3,
-            ])
-            ->actions([
-                Action::make('addToCart')
-                    ->label('Tambah')
-                    ->icon('heroicon-m-plus')
-                    ->color('primary')
-                    ->button()
-                    ->extraAttributes(['class' => 'w-full justify-center'])
-                    ->action(fn (Product $record) => $this->addToCart($record->id)),
             ])
             ->defaultSort('name');
     }
@@ -106,7 +106,7 @@ class Pos extends Page implements HasTable
 
     public function getCartItems(): array
     {
-        $productIds = collect($this->cart)->pluck('product_id');
+        $productIds = collect($this->items)->pluck('product_id');
         $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
         $locationId = auth()->user()->location_id;
 
@@ -115,7 +115,7 @@ class Pos extends Page implements HasTable
             ->get()
             ->keyBy('product_id');
 
-        return collect($this->cart)->map(function ($item) use ($products, $stocks) {
+        return collect($this->items)->map(function ($item) use ($products, $stocks) {
             $product = $products->get($item['product_id']);
             if (! $product) {
                 return null;
@@ -134,64 +134,65 @@ class Pos extends Page implements HasTable
         return (float) collect($this->getCartItems())->sum('subtotal');
     }
 
-    public function addToCart(string $productId): void
+    public function incrementItem(string $productId): void
     {
-        $existingIndex = collect($this->cart)->search(fn ($item) => $item['product_id'] === $productId);
-
+        $existingIndex = collect($this->items)->search(fn ($item) => $item['product_id'] === $productId);
         if ($existingIndex !== false) {
-            $currentQty = (int) $this->cart[$existingIndex]['qty'] + 1;
-            if (! $this->isStockAvailable($productId, $currentQty)) {
-                $this->notifyWarning('Stok Tidak Mencukupi');
-
-                return;
-            }
-            $this->cart[$existingIndex]['qty'] = $currentQty;
+            $this->updateItemQty($productId, $this->items[$existingIndex]['qty'] + 1);
         } else {
-            if (! $this->isStockAvailable($productId, 1)) {
-                $this->notifyWarning('Stok Habis');
-
-                return;
-            }
-            $this->cart[] = [
-                'product_id' => $productId,
-                'qty' => 1,
-            ];
+            $this->updateItemQty($productId, 1);
         }
     }
 
-    public function updateQty(int $index, int $qty): void
+    public function decrementItem(string $productId): void
+    {
+        $existingIndex = collect($this->items)->search(fn ($item) => $item['product_id'] === $productId);
+        if ($existingIndex !== false) {
+            $this->updateItemQty($productId, $this->items[$existingIndex]['qty'] - 1);
+        }
+    }
+
+    public function updateItemQty(string $productId, $qty): void
     {
         $qty = max(0, (int) $qty);
+        $existingIndex = collect($this->items)->search(fn ($item) => $item['product_id'] === $productId);
 
         if ($qty < 1) {
-            unset($this->cart[$index]);
-            $this->cart = array_values($this->cart);
+            if ($existingIndex !== false) {
+                unset($this->items[$existingIndex]);
+                $this->items = array_values($this->items);
+            }
 
             return;
         }
 
-        if (! isset($this->cart[$index])) {
-            return;
-        }
-
-        if (! $this->isStockAvailable($this->cart[$index]['product_id'], $qty)) {
+        if (! $this->isStockAvailable($productId, $qty)) {
             $this->notifyWarning('Stok Tidak Mencukupi');
 
             return;
         }
 
-        $this->cart[$index]['qty'] = $qty;
+        if ($existingIndex !== false) {
+            $this->items[$existingIndex]['qty'] = $qty;
+        } else {
+            $this->items[] = [
+                'product_id' => $productId,
+                'qty' => $qty,
+            ];
+        }
     }
 
-    public function removeCartItem(int $index): void
+    public function removeItem(string $productId): void
     {
-        unset($this->cart[$index]);
-        $this->cart = array_values($this->cart);
+        $this->items = collect($this->items)
+            ->reject(fn ($item) => $item['product_id'] === $productId)
+            ->values()
+            ->toArray();
     }
 
     public function clearCart(): void
     {
-        $this->cart = [];
+        $this->items = [];
     }
 
     protected function isStockAvailable(string $productId, int $qty): bool
@@ -244,7 +245,7 @@ class Pos extends Page implements HasTable
             ->action(function (array $data) {
                 $this->processSale($data);
             })
-            ->hidden(fn (): bool => empty($this->cart));
+            ->hidden(fn (): bool => empty($this->items));
     }
 
     public function getPaymentHint(float $paidAmount): ?string
@@ -288,7 +289,7 @@ class Pos extends Page implements HasTable
                 $total = 0;
                 $saleItems = [];
 
-                foreach ($this->cart as $cartItem) {
+                foreach ($this->items as $cartItem) {
                     $product = Product::findOrFail($cartItem['product_id']);
                     $qty = (int) $cartItem['qty'];
 
@@ -367,7 +368,7 @@ class Pos extends Page implements HasTable
             return;
         }
 
-        $this->cart = [];
+        $this->items = [];
         $this->dispatch('$refresh');
 
         $printUrl = route('admin.sales.receipt', $sale);

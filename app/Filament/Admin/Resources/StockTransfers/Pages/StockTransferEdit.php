@@ -18,6 +18,7 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Resources\Pages\Page;
 use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
@@ -204,6 +205,7 @@ class StockTransferEdit extends Page implements HasForms, HasTable
                             ->icon(Heroicon::OutlinedCube)
                             ->schema([
                                 EmbeddedTable::make(),
+                                View::make('filament.admin.components.selected-items-summary'),
                             ]),
                     ]),
             ]);

@@ -77,7 +77,7 @@ class Pos extends StaffPos
                             $state < 10 => 'warning',
                             default => 'success',
                         })
-                        ->formatStateUsing(fn (int $state, Stock $record): string => 'Stok: '.$state.' • '.$record->location->name),
+                        ->formatStateUsing(fn (int $state, Stock $record): string => 'Stok '.$state.' | '.$record->location->name),
                 ])->space(2),
             ])
             ->contentGrid([
@@ -167,12 +167,12 @@ class Pos extends StaffPos
 
                 $locationId = $record->location_id;
 
-                $existingIndex = collect($this->cart)->search(
+                $existingIndex = collect($this->items)->search(
                     fn ($item) => $item['product_id'] === $product->id && ($item['location_id'] ?? null) === $locationId
                 );
 
                 if ($existingIndex !== false) {
-                    $currentQty = (int) $this->cart[$existingIndex]['qty'] + 1;
+                    $currentQty = (int) $this->items[$existingIndex]['qty'] + 1;
                     $stock = Stock::where('product_id', $product->id)
                         ->where('location_id', $locationId)
                         ->first();
@@ -182,8 +182,8 @@ class Pos extends StaffPos
 
                         return;
                     }
-                    $this->cart[$existingIndex]['qty'] = $currentQty;
-                    $this->cart[$existingIndex]['location_id'] = $locationId;
+                    $this->items[$existingIndex]['qty'] = $currentQty;
+                    $this->items[$existingIndex]['location_id'] = $locationId;
                 } else {
                     $stock = Stock::where('product_id', $product->id)
                         ->where('location_id', $locationId)
@@ -194,7 +194,7 @@ class Pos extends StaffPos
 
                         return;
                     }
-                    $this->cart[] = [
+                    $this->items[] = [
                         'product_id' => $product->id,
                         'location_id' => $locationId,
                         'qty' => 1,
@@ -207,10 +207,10 @@ class Pos extends StaffPos
 
     public function getCartItems(): array
     {
-        $productIds = collect($this->cart)->pluck('product_id');
+        $productIds = collect($this->items)->pluck('product_id');
         $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
 
-        return collect($this->cart)->map(function ($item) use ($products) {
+        return collect($this->items)->map(function ($item) use ($products) {
             $product = $products->get($item['product_id']);
             if (! $product) {
                 return null;
@@ -227,17 +227,17 @@ class Pos extends StaffPos
         $qty = max(0, (int) $qty);
 
         if ($qty < 1) {
-            unset($this->cart[$index]);
-            $this->cart = array_values($this->cart);
+            unset($this->items[$index]);
+            $this->items = array_values($this->items);
 
             return;
         }
 
-        if (! isset($this->cart[$index])) {
+        if (! isset($this->items[$index])) {
             return;
         }
 
-        $item = $this->cart[$index];
+        $item = $this->items[$index];
         $stock = Stock::where('product_id', $item['product_id'])
             ->where('location_id', $item['location_id'])
             ->first();
@@ -248,7 +248,13 @@ class Pos extends StaffPos
             return;
         }
 
-        $this->cart[$index]['qty'] = $qty;
+        $this->items[$index]['qty'] = $qty;
+    }
+
+    public function removeCartItem(int $index): void
+    {
+        unset($this->items[$index]);
+        $this->items = array_values($this->items);
     }
 
     public function processSale(array $data): void
@@ -261,7 +267,7 @@ class Pos extends StaffPos
                 $total = 0;
                 $saleItems = [];
 
-                foreach ($this->cart as $cartItem) {
+                foreach ($this->items as $cartItem) {
                     $product = Product::findOrFail($cartItem['product_id']);
                     $qty = (int) $cartItem['qty'];
                     $locationId = $cartItem['location_id'];
@@ -292,7 +298,7 @@ class Pos extends StaffPos
 
                 $sale = Sale::create([
                     'user_id' => auth()->id(),
-                    'location_id' => $this->cart[0]['location_id'],
+                    'location_id' => $this->items[0]['location_id'],
                     'total' => $total,
                     'paid_amount' => $paidAmount,
                     'payment_method' => $paymentMethod,
@@ -340,7 +346,7 @@ class Pos extends StaffPos
             return;
         }
 
-        $this->cart = [];
+        $this->items = [];
         $this->dispatch('$refresh');
 
         $printUrl = route('admin.sales.receipt', $sale);
