@@ -25,18 +25,31 @@
         </div>
     </x-slot>
 
+    @php
+        $totalAll = 0;
+    @endphp
     <div class="space-y-0 divide-y divide-gray-100 dark:divide-gray-700/50">
         @forelse ($getLivewire()->items as $index => $item)
+            @php
+                $price = $item['price'] ?? 0;
+                if (array_key_exists('selling_price_type', $item)) {
+                    $type = $item['selling_price_type'] ?? null;
+                    if ($type === 'default' || $item['price'] === null) {
+                        $product = \App\Models\Product::find($item['product_id']);
+                        $price = $product ? (float) $product->selling_price : 0;
+                    }
+                }
+                $subtotal = $price * $item['qty'];
+                $totalAll += $subtotal;
+            @endphp
             <div class="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                        {{ $item['name'] }}
+                        {{ $item['name'] ?? '' }}
                     </p>
-                    @if(isset($item['price']))
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            Rp {{ number_format($item['price'], 0, ',', '.') }}
-                        </p>
-                    @endif
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                        Rp {{ number_format($price, 0, ',', '.') }}
+                    </p>
                 </div>
 
                 <div class="flex items-center gap-1">
@@ -61,7 +74,10 @@
                     />
                 </div>
 
-                <div class="text-right shrink-0 min-w-[30px]">
+                <div class="text-right shrink-0 min-w-[88px]">
+                    <p class="text-sm font-semibold text-gray-900 dark:text-white tabular-nums">
+                        Rp {{ number_format($subtotal, 0, ',', '.') }}
+                    </p>
                     <button
                         wire:click="removeItem('{{ $item['product_id'] }}')"
                         type="button"
@@ -85,5 +101,17 @@
                 </p>
             </div>
         @endforelse
+
+        {{-- Total Price --}}
+        @if (count($getLivewire()->items) > 0)
+            <div class="pt-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-semibold text-gray-900 dark:text-white">Total</span>
+                    <span class="text-lg font-bold text-primary-600 dark:text-primary-400 tabular-nums">
+                        Rp {{ number_format($totalAll, 0, ',', '.') }}
+                    </span>
+                </div>
+            </div>
+        @endif
     </div>
 </x-filament::section>

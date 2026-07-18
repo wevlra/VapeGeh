@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['user_id', 'location_id', 'total', 'paid_amount', 'payment_method', 'notes'])]
+#[Fillable(['user_id', 'location_id', 'buyer_id', 'total', 'paid_amount', 'payment_method', 'notes'])]
 class Sale extends Model
 {
     /** @use HasFactory<SaleFactory> */
@@ -55,6 +55,14 @@ class Sale extends Model
     public function location(): BelongsTo
     {
         return $this->belongsTo(Location::class);
+    }
+
+    /**
+     * @return BelongsTo<Buyer, $this>
+     */
+    public function buyer(): BelongsTo
+    {
+        return $this->belongsTo(Buyer::class);
     }
 
     /**

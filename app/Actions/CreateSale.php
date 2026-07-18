@@ -23,8 +23,9 @@ class CreateSale
         string $paymentMethod = 'cash',
         float $paidAmount = 0,
         ?string $notes = null,
+        ?string $buyerId = null,
     ): Sale {
-        return DB::transaction(function () use ($user, $locationId, $items, $paymentMethod, $paidAmount, $notes) {
+        return DB::transaction(function () use ($user, $locationId, $items, $paymentMethod, $paidAmount, $notes, $buyerId) {
             $total = 0;
             $saleItems = [];
 
@@ -62,6 +63,7 @@ class CreateSale
             $sale = Sale::create([
                 'user_id' => $user->id,
                 'location_id' => $locationId,
+                'buyer_id' => $buyerId,
                 'total' => $total,
                 'paid_amount' => $paidAmount,
                 'payment_method' => $paymentMethod,
@@ -88,6 +90,7 @@ class CreateSale
                     'quantity' => -$saleItem['qty'],
                     'related_type' => Sale::class,
                     'related_id' => $sale->id,
+                    'buyer_id' => $buyerId,
                     'created_by' => $user->id,
                     'notes' => "Penjualan #{$sale->invoice_number}",
                 ]);

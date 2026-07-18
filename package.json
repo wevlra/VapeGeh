@@ -20,7 +20,7 @@
     },
     "dependencies": {
         "@capacitor/core": "^7.6.7",
-        "@capacitor/network": "^8.0.1",
+        "@capawesome/capacitor-network": "^0.1.1",
         "axios": "^1.18.1",
         "capacitor-thermal-printer": "^0.2.5",
         "html2canvas": "^1.4.1"

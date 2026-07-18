@@ -157,17 +157,22 @@ class Pos extends Page implements HasTable
         $qty = max(0, (int) $qty);
         $existingIndex = collect($this->items)->search(fn ($item) => $item['product_id'] === $productId);
 
+        $locationId = auth()->user()->location_id;
+        $stock = Stock::where('product_id', $productId)
+            ->where('location_id', $locationId)
+            ->first();
+        $available = $stock ? $stock->qty : 0;
+
+        if ($qty > $available) {
+            $qty = $available;
+            $this->notifyWarning("Stok tidak mencukupi. Kuantitas disesuaikan ke stok maksimal ({$qty})");
+        }
+
         if ($qty < 1) {
             if ($existingIndex !== false) {
                 unset($this->items[$existingIndex]);
                 $this->items = array_values($this->items);
             }
-
-            return;
-        }
-
-        if (! $this->isStockAvailable($productId, $qty)) {
-            $this->notifyWarning('Stok Tidak Mencukupi');
 
             return;
         }
@@ -321,6 +326,7 @@ class Pos extends Page implements HasTable
                 $sale = Sale::create([
                     'user_id' => auth()->id(),
                     'location_id' => $locationId,
+                    'buyer_id' => $data['buyer_id'] ?? null,
                     'total' => $total,
                     'paid_amount' => $paidAmount,
                     'payment_method' => $paymentMethod,
@@ -346,6 +352,7 @@ class Pos extends Page implements HasTable
                         'quantity' => -$saleItem['qty'],
                         'related_type' => Sale::class,
                         'related_id' => $sale->id,
+                        'buyer_id' => $data['buyer_id'] ?? null,
                         'notes' => "Sale {$sale->invoice_number}",
                         'created_by' => auth()->id(),
                     ]);

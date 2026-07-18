@@ -11,6 +11,7 @@
         "@capacitor/core": "^8.4.1",
         "@capacitor/filesystem": "^8.1.2",
         "@capacitor/share": "^8.0.1",
+        "@capawesome/capacitor-network": "^0.1.1",
         "capacitor-thermal-printer": "^0.2.5"
     },
     "devDependencies": {

@@ -1,7 +1,8 @@
 @php
     $record = $getRecord();
     $state = $getState() ?? [];
-    $existing = collect($this->items)->firstWhere('product_id', $record->id);
+    $itemKeyField = $itemKeyField ?? $state['itemKeyField'] ?? 'product_id';
+    $existing = collect($this->items)->firstWhere($itemKeyField, $record->id);
 
     $showPrice = $showPrice ?? $state['showPrice'] ?? false;
     $priceLabel = $priceLabel ?? $state['priceLabel'] ?? 'Harga:';

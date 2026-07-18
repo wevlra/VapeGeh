@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\CreateSale;
+use App\Models\Buyer;
 use App\Models\Location;
 use App\Models\Product;
 use App\Models\Sale;
@@ -165,4 +166,39 @@ it('relates sale to user and location', function () {
 
     expect($sale->user->is($staff))->toBeTrue()
         ->and($sale->location->is($location))->toBeTrue();
+});
+
+it('associates buyer to sale and stock movements if provided', function () {
+    $location = Location::factory()->create();
+    $staff = User::factory()->create([
+        'role' => 'staff',
+        'location_id' => $location->id,
+    ]);
+    $this->actingAs($staff);
+    $product = Product::factory()->create();
+    $buyer = Buyer::create(['name' => 'John Doe']);
+
+    Stock::factory()->create([
+        'product_id' => $product->id,
+        'location_id' => $location->id,
+        'qty' => 50,
+    ]);
+
+    $action = app(CreateSale::class);
+    $sale = $action->execute(
+        user: $staff,
+        locationId: $location->id,
+        items: [['product_id' => $product->id, 'qty' => 1]],
+        paymentMethod: 'cash',
+        paidAmount: 10000,
+        notes: null,
+        buyerId: $buyer->id,
+    );
+
+    expect($sale->buyer_id)->toBe($buyer->id);
+
+    $movement = StockMovement::where('product_id', $product->id)
+        ->where('type', 'out')
+        ->first();
+    expect($movement->buyer_id)->toBe($buyer->id);
 });

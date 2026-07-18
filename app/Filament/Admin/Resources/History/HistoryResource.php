@@ -52,8 +52,8 @@ class HistoryResource extends Resource
                 'creator',
                 'related' => function (MorphTo $morphTo) {
                     $morphTo->morphWith([
-                        Sale::class => ['items.product'],
-                        StockEntry::class => ['items.product'],
+                        Sale::class => ['items.product', 'buyer'],
+                        StockEntry::class => ['items.product', 'buyer'],
                         StockOpname::class => ['items.product'],
                         StockTransfer::class => ['items.product'],
                     ]);

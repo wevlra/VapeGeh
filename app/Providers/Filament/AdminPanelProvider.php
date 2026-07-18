@@ -115,7 +115,7 @@ class AdminPanelProvider extends PanelProvider
                 FilamentView::registerRenderHook(
                     PanelsRenderHook::BODY_END,
                     fn (): string => Blade::render('<x-printer-scanner-modal /><x-receipt-action-modal /><x-network-check-modal />').
-                        Blade::render('@vite(["resources/js/receipt-image.js"])')
+                        Blade::render('@vite(["resources/js/app.js", "resources/js/receipt-image.js"])')
                 );
 
                 app()->bind(LogoutResponse::class, fn (): \Filament\Auth\Http\Responses\LogoutResponse => new class extends \Filament\Auth\Http\Responses\LogoutResponse

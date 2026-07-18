@@ -67,8 +67,14 @@ class InvoiceService
             $buyerData['address'] = $related->toLocation->address ?? config('store.address');
         } else {
             // Default Sales/Other logic
-            if ($isSale && $related->user) {
-                $buyerData['name'] = $related->user->name;
+            if ($isSale && $related->buyer) {
+                $buyerData['name'] = $related->buyer->name;
+                if ($related->buyer->phone) {
+                    $buyerData['phone'] = $related->buyer->phone;
+                }
+                if ($related->buyer->email) {
+                    $buyerData['address'] = $related->buyer->email;
+                }
             } elseif ($stockMovement->buyer) {
                 $buyerData['name'] = $stockMovement->buyer->name;
                 if ($stockMovement->buyer->phone) {
@@ -77,6 +83,8 @@ class InvoiceService
                 if ($stockMovement->buyer->email) {
                     $buyerData['address'] = $stockMovement->buyer->email;
                 }
+            } elseif ($isSale && $related->user) {
+                $buyerData['name'] = $related->user->name;
             }
         }
 

@@ -25,6 +25,9 @@ class SaleInfolist
                             ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                         TextEntry::make('user.name')
                             ->label('Kasir'),
+                        TextEntry::make('buyer.name')
+                            ->label('Pembeli')
+                            ->default('Walk-in Customer'),
                         TextEntry::make('location.name')
                             ->label('Lokasi'),
                         TextEntry::make('payment_method')

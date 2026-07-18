@@ -69,11 +69,7 @@
                     }
                 });
 
-                if (window.Capacitor?.isNativePlatform?.()) {
-                    this.initCapacitorListener();
-                } else {
-                    this.initBrowserListeners();
-                }
+                this.initListener();
 
                 this.retryInterval = setInterval(() => {
                     if (!this.isConnected) {
@@ -83,51 +79,30 @@
             },
 
             async checkConnection() {
-                if (window.Capacitor?.isNativePlatform?.()) {
-                    try {
-                        const Network = window.Capacitor?.Plugins?.Network;
-                        if (Network?.getStatus) {
-                            const status = await Network.getStatus();
-                            this.isConnected = status.connected;
-                            if (status.connected) {
-                                this.hasChecked = true;
-                            }
-                            return;
+                try {
+                    const Network = window.CapawesomeNetwork || window.Capacitor?.Plugins?.Network;
+                    if (Network?.getStatus) {
+                        const status = await Network.getStatus();
+                        this.isConnected = status.connected;
+                        if (status.connected) {
+                            this.hasChecked = true;
                         }
-                    } catch (e) {
-                        // fall through
                     }
-                }
-                this.isConnected = navigator.onLine;
-                if (navigator.onLine) {
-                    this.hasChecked = true;
+                } catch (e) {
+                    // console.error('Network plugin failed', e);
                 }
             },
 
-            initCapacitorListener() {
-                const Network = window.Capacitor?.Plugins?.Network;
-                if (!Network?.addListener) return;
-
-                Network.addListener('networkStatusChange', (status) => {
-                    this.isConnected = status.connected;
-                    if (status.connected) {
-                        this.hasChecked = true;
-                    }
-                });
-            },
-
-            initBrowserListeners() {
-                this._onOnline = () => {
-                    this.isConnected = true;
-                    this.hasChecked = true;
-                };
-                this._onOffline = () => {
-                    this.isConnected = false;
-                    this.hasChecked = true;
-                };
-
-                window.addEventListener('online', this._onOnline);
-                window.addEventListener('offline', this._onOffline);
+            initListener() {
+                const Network = window.CapawesomeNetwork || window.Capacitor?.Plugins?.Network;
+                if (Network?.addListener) {
+                    Network.addListener('networkStatusChange', (status) => {
+                        this.isConnected = status.connected;
+                        if (status.connected) {
+                            this.hasChecked = true;
+                        }
+                    });
+                }
             },
 
             async retryConnection() {

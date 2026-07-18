@@ -80,6 +80,9 @@ class HistoryInfolist
                                         'cash' => 'Tunai',
                                         default => ucfirst($state),
                                     }),
+                                TextEntry::make('related.buyer.name')
+                                    ->label('Pembeli')
+                                    ->default('Walk-in Customer'),
                                 TextEntry::make('related.notes')
                                     ->label('Catatan')
                                     ->columnSpanFull()
@@ -192,6 +195,15 @@ class HistoryInfolist
                                         'qris' => 'QRIS',
                                         default => $state,
                                     }),
+                                TextEntry::make('stock_entry_total')
+                                    ->label('Total')
+                                    ->state(fn () => $total)
+                                    ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
+                                TextEntry::make('related.notes')
+                                    ->label('Catatan')
+                                    ->columnSpanFull()
+                                    ->default('Tidak ada catatan')
+                                    ->color(fn ($state, $record) => blank($record->related?->notes) ? 'gray' : null),
                                 RepeatableEntry::make('additional_costs')
                                     ->label('Biaya Tambahan')
                                     ->hidden(fn () => blank($entry->additional_costs))
@@ -202,21 +214,11 @@ class HistoryInfolist
                                     ->schema([
                                         TextEntry::make('description')
                                             ->label('Deskripsi')
-                                            ->default('Tidak ada deskripsi')
-                                            ->color(fn ($state, $record) => blank($record->description) ? 'gray' : null),
+                                            ->default('Tidak ada deskripsi'),
                                         TextEntry::make('amount')
                                             ->label('Jumlah')
                                             ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                                     ]),
-                                TextEntry::make('related.notes')
-                                    ->label('Catatan')
-                                    ->columnSpanFull()
-                                    ->default('Tidak ada catatan')
-                                    ->color(fn ($state, $record) => blank($record->related?->notes) ? 'gray' : null),
-                                TextEntry::make('stock_entry_total')
-                                    ->label('Total Harga')
-                                    ->state(fn () => $total)
-                                    ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                                 RepeatableEntry::make('related.items')
                                     ->hiddenLabel()
                                     ->table([

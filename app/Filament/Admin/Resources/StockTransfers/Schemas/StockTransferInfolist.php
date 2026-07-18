@@ -45,16 +45,16 @@ class StockTransferInfolist
                             ->label('Dari'),
                         TextEntry::make('toLocation.name')
                             ->label('Ke'),
-                        TextEntry::make('notes')
-                            ->label('Catatan')
-                            ->default('Tidak ada catatan')
-                            ->color(fn ($state, $record) => blank($record->notes) ? 'gray' : null)
-                            ->columnSpanFull(),
                         TextEntry::make('creator.name')
                             ->label('Dibuat oleh'),
                         TextEntry::make('created_at')
                             ->label('Tanggal')
                             ->dateTime(),
+                        TextEntry::make('notes')
+                            ->label('Catatan')
+                            ->default('Tidak ada catatan')
+                            ->color(fn ($state, $record) => blank($record->notes) ? 'gray' : null)
+                            ->columnSpanFull(),
                     ]),
 
                 Section::make('Daftar Produk')

@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Pages;
 
 use App\Filament\Concerns\NotifiesWithDetail;
 use App\Filament\Staff\Pages\Pos as StaffPos;
+use App\Models\Buyer;
 use App\Models\Location;
 use App\Models\Product;
 use App\Models\Sale;
@@ -12,10 +13,15 @@ use App\Models\StockMovement;
 use BackedEnum;
 use DomainException;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Support\Icons\Heroicon;
+use Filament\Support\RawJs;
 use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
@@ -62,9 +68,15 @@ class Pos extends StaffPos
                         ->formatStateUsing(fn (Stock $record): string => mb_strimwidth($record->product->name, 0, 40, '...')),
                     TextColumn::make('price_display')
                         ->state(fn (Stock $record) => $record)
-                        ->formatStateUsing(function (Stock $record): string {
-                            if ($record->price > 0) {
-                                return 'Rp '.number_format((float) $record->price, 0, ',', '.').' (Outlet)';
+                        ->formatStateUsing(function (Stock $record, $livewire): string {
+                            $priceType = $livewire->tableFilters['price_type']['value'] ?? 'default';
+
+                            if ($priceType === 'reseller') {
+                                return 'Rp '.number_format((float) $record->product->reseller_price, 0, ',', '.').' (Reseller)';
+                            } elseif ($priceType === 'price_1') {
+                                return 'Rp '.number_format((float) $record->product->price_1, 0, ',', '.').' (Harga 1)';
+                            } elseif ($priceType === 'price_2') {
+                                return 'Rp '.number_format((float) $record->product->price_2, 0, ',', '.').' (Harga 2)';
                             }
 
                             return 'Rp '.number_format((float) $record->product->selling_price, 0, ',', '.');
@@ -78,6 +90,14 @@ class Pos extends StaffPos
                             default => 'success',
                         })
                         ->formatStateUsing(fn (int $state, Stock $record): string => 'Stok '.$state.' | '.$record->location->name),
+                    ViewColumn::make('controls')
+                        ->label('Kontrol')
+                        ->view('filament.tables.columns.pos-product-inline-controls')
+                        ->extraAttributes(['class' => 'w-full flex justify-end mt-4'])
+                        ->state(fn () => [
+                            'showPrice' => false,
+                            'itemKeyField' => 'stock_id',
+                        ]),
                 ])->space(2),
             ])
             ->contentGrid([
@@ -89,137 +109,105 @@ class Pos extends StaffPos
                     ->label('Lokasi')
                     ->options(fn () => Location::pluck('name', 'id'))
                     ->visible(! $locationId),
+                SelectFilter::make('price_type')
+                    ->label('Tipe Harga')
+                    ->options([
+                        'default' => 'Default (Harga Jual)',
+                        'reseller' => 'Reseller',
+                        'price_1' => 'Harga 1',
+                        'price_2' => 'Harga 2',
+                    ])
+                    ->default('default')
+                    ->selectablePlaceholder(false)
+                    ->query(fn ($query) => $query), // don't filter the actual query
             ])
-            ->actions([
-                $this->addToCartAction(),
-            ])
+            ->actions([])
             ->defaultSort('locations.name');
-    }
-
-    /**
-     * Add to cart action with modal for price selection (admin only).
-     */
-    protected function addToCartAction(): Action
-    {
-        return Action::make('addToCart')
-            ->label('Tambah')
-            ->icon('heroicon-m-plus')
-            ->color('primary')
-            ->button()
-            ->extraAttributes(['class' => 'w-full justify-center'])
-            ->form([
-                Select::make('selected_price')
-                    ->label('Harga')
-                    ->options(function (Stock $record): array {
-                        $product = $record->product;
-                        $options = [];
-
-                        if ((float) $record->price > 0) {
-                            $options['stock'] = 'Harga Outlet: Rp '.number_format((float) $record->price, 0, ',', '.');
-                        }
-
-                        if ((float) $product->selling_price > 0) {
-                            $options['default'] = 'Default: Rp '.number_format((float) $product->selling_price, 0, ',', '.');
-                        }
-
-                        if ((float) $product->reseller_price > 0) {
-                            $options['reseller'] = 'Reseller: Rp '.number_format((float) $product->reseller_price, 0, ',', '.');
-                        }
-                        if ((float) $product->price_1 > 0) {
-                            $options['price_1'] = 'Harga 1: Rp '.number_format((float) $product->price_1, 0, ',', '.');
-                        }
-                        if ((float) $product->price_2 > 0) {
-                            $options['price_2'] = 'Harga 2: Rp '.number_format((float) $product->price_2, 0, ',', '.');
-                        }
-
-                        if (empty($options)) {
-                            $options['default'] = 'Rp 0';
-                        }
-
-                        return $options;
-                    })
-                    ->default(fn (Stock $record): string => $record->price > 0 ? 'stock' : 'default')
-                    ->required(),
-            ])
-            ->action(function (array $data, Stock $record): void {
-                $product = $record->product;
-                $selected = $data['selected_price'];
-
-                if ($selected === 'default') {
-                    $price = (float) $product->selling_price;
-                    $label = 'Default';
-                } elseif ($selected === 'stock') {
-                    $price = (float) $record->price;
-                    $label = 'Harga Outlet';
-                } elseif ($selected === 'reseller') {
-                    $price = (float) $product->reseller_price;
-                    $label = 'Reseller';
-                } elseif ($selected === 'price_1') {
-                    $price = (float) $product->price_1;
-                    $label = 'Harga 1';
-                } elseif ($selected === 'price_2') {
-                    $price = (float) $product->price_2;
-                    $label = 'Harga 2';
-                } else {
-                    $price = 0;
-                    $label = 'Tidak Diketahui';
-                }
-
-                $locationId = $record->location_id;
-
-                $existingIndex = collect($this->items)->search(
-                    fn ($item) => $item['product_id'] === $product->id && ($item['location_id'] ?? null) === $locationId
-                );
-
-                if ($existingIndex !== false) {
-                    $currentQty = (int) $this->items[$existingIndex]['qty'] + 1;
-                    $stock = Stock::where('product_id', $product->id)
-                        ->where('location_id', $locationId)
-                        ->first();
-
-                    if (! $stock || $stock->qty < $currentQty) {
-                        $this->notifyWarning('Stok Tidak Mencukupi');
-
-                        return;
-                    }
-                    $this->items[$existingIndex]['qty'] = $currentQty;
-                    $this->items[$existingIndex]['location_id'] = $locationId;
-                } else {
-                    $stock = Stock::where('product_id', $product->id)
-                        ->where('location_id', $locationId)
-                        ->first();
-
-                    if (! $stock || $stock->qty < 1) {
-                        $this->notifyWarning('Stok Habis');
-
-                        return;
-                    }
-                    $this->items[] = [
-                        'product_id' => $product->id,
-                        'location_id' => $locationId,
-                        'qty' => 1,
-                        'price' => $price,
-                        'price_label' => $label,
-                    ];
-                }
-            });
     }
 
     public function getCartItems(): array
     {
         $productIds = collect($this->items)->pluck('product_id');
         $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
+        $priceType = $this->tableFilters['price_type']['value'] ?? 'default';
 
-        return collect($this->items)->map(function ($item) use ($products) {
+        return collect($this->items)->map(function ($item) use ($products, $priceType) {
             $product = $products->get($item['product_id']);
             if (! $product) {
                 return null;
             }
             $item['name'] = $product->name;
+
+            if ($priceType === 'reseller') {
+                $item['price'] = (float) $product->reseller_price;
+                $item['price_label'] = 'Reseller';
+            } elseif ($priceType === 'price_1') {
+                $item['price'] = (float) $product->price_1;
+                $item['price_label'] = 'Harga 1';
+            } elseif ($priceType === 'price_2') {
+                $item['price'] = (float) $product->price_2;
+                $item['price_label'] = 'Harga 2';
+            } else {
+                $item['price'] = (float) $product->selling_price;
+                $item['price_label'] = 'Default';
+            }
+
             $item['subtotal'] = $item['price'] * (int) $item['qty'];
 
             return $item;
         })->filter()->values()->toArray();
+    }
+
+    public function incrementItem(string $stockId): void
+    {
+        $existingIndex = collect($this->items)->search(fn ($item) => ($item['stock_id'] ?? null) === $stockId);
+        if ($existingIndex !== false) {
+            $this->updateItemQty($stockId, $this->items[$existingIndex]['qty'] + 1);
+        } else {
+            $this->updateItemQty($stockId, 1);
+        }
+    }
+
+    public function decrementItem(string $stockId): void
+    {
+        $existingIndex = collect($this->items)->search(fn ($item) => ($item['stock_id'] ?? null) === $stockId);
+        if ($existingIndex !== false) {
+            $this->updateItemQty($stockId, $this->items[$existingIndex]['qty'] - 1);
+        }
+    }
+
+    public function updateItemQty(string $stockId, $qty): void
+    {
+        $qty = max(0, (int) $qty);
+        $existingIndex = collect($this->items)->search(fn ($item) => ($item['stock_id'] ?? null) === $stockId);
+
+        $stock = Stock::with('product')->find($stockId);
+        $available = $stock ? $stock->qty : 0;
+
+        if ($qty > $available) {
+            $qty = $available;
+            $this->notifyWarning("Stok tidak mencukupi. Kuantitas disesuaikan ke stok maksimal ({$qty})");
+        }
+
+        if ($qty < 1) {
+            if ($existingIndex !== false) {
+                unset($this->items[$existingIndex]);
+                $this->items = array_values($this->items);
+            }
+
+            return;
+        }
+
+        if ($existingIndex !== false) {
+            $this->items[$existingIndex]['qty'] = $qty;
+        } else {
+            $this->items[] = [
+                'stock_id' => $stockId,
+                'product_id' => $stock->product_id,
+                'location_id' => $stock->location_id,
+                'qty' => $qty,
+            ];
+        }
     }
 
     public function updateQty(int $index, int $qty): void
@@ -241,9 +229,16 @@ class Pos extends StaffPos
         $stock = Stock::where('product_id', $item['product_id'])
             ->where('location_id', $item['location_id'])
             ->first();
+        $available = $stock ? $stock->qty : 0;
 
-        if (! $stock || $stock->qty < $qty) {
-            $this->notifyWarning('Stok Tidak Mencukupi');
+        if ($qty > $available) {
+            $qty = $available;
+            $this->notifyWarning("Stok tidak mencukupi. Kuantitas disesuaikan ke stok maksimal ({$qty})");
+        }
+
+        if ($qty < 1) {
+            unset($this->items[$index]);
+            $this->items = array_values($this->items);
 
             return;
         }
@@ -261,9 +256,10 @@ class Pos extends StaffPos
     {
         $paidAmount = (float) ($data['paid_amount'] ?? 0);
         $paymentMethod = $data['payment_method'] ?? 'cash';
+        $priceType = $this->tableFilters['price_type']['value'] ?? 'default';
 
         try {
-            $sale = DB::transaction(function () use ($paidAmount, $paymentMethod, $data) {
+            $sale = DB::transaction(function () use ($paidAmount, $paymentMethod, $data, $priceType) {
                 $total = 0;
                 $saleItems = [];
 
@@ -283,7 +279,16 @@ class Pos extends StaffPos
                         );
                     }
 
-                    $price = (float) $cartItem['price'];
+                    if ($priceType === 'reseller') {
+                        $price = (float) $product->reseller_price;
+                    } elseif ($priceType === 'price_1') {
+                        $price = (float) $product->price_1;
+                    } elseif ($priceType === 'price_2') {
+                        $price = (float) $product->price_2;
+                    } else {
+                        $price = (float) $product->selling_price;
+                    }
+
                     $subtotal = $price * $qty;
                     $total += $subtotal;
 
@@ -299,6 +304,7 @@ class Pos extends StaffPos
                 $sale = Sale::create([
                     'user_id' => auth()->id(),
                     'location_id' => $this->items[0]['location_id'],
+                    'buyer_id' => $data['buyer_id'] ?? null,
                     'total' => $total,
                     'paid_amount' => $paidAmount,
                     'payment_method' => $paymentMethod,
@@ -324,6 +330,7 @@ class Pos extends StaffPos
                         'quantity' => -$saleItem['qty'],
                         'related_type' => Sale::class,
                         'related_id' => $sale->id,
+                        'buyer_id' => $data['buyer_id'] ?? null,
                         'notes' => "Sale {$sale->invoice_number}",
                         'created_by' => auth()->id(),
                     ]);
@@ -374,5 +381,72 @@ class Pos extends StaffPos
                     }),
             ])
             ->send();
+    }
+
+    public function checkoutAction(): Action
+    {
+        return Action::make('checkout')
+            ->label('Bayar')
+            ->icon('heroicon-m-credit-card')
+            ->modalHeading('Bayar')
+            ->modalContent(view('filament.staff.pages.checkout-summary'))
+            ->form([
+                Select::make('buyer_id')
+                    ->label('Pembeli (opsional)')
+                    ->options(fn () => Buyer::pluck('name', 'id'))
+                    ->searchable()
+                    ->createOptionForm([
+                        TextInput::make('name')
+                            ->label('Nama')
+                            ->required()
+                            ->maxLength(255),
+                        TextInput::make('phone')
+                            ->label('Telepon')
+                            ->tel()
+                            ->maxLength(50),
+                        TextInput::make('email')
+                            ->label('Email')
+                            ->email()
+                            ->maxLength(255),
+                        Textarea::make('address')
+                            ->label('Alamat')
+                            ->rows(2),
+                    ])
+                    ->createOptionUsing(function (array $data): string {
+                        return Buyer::create($data)->getKey();
+                    }),
+                Radio::make('payment_method')
+                    ->label('Metode Pembayaran')
+                    ->options([
+                        'cash' => 'Tunai',
+                        'transfer' => 'Transfer',
+                        'qris' => 'QRIS',
+                    ])
+                    ->inline()
+                    ->default('cash')
+                    ->live(),
+                TextInput::make('paid_amount')
+                    ->label('Bayar')
+                    ->numeric()
+                    ->prefix('Rp')
+                    ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
+                    ->stripCharacters('.')
+                    ->default(fn (): float => $this->getCartTotal())
+                    ->visible(fn (callable $get): bool => $get('payment_method') === 'cash')
+                    ->rules(fn (callable $get): array => $get('payment_method') === 'cash'
+                        ? ['numeric', 'min:'.$this->getCartTotal()]
+                        : ['numeric'])
+                    ->live()
+                    ->hint(fn (callable $get): ?string => $this->getPaymentHint((float) ($get('paid_amount') ?? 0)))
+                    ->hintColor(fn (callable $get): ?string => $this->getPaymentHintColor((float) ($get('paid_amount') ?? 0))),
+                Textarea::make('notes')
+                    ->label('Catatan (opsional)')
+                    ->placeholder('Catatan untuk transaksi ini...')
+                    ->maxLength(1000),
+            ])
+            ->action(function (array $data) {
+                $this->processSale($data);
+            })
+            ->hidden(fn (): bool => empty($this->items));
     }
 }

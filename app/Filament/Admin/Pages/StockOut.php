@@ -229,6 +229,26 @@ class StockOut extends Page implements HasForms, HasTable
                                 return 'Harga: Rp '.number_format((float) $state, 0, ',', '.');
                             })
                             ->color('gray'),
+                        TextColumn::make('stock_info')
+                            ->label('Stok')
+                            ->getStateUsing(function (Product $record) {
+                                $locationId = $this->data['location_id'] ?? null;
+                                if (! $locationId) {
+                                    return 'Pilih lokasi terlebih dahulu';
+                                }
+                                $stock = $record->stocks()->where('location_id', $locationId)->first();
+
+                                return $stock ? $stock->qty : 0;
+                            })
+                            ->formatStateUsing(fn ($state) => is_numeric($state) ? "Stok {$state}" : $state)
+                            ->color(function ($state) {
+                                if (! is_numeric($state)) {
+                                    return 'gray';
+                                }
+
+                                return $state <= 0 ? 'danger' : ($state < 10 ? 'warning' : 'success');
+                            })
+                            ->badge(fn ($state) => is_numeric($state)),
                     ]),
                     ViewColumn::make('controls')
                         ->label('Kontrol')
@@ -247,6 +267,47 @@ class StockOut extends Page implements HasForms, HasTable
             ->reject(fn ($item) => $item['product_id'] === $productId)
             ->values()
             ->toArray();
+    }
+
+    public function updateItemQty(string $productId, $qty): void
+    {
+        $qty = (int) $qty;
+        if ($qty <= 0) {
+            $this->removeItem($productId);
+
+            return;
+        }
+
+        $record = Product::find($productId);
+        if (! $record) {
+            return;
+        }
+
+        $locationId = $this->data['location_id'] ?? null;
+        if ($locationId) {
+            $stock = $record->stocks()->where('location_id', $locationId)->first();
+            $available = $stock ? $stock->qty : 0;
+            if ($qty > $available) {
+                $qty = $available;
+                $this->notifyWarning("Stok tidak mencukupi. Kuantitas disesuaikan ke stok maksimal ({$qty})");
+
+                if ($qty <= 0) {
+                    $this->removeItem($productId);
+
+                    return;
+                }
+            }
+        }
+
+        $existingIndex = collect($this->items)->search(fn ($item) => $item['product_id'] === $productId);
+
+        $itemData = $this->buildItemData($record, $qty, $existingIndex !== false ? $this->items[$existingIndex] : null);
+
+        if ($existingIndex !== false) {
+            $this->items[$existingIndex] = $itemData;
+        } else {
+            $this->items[] = $itemData;
+        }
     }
 
     public function save(): void

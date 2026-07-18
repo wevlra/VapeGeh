@@ -50,7 +50,7 @@ class SaleResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['items.product']);
+        return parent::getEloquentQuery()->with(['items.product', 'buyer']);
     }
 
     public static function infolist(Schema $schema): Schema
