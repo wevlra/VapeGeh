@@ -9,6 +9,7 @@ use App\Models\Location;
 use App\Models\Product;
 use App\Models\Stock;
 use App\Models\StockOpname;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -78,17 +79,8 @@ class StockOpnameCreate extends Page implements HasForms, HasTable
                                             ->afterStateUpdated(function (callable $set) {
                                                 $this->items = [];
                                             }),
-                                        Select::make('price_type')
-                                            ->label('Gunakan Harga (Jika Stok Kurang)')
-                                            ->options([
-                                                'purchase_price' => 'Harga Beli',
-                                                'selling_price' => 'Harga Jual (Default)',
-                                                'reseller_price' => 'Harga Jual Reseller',
-                                                'price_1' => 'Harga Jual 1',
-                                                'price_2' => 'Harga Jual 2',
-                                            ])
-                                            ->default('purchase_price')
-                                            ->required(),
+                                        Hidden::make('price_type')
+                                            ->default('reseller_price'),
                                         Textarea::make('notes')
                                             ->label('Catatan')
                                             ->rows(2)
@@ -155,6 +147,15 @@ class StockOpnameCreate extends Page implements HasForms, HasTable
         $existingIndex = collect($this->items)->search(fn ($item) => $item['product_id'] === $productId);
         $itemData = $this->buildItemData($record, $qty, $existingIndex !== false ? $this->items[$existingIndex] : null);
 
+        if ($itemData['difference'] === 0) {
+            if ($existingIndex !== false) {
+                unset($this->items[$existingIndex]);
+                $this->items = array_values($this->items);
+            }
+
+            return;
+        }
+
         if ($existingIndex !== false) {
             $this->items[$existingIndex] = $itemData;
         } else {
@@ -206,10 +207,10 @@ class StockOpnameCreate extends Page implements HasForms, HasTable
     public function save(): void
     {
         $data = $this->form->getState();
-        $items = $this->items;
+        $items = collect($this->items)->filter(fn ($item) => $item['difference'] !== 0)->values()->toArray();
 
         if (empty($items)) {
-            $this->notifyError('Tidak Ada Produk', 'Tambahkan minimal satu produk.');
+            $this->notifyError('Tidak Ada Produk', 'Tambahkan minimal satu produk dengan selisih stok.');
 
             return;
         }

@@ -25,15 +25,7 @@ class StockOpnameInfolist
                             ->label('Lokasi'),
                         TextEntry::make('price_type')
                             ->label('Menggunakan Harga')
-                            ->hidden(auth()->user()->role === 'staff')
-                            ->formatStateUsing(fn (string $state): string => match ($state) {
-                                'purchase_price' => 'Harga Beli',
-                                'selling_price' => 'Harga Jual',
-                                'reseller_price' => 'Harga Reseller',
-                                'price_1' => 'Harga 1',
-                                'price_2' => 'Harga 2',
-                                default => 'Harga Beli',
-                            }),
+                            ->state('Harga Opname'),
                         TextEntry::make('total_difference_value')
                             ->label('Total Selisih Nilai')
                             ->state(fn (StockOpname $record): float => $record->total_difference_value)

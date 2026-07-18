@@ -31,11 +31,7 @@ class StockOpnameItem extends Model
 
     public function getDifferenceValueAttribute(): float
     {
-        if ($this->difference > 0) {
-            $priceField = 'purchase_price';
-        } else {
-            $priceField = $this->stockOpname?->price_type ?? 'purchase_price';
-        }
+        $priceField = $this->stockOpname?->price_type ?? 'reseller_price';
 
         return (float) ($this->difference * ($this->product?->{$priceField} ?? 0));
     }

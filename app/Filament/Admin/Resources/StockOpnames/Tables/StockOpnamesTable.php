@@ -26,18 +26,7 @@ class StockOpnamesTable
                 TextColumn::make('location.name')
                     ->label('Lokasi')
                     ->searchable(),
-                TextColumn::make('price_type')
-                    ->label('Harga')
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'purchase_price' => 'Beli',
-                        'selling_price' => 'Jual',
-                        'reseller_price' => 'Reseller',
-                        'price_1' => 'Harga 1',
-                        'price_2' => 'Harga 2',
-                        default => 'Beli',
-                    })
-                    ->badge()
-                    ->color('info'),
+
                 TextColumn::make('total_difference_value')
                     ->label('Total Selisih Nilai')
                     ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))

@@ -65,3 +65,7 @@
     align-self: flex-start;
 }
 
+html,
+body {
+    touch-action: manipulation;
+}
