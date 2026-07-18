@@ -51,9 +51,9 @@ class StockRelationManager extends RelationManager
                         default => 'success',
                     }),
                 TextColumn::make('price')
-                    ->label('Harga Jual Outlet')
+                    ->label('Harga Outlet')
                     ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
-                    ->placeholder('Default')
+                    ->placeholder('Harga 1')
                     ->sortable(),
             ])
             ->recordActions([
@@ -67,24 +67,19 @@ class StockRelationManager extends RelationManager
                             ->minValue(0)
                             ->default(fn (Stock $record): int => $record->qty),
                         Select::make('price_type')
-                            ->label('Harga Jual Outlet')
+                            ->label('Harga Outlet')
                             ->options(function (Stock $record): array {
                                 $product = $record->product;
                                 $options = [];
 
-                                $defaultPrice = (float) $product->selling_price;
-                                if ($defaultPrice > 0) {
-                                    $options['default'] = 'Default: Rp '.number_format($defaultPrice, 0, ',', '.');
-                                }
-
-                                if ((float) $product->reseller_price > 0) {
-                                    $options['reseller'] = 'Reseller: Rp '.number_format((float) $product->reseller_price, 0, ',', '.');
-                                }
                                 if ((float) $product->price_1 > 0) {
                                     $options['price_1'] = 'Harga 1: Rp '.number_format((float) $product->price_1, 0, ',', '.');
                                 }
                                 if ((float) $product->price_2 > 0) {
                                     $options['price_2'] = 'Harga 2: Rp '.number_format((float) $product->price_2, 0, ',', '.');
+                                }
+                                if ((float) $product->reseller_price > 0) {
+                                    $options['reseller'] = 'Harga Reseller: Rp '.number_format((float) $product->reseller_price, 0, ',', '.');
                                 }
 
                                 return $options;
@@ -94,17 +89,15 @@ class StockRelationManager extends RelationManager
                                     return null;
                                 }
                                 $product = $record->product;
-                                if ((float) $record->price == (float) $product->selling_price) {
-                                    return 'default';
-                                } elseif ((float) $record->price == (float) $product->reseller_price && (float) $product->reseller_price > 0) {
-                                    return 'reseller';
-                                } elseif ((float) $record->price == (float) $product->price_1 && (float) $product->price_1 > 0) {
+                                if ((float) $record->price == (float) $product->price_1 && (float) $product->price_1 > 0) {
                                     return 'price_1';
                                 } elseif ((float) $record->price == (float) $product->price_2 && (float) $product->price_2 > 0) {
                                     return 'price_2';
+                                } elseif ((float) $record->price == (float) $product->reseller_price && (float) $product->reseller_price > 0) {
+                                    return 'reseller';
                                 }
 
-                                return 'default';
+                                return null;
                             })
                             ->nullable(),
                         Textarea::make('notes')
@@ -115,8 +108,6 @@ class StockRelationManager extends RelationManager
                         $priceType = $data['price_type'] ?? null;
                         if ($priceType === 'custom') {
                             $priceValue = (float) ($data['custom_price'] ?? 0);
-                        } elseif ($priceType === 'default') {
-                            $priceValue = null;
                         } elseif ($priceType === 'reseller') {
                             $priceValue = (float) $record->product->reseller_price;
                         } elseif ($priceType === 'price_1') {

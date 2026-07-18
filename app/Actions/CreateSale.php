@@ -42,7 +42,7 @@ class CreateSale
                     );
                 }
 
-                $price = $stock && $stock->price > 0 ? (float) $stock->price : (float) $product->selling_price;
+                $price = $stock && $stock->price > 0 ? (float) $stock->price : (float) $product->price_1;
                 $subtotal = $price * $item['qty'];
                 $total += $subtotal;
 

@@ -84,10 +84,9 @@ class StockTransferCreate extends Page implements HasForms, HasTable
                                         Select::make('price_id')
                                             ->label('Update Harga Tujuan (Ops.)')
                                             ->options([
-                                                'default' => 'Harga Default',
-                                                'reseller' => 'Harga Reseller',
                                                 'price_1' => 'Harga 1',
                                                 'price_2' => 'Harga 2',
+                                                'reseller' => 'Harga Reseller',
                                             ])
                                             ->placeholder('Tetap / Tidak Diubah')
                                             ->nullable()
@@ -115,9 +114,7 @@ class StockTransferCreate extends Page implements HasForms, HasTable
     {
         $sellingPriceType = $this->data['price_id'] ?? null;
         $resolvedPrice = null;
-        if ($sellingPriceType === 'default') {
-            $resolvedPrice = 0; // 0 signals CompleteStockTransfer to reset price to default (null)
-        } elseif ($sellingPriceType === 'reseller') {
+        if ($sellingPriceType === 'reseller') {
             $resolvedPrice = (float) $record->reseller_price;
         } elseif ($sellingPriceType === 'price_1') {
             $resolvedPrice = (float) $record->price_1;
@@ -129,7 +126,7 @@ class StockTransferCreate extends Page implements HasForms, HasTable
             'product_id' => $record->id,
             'name' => $record->name,
             'qty' => $qty,
-            'selling_price_type' => $sellingPriceType,
+            'price_1_type' => $sellingPriceType,
             'price' => $resolvedPrice, // for selected-items-preview
         ];
     }
@@ -146,8 +143,8 @@ class StockTransferCreate extends Page implements HasForms, HasTable
                             ->label('Nama Produk')
                             ->weight('bold')
                             ->searchable(),
-                        TextColumn::make('selling_price')
-                            ->label('Harga Jual')
+                        TextColumn::make('price_1')
+                            ->label('Harga 1')
                             ->getStateUsing(function (Product $record) {
                                 $priceId = $this->data['price_id'] ?? null;
                                 if ($priceId === 'reseller') {
@@ -160,7 +157,7 @@ class StockTransferCreate extends Page implements HasForms, HasTable
                                     return (float) $record->price_2;
                                 }
 
-                                return (float) $record->selling_price;
+                                return (float) $record->price_1;
                             })
                             ->formatStateUsing(function ($state): string {
                                 $priceId = $this->data['price_id'] ?? null;

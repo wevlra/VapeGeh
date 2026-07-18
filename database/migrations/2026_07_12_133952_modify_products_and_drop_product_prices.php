@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::dropIfExists('product_prices');
 
         Schema::table('products', function (Blueprint $table) {
-            $table->decimal('reseller_price', 15, 2)->default(0)->after('selling_price');
+            $table->dropColumn('selling_price');
+            $table->decimal('reseller_price', 15, 2)->default(0)->after('purchase_price');
             $table->decimal('price_1', 15, 2)->default(0)->after('reseller_price');
             $table->decimal('price_2', 15, 2)->default(0)->after('price_1');
         });
@@ -27,6 +28,7 @@ return new class extends Migration
     {
         Schema::table('products', function (Blueprint $table) {
             $table->dropColumn(['reseller_price', 'price_1', 'price_2']);
+            $table->decimal('selling_price', 12, 2)->default(0)->after('purchase_price');
         });
 
         Schema::create('product_prices', function (Blueprint $table) {

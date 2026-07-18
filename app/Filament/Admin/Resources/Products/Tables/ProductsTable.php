@@ -31,22 +31,19 @@ class ProductsTable
                     ->label('Harga Beli')
                     ->formatStateUsing(fn ($state) => 'Rp '.number_format($state, 0, ',', '.'))
                     ->sortable(),
-                TextColumn::make('selling_price')
+                TextColumn::make('prices')
                     ->label('Harga Jual')
                     ->formatStateUsing(function (string|int|float $state, Product $record): string {
                         $prices = [];
 
-                        if ($record->selling_price > 0) {
-                            $prices[] = 'Rp '.number_format($record->selling_price, 0, ',', '.');
-                        }
-                        if ($record->reseller_price > 0) {
-                            $prices[] = 'Rp '.number_format($record->reseller_price, 0, ',', '.');
-                        }
                         if ($record->price_1 > 0) {
                             $prices[] = 'Rp '.number_format($record->price_1, 0, ',', '.');
                         }
                         if ($record->price_2 > 0) {
                             $prices[] = 'Rp '.number_format($record->price_2, 0, ',', '.');
+                        }
+                        if ($record->reseller_price > 0) {
+                            $prices[] = 'Rp '.number_format($record->reseller_price, 0, ',', '.');
                         }
 
                         return empty($prices) ? '-' : implode(', ', $prices);

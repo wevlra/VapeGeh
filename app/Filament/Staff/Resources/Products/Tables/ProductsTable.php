@@ -25,12 +25,12 @@ class ProductsTable
                     ->searchable()
                     ->sortable()
                     ->badge(),
-                TextColumn::make('selling_price')
-                    ->label('Harga Jual')
+                TextColumn::make('price_1')
+                    ->label('Harga 1')
                     ->getStateUsing(function (Product $record) use ($locationId): float {
                         $stock = $record->stocks->firstWhere('location_id', $locationId);
 
-                        return $stock && $stock->price > 0 ? (float) $stock->price : (float) $record->selling_price;
+                        return $stock && $stock->price > 0 ? (float) $stock->price : (float) $record->price_1;
                     })
                     ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
                     ->color('primary')

@@ -17,7 +17,7 @@ it('can perform stock out and record income', function () {
 
     $location = Location::factory()->create();
     $product = Product::factory()->create([
-        'selling_price' => 150000.00,
+        'price_1' => 150000.00,
     ]);
 
     // Seed stock

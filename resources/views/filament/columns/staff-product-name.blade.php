@@ -13,7 +13,7 @@
             @php
                 $locationId = auth()->user()?->location_id;
                 $stock = $getRecord()->stocks->firstWhere('location_id', $locationId);
-                $price = $stock && $stock->price > 0 ? $stock->price : $getRecord()->selling_price;
+                $price = $stock && $stock->price > 0 ? $stock->price : $getRecord()->price_1;
             @endphp
             <span class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 Rp {{ number_format($price, 0, ',', '.') }}

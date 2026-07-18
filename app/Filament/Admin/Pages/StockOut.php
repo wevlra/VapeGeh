@@ -121,14 +121,13 @@ class StockOut extends Page implements HasForms, HasTable
                                             'qris' => 'QRIS',
                                         ]),
                                     Select::make('price_id')
-                                        ->label('Tipe Harga Jual')
+                                        ->label('Tipe Harga')
                                         ->options([
-                                            'default' => 'Harga Default',
-                                            'reseller' => 'Harga Reseller',
                                             'price_1' => 'Harga 1',
                                             'price_2' => 'Harga 2',
+                                            'reseller' => 'Harga Reseller',
                                         ])
-                                        ->default('default')
+                                        ->default('price_1')
                                         ->required()
                                         ->live()
                                         ->afterStateUpdated(function (callable $set) {
@@ -175,10 +174,8 @@ class StockOut extends Page implements HasForms, HasTable
 
     protected function buildItemData(Product $record, int $qty, ?array $existing): array
     {
-        $priceId = $this->data['price_id'] ?? 'default';
-        if ($priceId === 'default') {
-            $resolvedPrice = (float) $record->selling_price;
-        } elseif ($priceId === 'reseller') {
+        $priceId = $this->data['price_id'] ?? 'price_1';
+        if ($priceId === 'reseller') {
             $resolvedPrice = (float) $record->reseller_price;
         } elseif ($priceId === 'price_1') {
             $resolvedPrice = (float) $record->price_1;
@@ -209,10 +206,10 @@ class StockOut extends Page implements HasForms, HasTable
                             ->label('Nama Produk')
                             ->weight('bold')
                             ->searchable(),
-                        TextColumn::make('selling_price')
-                            ->label('Harga Jual Default')
+                        TextColumn::make('price_1')
+                            ->label('Harga 1 Default')
                             ->getStateUsing(function (Product $record) {
-                                $priceId = $this->data['price_id'] ?? 'default';
+                                $priceId = $this->data['price_id'] ?? 'price_1';
                                 if ($priceId === 'reseller') {
                                     return (float) $record->reseller_price;
                                 }
@@ -223,7 +220,7 @@ class StockOut extends Page implements HasForms, HasTable
                                     return (float) $record->price_2;
                                 }
 
-                                return (float) $record->selling_price;
+                                return (float) $record->price_1;
                             })
                             ->formatStateUsing(function ($state): string {
                                 return 'Harga: Rp '.number_format((float) $state, 0, ',', '.');

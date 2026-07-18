@@ -32,11 +32,11 @@
         @forelse ($getLivewire()->items as $index => $item)
             @php
                 $price = $item['price'] ?? 0;
-                if (array_key_exists('selling_price_type', $item)) {
-                    $type = $item['selling_price_type'] ?? null;
+                if (array_key_exists('price_1_type', $item)) {
+                    $type = $item['price_1_type'] ?? null;
                     if ($type === 'default' || $item['price'] === null) {
                         $product = \App\Models\Product::find($item['product_id']);
-                        $price = $product ? (float) $product->selling_price : 0;
+                        $price = $product ? (float) $product->price_1 : 0;
                     }
                 }
                 $subtotal = $price * $item['qty'];

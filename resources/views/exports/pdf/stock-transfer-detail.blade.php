@@ -47,7 +47,7 @@
             @forelse ($transfer->items as $i => $item)
                 @php
                     $qty = $item->qty;
-                    $price = empty($item->price) ? $item->product->selling_price : $item->price;
+                    $price = empty($item->price) ? $item->product->price_1 : $item->price;
                     $subtotal = $qty * $price;
                     $totalQty += $qty;
                     $totalValue += $subtotal;

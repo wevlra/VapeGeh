@@ -111,19 +111,19 @@ class DatabaseSeeder extends Seeder
 
         // ── Products ───────────────────────────────────────────────
         $products = collect([
-            ['name' => 'Nasty Juice Fruity 30ml', 'category_id' => $catLiquid, 'purchase_price' => 35000, 'selling_price' => 55000, 'reseller_price' => 45000],
-            ['name' => 'Nasty Juice Grape 30ml', 'category_id' => $catLiquid, 'purchase_price' => 35000, 'selling_price' => 55000, 'reseller_price' => 45000],
-            ['name' => 'Crush Frozen Mint 30ml', 'category_id' => $catLiquid, 'purchase_price' => 35000, 'selling_price' => 55000, 'reseller_price' => 45000],
-            ['name' => 'Zap Juice Tobacco Gold 60ml', 'category_id' => $catLiquid, 'purchase_price' => 60000, 'selling_price' => 95000, 'reseller_price' => 75000],
-            ['name' => 'Pachamama Strawberry 30ml', 'category_id' => $catLiquid, 'purchase_price' => 40000, 'selling_price' => 65000, 'reseller_price' => 50000],
-            ['name' => 'Voopoo PnP Coils 0.4ohm', 'category_id' => $catCoil, 'purchase_price' => 40000, 'selling_price' => 65000, 'reseller_price' => 50000],
-            ['name' => 'Voopoo PnP Coils 0.8ohm', 'category_id' => $catCoil, 'purchase_price' => 40000, 'selling_price' => 65000, 'reseller_price' => 50000],
-            ['name' => 'Uwell Caliburn Coils', 'category_id' => $catCoil, 'purchase_price' => 35000, 'selling_price' => 55000, 'reseller_price' => 45000],
-            ['name' => 'Voopoo Drag Nano 2', 'category_id' => $catDevice, 'purchase_price' => 180000, 'selling_price' => 275000, 'reseller_price' => 220000],
-            ['name' => 'Uwell Caliburn G2', 'category_id' => $catDevice, 'purchase_price' => 220000, 'selling_price' => 340000, 'reseller_price' => 270000],
-            ['name' => 'Xros 3 Mini', 'category_id' => $catDevice, 'purchase_price' => 150000, 'selling_price' => 235000, 'reseller_price' => 190000],
-            ['name' => 'USB-C Charging Cable', 'category_id' => $catAccessory, 'purchase_price' => 15000, 'selling_price' => 25000, 'reseller_price' => 20000],
-            ['name' => 'Carrying Case (Small)', 'category_id' => $catAccessory, 'purchase_price' => 20000, 'selling_price' => 35000, 'reseller_price' => 28000],
+            ['name' => 'Nasty Juice Fruity 30ml', 'category_id' => $catLiquid, 'purchase_price' => 35000, 'price_1' => 55000, 'reseller_price' => 45000, 'price_2' => 50000],
+            ['name' => 'Nasty Juice Grape 30ml', 'category_id' => $catLiquid, 'purchase_price' => 35000, 'price_1' => 55000, 'reseller_price' => 45000, 'price_2' => 50000],
+            ['name' => 'Crush Frozen Mint 30ml', 'category_id' => $catLiquid, 'purchase_price' => 35000, 'price_1' => 55000, 'reseller_price' => 45000, 'price_2' => 50000],
+            ['name' => 'Zap Juice Tobacco Gold 60ml', 'category_id' => $catLiquid, 'purchase_price' => 60000, 'price_1' => 95000, 'reseller_price' => 75000, 'price_2' => 85000],
+            ['name' => 'Pachamama Strawberry 30ml', 'category_id' => $catLiquid, 'purchase_price' => 40000, 'price_1' => 65000, 'reseller_price' => 50000, 'price_2' => 60000],
+            ['name' => 'Voopoo PnP Coils 0.4ohm', 'category_id' => $catCoil, 'purchase_price' => 40000, 'price_1' => 65000, 'reseller_price' => 50000, 'price_2' => 60000],
+            ['name' => 'Voopoo PnP Coils 0.8ohm', 'category_id' => $catCoil, 'purchase_price' => 40000, 'price_1' => 65000, 'reseller_price' => 50000, 'price_2' => 60000],
+            ['name' => 'Uwell Caliburn Coils', 'category_id' => $catCoil, 'purchase_price' => 35000, 'price_1' => 55000, 'reseller_price' => 45000, 'price_2' => 50000],
+            ['name' => 'Voopoo Drag Nano 2', 'category_id' => $catDevice, 'purchase_price' => 180000, 'price_1' => 275000, 'reseller_price' => 220000, 'price_2' => 250000],
+            ['name' => 'Uwell Caliburn G2', 'category_id' => $catDevice, 'purchase_price' => 220000, 'price_1' => 340000, 'reseller_price' => 270000, 'price_2' => 300000],
+            ['name' => 'Xros 3 Mini', 'category_id' => $catDevice, 'purchase_price' => 150000, 'price_1' => 235000, 'reseller_price' => 190000, 'price_2' => 210000],
+            ['name' => 'USB-C Charging Cable', 'category_id' => $catAccessory, 'purchase_price' => 15000, 'price_1' => 25000, 'reseller_price' => 20000, 'price_2' => 22000],
+            ['name' => 'Carrying Case (Small)', 'category_id' => $catAccessory, 'purchase_price' => 20000, 'price_1' => 35000, 'reseller_price' => 28000, 'price_2' => 30000],
         ])->map(fn ($data) => Product::create($data));
 
         // ── Stock at warehouse ─────────────────────────────────────
@@ -181,7 +181,7 @@ class DatabaseSeeder extends Seeder
             for ($i = 0; $i < rand(1, 3); $i++) {
                 $product = $products->random();
                 $qty = rand(1, 2);
-                $subtotal = $product->selling_price * $qty;
+                $subtotal = $product->price_1 * $qty;
 
                 try {
                     $sale = app(CreateSale::class)->execute(

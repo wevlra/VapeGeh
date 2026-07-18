@@ -69,7 +69,7 @@ class Pos extends StaffPos
                     TextColumn::make('price_display')
                         ->state(fn (Stock $record) => $record)
                         ->formatStateUsing(function (Stock $record, $livewire): string {
-                            $priceType = $livewire->tableFilters['price_type']['value'] ?? 'default';
+                            $priceType = $livewire->tableFilters['price_type']['value'] ?? 'price_1';
 
                             if ($priceType === 'reseller') {
                                 return 'Rp '.number_format((float) $record->product->reseller_price, 0, ',', '.').' (Reseller)';
@@ -79,7 +79,7 @@ class Pos extends StaffPos
                                 return 'Rp '.number_format((float) $record->product->price_2, 0, ',', '.').' (Harga 2)';
                             }
 
-                            return 'Rp '.number_format((float) $record->product->selling_price, 0, ',', '.');
+                            return 'Rp '.number_format((float) $record->product->price_1, 0, ',', '.');
                         })
                         ->color('primary'),
                     TextColumn::make('qty')
@@ -112,12 +112,11 @@ class Pos extends StaffPos
                 SelectFilter::make('price_type')
                     ->label('Tipe Harga')
                     ->options([
-                        'default' => 'Default (Harga Jual)',
-                        'reseller' => 'Reseller',
                         'price_1' => 'Harga 1',
                         'price_2' => 'Harga 2',
+                        'reseller' => 'Harga Reseller',
                     ])
-                    ->default('default')
+                    ->default('price_1')
                     ->selectablePlaceholder(false)
                     ->query(fn ($query) => $query), // don't filter the actual query
             ])
@@ -129,7 +128,7 @@ class Pos extends StaffPos
     {
         $productIds = collect($this->items)->pluck('product_id');
         $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
-        $priceType = $this->tableFilters['price_type']['value'] ?? 'default';
+        $priceType = $this->tableFilters['price_type']['value'] ?? 'price_1';
 
         return collect($this->items)->map(function ($item) use ($products, $priceType) {
             $product = $products->get($item['product_id']);
@@ -148,8 +147,8 @@ class Pos extends StaffPos
                 $item['price'] = (float) $product->price_2;
                 $item['price_label'] = 'Harga 2';
             } else {
-                $item['price'] = (float) $product->selling_price;
-                $item['price_label'] = 'Default';
+                $item['price'] = (float) $product->price_1;
+                $item['price_label'] = 'Harga 1';
             }
 
             $item['subtotal'] = $item['price'] * (int) $item['qty'];
@@ -256,7 +255,7 @@ class Pos extends StaffPos
     {
         $paidAmount = (float) ($data['paid_amount'] ?? 0);
         $paymentMethod = $data['payment_method'] ?? 'cash';
-        $priceType = $this->tableFilters['price_type']['value'] ?? 'default';
+        $priceType = $this->tableFilters['price_type']['value'] ?? 'price_1';
 
         try {
             $sale = DB::transaction(function () use ($paidAmount, $paymentMethod, $data, $priceType) {
@@ -286,7 +285,7 @@ class Pos extends StaffPos
                     } elseif ($priceType === 'price_2') {
                         $price = (float) $product->price_2;
                     } else {
-                        $price = (float) $product->selling_price;
+                        $price = (float) $product->price_1;
                     }
 
                     $subtotal = $price * $qty;

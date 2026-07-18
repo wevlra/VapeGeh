@@ -69,8 +69,8 @@ it('relates stock to product and location', function () {
 it('computes total asset per location and globally', function () {
     $warehouse = Location::factory()->warehouse()->create();
     $store = Location::factory()->create();
-    $product1 = Product::factory()->create(['selling_price' => 100000]);
-    $product2 = Product::factory()->create(['selling_price' => 80000]);
+    $product1 = Product::factory()->create(['price_1' => 100000]);
+    $product2 = Product::factory()->create(['price_1' => 80000]);
 
     Stock::create(['product_id' => $product1->id, 'location_id' => $warehouse->id, 'qty' => 5]);
     Stock::create(['product_id' => $product2->id, 'location_id' => $store->id, 'qty' => 3]);

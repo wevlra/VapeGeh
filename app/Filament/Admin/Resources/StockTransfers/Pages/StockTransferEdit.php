@@ -75,14 +75,12 @@ class StockTransferEdit extends Page implements HasForms, HasTable
         $this->items = $this->record->items->map(function ($item) {
             $sellingPriceType = null;
             if ($item->price) {
-                if ((float) $item->price == (float) $item->product->selling_price) {
-                    $sellingPriceType = 'default';
-                } elseif ((float) $item->price == (float) $item->product->reseller_price) {
+                if ((float) $item->price == (float) $item->product->reseller_price) {
                     $sellingPriceType = 'reseller';
-                } elseif ((float) $item->price == (float) $item->product->price_1) {
-                    $sellingPriceType = 'price_1';
                 } elseif ((float) $item->price == (float) $item->product->price_2) {
                     $sellingPriceType = 'price_2';
+                } elseif ((float) $item->price == (float) $item->product->price_1) {
+                    $sellingPriceType = 'price_1';
                 }
             }
 
@@ -91,7 +89,7 @@ class StockTransferEdit extends Page implements HasForms, HasTable
                 'name' => $item->product->name,
                 'qty' => $item->qty,
                 'price' => $item->price,
-                'selling_price_type' => $sellingPriceType,
+                'price_1_type' => $sellingPriceType,
             ];
         })->toArray();
     }
@@ -184,10 +182,9 @@ class StockTransferEdit extends Page implements HasForms, HasTable
                                         Select::make('price_id')
                                             ->label('Update Harga Tujuan (Ops.)')
                                             ->options([
-                                                'default' => 'Harga Default',
-                                                'reseller' => 'Harga Reseller',
                                                 'price_1' => 'Harga 1',
                                                 'price_2' => 'Harga 2',
+                                                'reseller' => 'Harga Reseller',
                                             ])
                                             ->placeholder('Tetap / Tidak Diubah')
                                             ->nullable()
@@ -215,9 +212,7 @@ class StockTransferEdit extends Page implements HasForms, HasTable
     {
         $sellingPriceType = $this->data['price_id'] ?? null;
         $resolvedPrice = null;
-        if ($sellingPriceType === 'default') {
-            $resolvedPrice = 0;
-        } elseif ($sellingPriceType === 'reseller') {
+        if ($sellingPriceType === 'reseller') {
             $resolvedPrice = (float) $record->reseller_price;
         } elseif ($sellingPriceType === 'price_1') {
             $resolvedPrice = (float) $record->price_1;
@@ -229,7 +224,7 @@ class StockTransferEdit extends Page implements HasForms, HasTable
             'product_id' => $record->id,
             'name' => $record->name,
             'qty' => $qty,
-            'selling_price_type' => $sellingPriceType,
+            'price_1_type' => $sellingPriceType,
             'price' => $resolvedPrice, // for selected-items-preview
         ];
     }
@@ -246,8 +241,8 @@ class StockTransferEdit extends Page implements HasForms, HasTable
                             ->label('Nama Produk')
                             ->weight('bold')
                             ->searchable(),
-                        TextColumn::make('selling_price')
-                            ->label('Harga Jual')
+                        TextColumn::make('price_1')
+                            ->label('Harga 1')
                             ->getStateUsing(function (Product $record) {
                                 $priceId = $this->data['price_id'] ?? null;
                                 if ($priceId === 'reseller') {
@@ -260,7 +255,7 @@ class StockTransferEdit extends Page implements HasForms, HasTable
                                     return (float) $record->price_2;
                                 }
 
-                                return (float) $record->selling_price;
+                                return (float) $record->price_1;
                             })
                             ->formatStateUsing(function ($state): string {
                                 $priceId = $this->data['price_id'] ?? null;

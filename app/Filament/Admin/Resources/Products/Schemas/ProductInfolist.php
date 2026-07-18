@@ -21,18 +21,15 @@ class ProductInfolist
                         TextEntry::make('purchase_price')
                             ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
                             ->label('Harga Beli'),
-                        TextEntry::make('selling_price')
-                            ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
-                            ->label('Harga Jual (Default)'),
-                        TextEntry::make('reseller_price')
-                            ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
-                            ->label('Reseller Price'),
                         TextEntry::make('price_1')
                             ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
                             ->label('Harga 1'),
                         TextEntry::make('price_2')
                             ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
                             ->label('Harga 2'),
+                        TextEntry::make('reseller_price')
+                            ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
+                            ->label('Harga Reseller'),
                     ]),
             ]);
     }

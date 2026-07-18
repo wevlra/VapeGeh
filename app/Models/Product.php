@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'category_id', 'purchase_price', 'selling_price', 'reseller_price', 'price_1', 'price_2'])]
+#[Fillable(['name', 'category_id', 'purchase_price', 'reseller_price', 'price_1', 'price_2'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
@@ -42,14 +42,14 @@ class Product extends Model
 
     public function getDefaultPriceAttribute(): float
     {
-        return (float) $this->selling_price;
+        return (float) $this->price_1;
     }
 
     protected function casts(): array
     {
         return [
             'purchase_price' => 'float',
-            'selling_price' => 'float',
+            'price_1' => 'float',
             'reseller_price' => 'float',
             'price_1' => 'float',
             'price_2' => 'float',

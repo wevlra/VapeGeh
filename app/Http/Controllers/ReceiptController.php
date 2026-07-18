@@ -80,7 +80,7 @@ class ReceiptController extends Controller
             $price = (float) match (true) {
                 isset($item->unit_price) && $item->unit_price > 0 => $item->unit_price,
                 ! empty($item->price) => $item->price,
-                default => $item->product?->selling_price ?? 0,
+                default => $item->product?->price_1 ?? 0,
             };
 
             $products[] = [

@@ -38,7 +38,7 @@ class SaleForm
                                 }])->find($state);
                                 if ($product) {
                                     $stock = $product->stocks->first();
-                                    $price = $stock && $stock->price > 0 ? $stock->price : $product->selling_price;
+                                    $price = $stock && $stock->price > 0 ? $stock->price : $product->price_1;
                                     $set('price', (int) $price);
                                 }
                             })

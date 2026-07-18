@@ -23,12 +23,12 @@ class ProductInfolist
                         TextEntry::make('category.name')
                             ->label('Kategori')
                             ->badge(),
-                        TextEntry::make('selling_price')
-                            ->label('Harga Jual')
+                        TextEntry::make('price_1')
+                            ->label('Harga 1')
                             ->getStateUsing(function ($record) use ($locationId): float {
                                 $stock = $record->stocks->firstWhere('location_id', $locationId);
 
-                                return $stock && $stock->price > 0 ? (float) $stock->price : (float) $record->selling_price;
+                                return $stock && $stock->price > 0 ? (float) $stock->price : (float) $record->price_1;
                             })
                             ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
                             ->color('primary'),

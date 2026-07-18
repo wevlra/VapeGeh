@@ -15,7 +15,7 @@ it('creates a sale and deducts stock', function () {
     $this->actingAs($user);
 
     $location = Location::factory()->create();
-    $product = Product::factory()->create(['selling_price' => 50000]);
+    $product = Product::factory()->create(['price_1' => 50000]);
     Stock::factory()->create([
         'product_id' => $product->id,
         'location_id' => $location->id,
@@ -51,7 +51,7 @@ it('throws DomainException when stock is insufficient', function () {
     $this->actingAs($user);
 
     $location = Location::factory()->create();
-    $product = Product::factory()->create(['selling_price' => 50000]);
+    $product = Product::factory()->create(['price_1' => 50000]);
     Stock::factory()->create([
         'product_id' => $product->id,
         'location_id' => $location->id,
@@ -70,7 +70,7 @@ it('throws DomainException when sale total is zero', function () {
     $this->actingAs($user);
 
     $location = Location::factory()->create();
-    $product = Product::factory()->create(['selling_price' => 0]);
+    $product = Product::factory()->create(['price_1' => 0]);
     Stock::factory()->create([
         'product_id' => $product->id,
         'location_id' => $location->id,
