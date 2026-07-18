@@ -59,3 +59,9 @@
 .fi-in-table-repeatable > table > tbody > tr > td .fi-in-entry {
     @apply !inline;
 }
+
+.fi-badge {
+    width: fit-content !important;
+    align-self: flex-start;
+}
+

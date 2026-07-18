@@ -9,3 +9,9 @@
 @source '../../../../resources/views/filament/staff/*';
 @source '../../../../resources/views/filament/columns/*';
 @source '../../../../resources/views/components/*';
+
+.fi-badge {
+    width: fit-content !important;
+    align-self: flex-start;
+}
+
