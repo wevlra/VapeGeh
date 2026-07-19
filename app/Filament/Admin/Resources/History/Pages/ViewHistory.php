@@ -25,9 +25,8 @@ class ViewHistory extends ViewRecord
             PrintInvoiceAction::make('print_invoice'),
             PrintReportAction::make('print_report'),
             Action::make('edit')
-                ->label('Edit')
-                ->icon('heroicon-o-pencil')
-                ->color('info')
+                ->label('Ubah')
+                ->icon('heroicon-o-pencil-square')
                 ->url(function (StockMovement $record) {
                     if ($record->related instanceof Sale) {
                         return SaleResource::getUrl('edit', ['record' => $record->related_id]);

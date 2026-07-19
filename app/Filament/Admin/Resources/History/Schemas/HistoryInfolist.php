@@ -48,8 +48,8 @@ class HistoryInfolist
                                 'in' => 'heroicon-o-arrow-down-tray',
                                 'out' => 'heroicon-o-arrow-up-tray',
                                 'transfer' => 'heroicon-o-arrow-right-end-on-rectangle',
-                                'opname' => 'heroicon-o-pencil',
-                                'adjustment' => 'heroicon-o-pencil',
+                                'opname' => 'heroicon-o-pencil-square',
+                                'adjustment' => 'heroicon-o-pencil-square',
                                 default => null,
                             }),
                         TextEntry::make('location.name')

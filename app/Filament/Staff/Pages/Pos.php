@@ -216,6 +216,7 @@ class Pos extends Page implements HasTable
             ->label('Bayar')
             ->icon('heroicon-m-credit-card')
             ->modalHeading('Bayar')
+            ->modalSubmitActionLabel('Proses Pembayaran')
             ->modalContent(view('filament.staff.pages.checkout-summary'))
             ->form([
                 Radio::make('payment_method')

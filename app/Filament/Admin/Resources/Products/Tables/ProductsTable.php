@@ -31,9 +31,9 @@ class ProductsTable
                     ->label('Harga Beli')
                     ->formatStateUsing(fn ($state) => 'Rp '.number_format($state, 0, ',', '.'))
                     ->sortable(),
-                TextColumn::make('prices')
+                TextColumn::make('price_1')
                     ->label('Harga Jual')
-                    ->formatStateUsing(function (string|int|float $state, Product $record): string {
+                    ->formatStateUsing(function ($state, Product $record): string {
                         $prices = [];
 
                         if ($record->price_1 > 0) {

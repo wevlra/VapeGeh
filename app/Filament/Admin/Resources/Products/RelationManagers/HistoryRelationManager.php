@@ -55,7 +55,7 @@ class HistoryRelationManager extends RelationManager
                         'in' => 'heroicon-o-arrow-down-tray',
                         'out' => 'heroicon-o-arrow-up-tray',
                         'transfer' => 'heroicon-o-arrow-right-end-on-rectangle',
-                        'adjustment' => 'heroicon-o-pencil',
+                        'adjustment' => 'heroicon-o-pencil-square',
                         default => null,
                     }),
                 TextColumn::make('location.name')

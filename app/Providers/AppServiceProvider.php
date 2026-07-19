@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Settings\StoreSettings;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Database\Eloquent\Model;
@@ -31,8 +33,10 @@ class AppServiceProvider extends ServiceProvider
         // Override store config from database settings
         $this->overrideConfigFromSettings();
 
+        CreateAction::configureUsing(fn (CreateAction $action) => $action->icon('heroicon-o-plus'));
         DeleteAction::configureUsing(fn (DeleteAction $action) => $action->icon('heroicon-o-trash'));
         DeleteBulkAction::configureUsing(fn (DeleteBulkAction $action) => $action->icon('heroicon-o-trash'));
+        EditAction::configureUsing(fn (EditAction $action) => $action->icon('heroicon-o-pencil-square'));
 
         FilamentView::registerRenderHook(
             PanelsRenderHook::USER_MENU_BEFORE,
