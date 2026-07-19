@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Foundation\Inspiring;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Facades\Storage;
@@ -10,12 +11,12 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::call(function () {
-    $files = Storage::disk('public')->files('reports');
-
-    foreach ($files as $file) {
-        $age = now()->diffInHours(Storage::disk('public')->lastModified($file));
-
-        if ($age >= 24) {
+    foreach (Storage::disk('public')->files('reports') as $file) {
+        if (
+            Carbon::createFromTimestamp(
+                Storage::disk('public')->lastModified($file)
+            )->lt(now()->subHours(12))
+        ) {
             Storage::disk('public')->delete($file);
         }
     }
