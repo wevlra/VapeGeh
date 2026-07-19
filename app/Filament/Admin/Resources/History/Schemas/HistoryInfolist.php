@@ -65,6 +65,7 @@ class HistoryInfolist
 
                 Section::make('Detail Transaksi')
                     ->columnSpanFull()
+                    ->columns(2)
                     ->schema(function ($record) {
                         if ($record->related instanceof Sale) {
                             return [
@@ -89,6 +90,7 @@ class HistoryInfolist
                                     ->default('Tidak ada catatan')
                                     ->color(fn ($state, $record) => blank($record->related?->notes) ? 'gray' : null),
                                 RepeatableEntry::make('related.items')
+                                    ->columnSpanFull()
                                     ->hiddenLabel()
                                     ->table([
                                         TableColumn::make('Produk')
@@ -144,6 +146,7 @@ class HistoryInfolist
                                     ->default('Tidak ada catatan')
                                     ->color(fn ($state, $record) => blank($record->related?->notes) ? 'gray' : null),
                                 RepeatableEntry::make('related.items')
+                                    ->columnSpanFull()
                                     ->hiddenLabel()
                                     ->table([
                                         TableColumn::make('Produk')
@@ -205,6 +208,7 @@ class HistoryInfolist
                                     ->default('Tidak ada catatan')
                                     ->color(fn ($state, $record) => blank($record->related?->notes) ? 'gray' : null),
                                 RepeatableEntry::make('additional_costs')
+                                    ->columnSpanFull()
                                     ->label('Biaya Tambahan')
                                     ->hidden(fn () => blank($entry->additional_costs))
                                     ->table([
@@ -220,6 +224,7 @@ class HistoryInfolist
                                             ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                                     ]),
                                 RepeatableEntry::make('related.items')
+                                    ->columnSpanFull()
                                     ->hiddenLabel()
                                     ->table([
                                         TableColumn::make('Produk')
@@ -260,6 +265,7 @@ class HistoryInfolist
                                     ->default('Tidak ada catatan')
                                     ->color(fn ($state, $record) => blank($record->related?->notes) ? 'gray' : null),
                                 RepeatableEntry::make('related.items')
+                                    ->columnSpanFull()
                                     ->hiddenLabel()
                                     ->table([
                                         TableColumn::make('Produk')
@@ -299,6 +305,7 @@ class HistoryInfolist
                         // (e.g., Location::class from DeleteLocation action)
                         return [
                             RepeatableEntry::make('sibling_movements')
+                                ->columnSpanFull()
                                 ->hiddenLabel()
                                 ->table([
                                     TableColumn::make('Produk'),

@@ -23,7 +23,7 @@ class SaleForm
                     ->schema([
                         Select::make('product_id')
                             ->label('Produk')
-                            ->options(function (?int $state, callable $get) {
+                            ->options(function ($state, callable $get) {
                                 $locationId = $get('../../location_id');
                                 if (! $locationId) {
                                     return Product::whereHas('stocks', fn ($q) => $q->where('qty', '>', 0))
@@ -36,18 +36,47 @@ class SaleForm
                                 )->pluck('name', 'id');
                             })
                             ->searchable()
-                            ->required(),
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function (callable $set, $state) {
+                                if ($state) {
+                                    $product = Product::find($state);
+                                    if ($product) {
+                                        $set('price', (string) (float) $product->price_1);
+                                    }
+                                } else {
+                                    $set('price', null);
+                                }
+                            }),
                         TextInput::make('qty')
                             ->label('Jumlah')
                             ->numeric()
                             ->minValue(1)
                             ->required(),
-                        TextInput::make('price')
+                        Select::make('price')
                             ->label('Harga')
-                            ->numeric()
-                            ->prefix('Rp')
-                            ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))
-                            ->stripCharacters('.')
+                            ->options(function (callable $get) {
+                                $productId = $get('product_id');
+                                if (! $productId) {
+                                    return [];
+                                }
+                                $product = Product::find($productId);
+                                if (! $product) {
+                                    return [];
+                                }
+
+                                $options = [];
+                                $options[(string) (float) $product->price_1] = 'Harga 1 (Rp '.number_format($product->price_1, 0, ',', '.').')';
+                                $options[(string) (float) $product->price_2] = 'Harga 2 (Rp '.number_format($product->price_2, 0, ',', '.').')';
+                                $options[(string) (float) $product->reseller_price] = 'Harga Reseller (Rp '.number_format($product->reseller_price, 0, ',', '.').')';
+
+                                $currentPrice = $get('price');
+                                if ($currentPrice && ! isset($options[(string) (float) $currentPrice])) {
+                                    $options[(string) (float) $currentPrice] = 'Harga Custom (Rp '.number_format((float) $currentPrice, 0, ',', '.').')';
+                                }
+
+                                return $options;
+                            })
                             ->required(),
                     ])
                     ->columns(3)

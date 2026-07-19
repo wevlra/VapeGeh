@@ -5,8 +5,10 @@ namespace App\Filament\Staff\Resources\Sales\Pages;
 use App\Actions\DeleteSale;
 use App\Actions\UpdateSale;
 use App\Filament\Concerns\NotifiesWithDetail;
+use App\Filament\Staff\Resources\History\HistoryResource;
 use App\Filament\Staff\Resources\Sales\SaleResource;
 use App\Models\Sale;
+use App\Models\StockMovement;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -46,5 +48,18 @@ class EditSale extends EditRecord
         app(UpdateSale::class)->execute($record, $data);
 
         return $record->fresh();
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        $movement = StockMovement::where('related_type', Sale::class)
+            ->where('related_id', $this->record->id)
+            ->first();
+
+        if ($movement) {
+            return HistoryResource::getUrl('view', ['record' => $movement->id]);
+        }
+
+        return $this->getResource()::getUrl('index');
     }
 }
