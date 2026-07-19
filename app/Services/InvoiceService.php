@@ -14,7 +14,7 @@ class InvoiceService
 {
     public function generate(StockMovement $stockMovement): Invoice
     {
-        $stockMovement->load(['product', 'location', 'creator', 'buyer', 'related', 'related.items.product']);
+        $stockMovement->load(['product', 'location', 'creator', 'buyer', 'related']);
 
         $location = $stockMovement->location;
         $related = $stockMovement->related;
@@ -22,8 +22,13 @@ class InvoiceService
         $isStockEntry = $related instanceof StockEntry;
         $isStockTransfer = $related instanceof StockTransfer;
 
-        if ($isSale) {
+        if ($related) {
             $related->loadMissing(['items.product']);
+            if ($isSale) {
+                $related->loadMissing(['buyer']);
+            } elseif ($isStockEntry) {
+                $related->loadMissing(['vendor']);
+            }
         }
 
         $sellerData = [

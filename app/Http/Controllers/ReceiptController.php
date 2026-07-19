@@ -13,7 +13,13 @@ class ReceiptController extends Controller
     {
         $this->authorizeAccess($stockMovement);
 
-        $stockMovement->load(['product', 'location', 'creator', 'buyer', 'related', 'related.buyer', 'related.items.product']);
+        $stockMovement->load(['product', 'location', 'creator', 'buyer', 'related']);
+
+        if ($stockMovement->related instanceof Sale) {
+            $stockMovement->related->load(['buyer', 'items.product']);
+        } elseif ($stockMovement->related instanceof StockEntry || $stockMovement->related instanceof StockTransfer) {
+            $stockMovement->related->load(['items.product']);
+        }
 
         if (request()->query('format') === 'text') {
             return view('receipts.receipt_text', ['movement' => $stockMovement]);
@@ -32,7 +38,8 @@ class ReceiptController extends Controller
 
         $this->authorizeAccess($movement);
 
-        $movement->load(['product', 'location', 'creator', 'buyer', 'related', 'related.buyer']);
+        $movement->load(['product', 'location', 'creator', 'buyer', 'related']);
+        $sale->load(['buyer', 'items.product']);
 
         if (request()->query('format') === 'text') {
             return view('receipts.receipt_text', ['movement' => $movement]);
