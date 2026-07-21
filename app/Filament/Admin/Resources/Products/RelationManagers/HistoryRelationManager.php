@@ -2,16 +2,12 @@
 
 namespace App\Filament\Admin\Resources\Products\RelationManagers;
 
+use App\Filament\Admin\Resources\History\HistoryResource;
 use App\Filament\Concerns\NotifiesWithDetail;
-use App\Models\Stock;
 use App\Models\StockMovement;
-use Filament\Actions\EditAction;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\DB;
 
 class HistoryRelationManager extends RelationManager
 {
@@ -72,78 +68,9 @@ class HistoryRelationManager extends RelationManager
                 TextColumn::make('creator.name')
                     ->label('Oleh'),
             ])
-            ->recordActions([
-                EditAction::make()
-                    ->hidden(fn (StockMovement $record): bool => ! in_array($record->type, ['in', 'out'], true))
-                    ->modalHeading(fn (StockMovement $record): string => $record->type === 'in' ? 'Edit Stok Masuk' : 'Edit Stok Keluar')
-                    ->form([
-                        TextInput::make('quantity')
-                            ->label('Jumlah')
-                            ->required()
-                            ->integer()
-                            ->minValue(1)
-                            ->formatStateUsing(fn (StockMovement $record): int => abs((int) $record->quantity))
-                            ->dehydrateStateUsing(fn (?int $state): int => $state ?? 0),
-                        Textarea::make('notes')
-                            ->label('Catatan')
-                            ->rows(2)
-                            ->formatStateUsing(fn (StockMovement $record): ?string => $record->notes),
-                    ])
-                    ->action(function (StockMovement $record, array $data): void {
-                        $oldQty = abs((int) $record->quantity);
-                        $newQty = (int) $data['quantity'];
-
-                        if ($newQty === $oldQty) {
-                            $record->update(['notes' => $data['notes'] ?? null]);
-
-                            NotifiesWithDetail::buildSuccessNotification(
-                                'Catatan Diperbarui',
-                                'Catatan untuk pergerakan stok ini berhasil diperbarui.'
-                            )->send();
-
-                            return;
-                        }
-
-                        $difference = $newQty - $oldQty;
-
-                        DB::transaction(function () use ($record, $difference, $newQty, $data) {
-                            $stock = Stock::where('product_id', $record->product_id)
-                                ->where('location_id', $record->location_id)
-                                ->lockForUpdate()
-                                ->first();
-
-                            if ($record->type === 'in') {
-                                if ($difference > 0) {
-                                    $stock?->increment('qty', $difference);
-                                } else {
-                                    $stock?->decrement('qty', abs($difference));
-                                }
-                                $record->update([
-                                    'quantity' => $newQty,
-                                    'notes' => $data['notes'] ?? null,
-                                ]);
-                            } else {
-                                if ($difference > 0) {
-                                    $stock?->decrement('qty', $difference);
-                                } else {
-                                    $stock?->increment('qty', abs($difference));
-                                }
-                                $record->update([
-                                    'quantity' => -$newQty,
-                                    'notes' => $data['notes'] ?? null,
-                                ]);
-                            }
-                        });
-
-                        NotifiesWithDetail::buildSuccessNotification(
-                            $record->type === 'in' ? 'Stok Masuk Diperbarui' : 'Stok Keluar Diperbarui',
-                            $record->type === 'in'
-                                ? 'Catatan stok masuk telah diperbarui menjadi '.$newQty.' unit.'
-                                : 'Catatan stok keluar telah diperbarui menjadi '.$newQty.' unit.'
-                        )->send();
-                    })
-                    ->successNotification(null),
-            ])
-            ->defaultSort('created_at', 'desc');
+            ->defaultSort('created_at', 'desc')
+            ->recordUrl(
+                fn (StockMovement $record): string => HistoryResource::getUrl('view', ['record' => $record])
+            );
     }
 }

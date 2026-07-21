@@ -219,11 +219,10 @@ class StockIn extends Page implements HasForms, HasTable
                         ->lockForUpdate()
                         ->first();
 
-                    $oldQty = $stock ? $stock->qty : 0;
                     $oldPrice = (float) $product->purchase_price;
 
-                    $avgPrice = ($oldQty > 0 && $oldPrice > 0)
-                        ? round(($oldPrice * $oldQty + $newPrice * $newQty) / ($oldQty + $newQty), 2)
+                    $avgPrice = ($oldPrice > 0)
+                        ? ($oldPrice + $newPrice) / 2
                         : $newPrice;
 
                     $product->update(['purchase_price' => round($avgPrice, 2)]);

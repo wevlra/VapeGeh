@@ -42,7 +42,7 @@ class StaffStatsOverview extends StatsOverviewWidget
                             ->default(fn () => $this->period)
                             ->native(false)
                             ->live()
-                            ->afterStateUpdated(fn ($state) => $this->setPeriod($state)),
+                            ->afterStateUpdated(fn ($state) => $this->setPeriod($state ?? 'all')),
                     ])
                     ->extraAttributes(['class' => 'mb-4'])
                     ->contained(false),

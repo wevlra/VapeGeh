@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\History\Pages;
 use App\Filament\Actions\PrintInvoiceAction;
 use App\Filament\Actions\PrintReceiptAction;
 use App\Filament\Actions\PrintReportAction;
+use App\Filament\Admin\Pages\EditStockIn;
 use App\Filament\Admin\Pages\EditStockOut;
 use App\Filament\Admin\Resources\History\HistoryResource;
 use App\Filament\Admin\Resources\Sales\SaleResource;
@@ -31,14 +32,19 @@ class ViewHistory extends ViewRecord
                     if ($record->related instanceof Sale) {
                         return SaleResource::getUrl('edit', ['record' => $record->related_id]);
                     }
-                    if ($record->related instanceof StockEntry && $record->type === 'out') {
-                        return EditStockOut::getUrl(['record' => $record->related_id]);
+                    if ($record->related instanceof StockEntry) {
+                        if ($record->type === 'out') {
+                            return EditStockOut::getUrl(['record' => $record->related_id]);
+                        }
+                        if ($record->type === 'in') {
+                            return EditStockIn::getUrl(['record' => $record->related_id]);
+                        }
                     }
 
                     return null;
                 })
                 ->visible(fn (StockMovement $record) => $record->related instanceof Sale ||
-                    ($record->related instanceof StockEntry && $record->type === 'out')
+                    ($record->related instanceof StockEntry && in_array($record->type, ['in', 'out']))
                 ),
         ];
     }
