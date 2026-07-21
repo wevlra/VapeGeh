@@ -31,18 +31,25 @@
                     placeholder="{{ $priceLabel ?? 'Harga' }}"
                     x-data="{
                         price: '{{ $price ? number_format($price, 0, '', '') : '' }}',
+                        timeout: null,
                         format() {
                             let val = this.$el.value.replace(/[^0-9]/g, '');
                             if (!val) {
                                 this.$el.value = '';
-                                return;
+                            } else {
+                                this.$el.value = parseInt(val, 10).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
                             }
-                            this.$el.value = parseInt(val, 10).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                            
+                            clearTimeout(this.timeout);
+                            this.timeout = setTimeout(() => {
+                                $wire.updateItemPrice('{{ $record->id }}', val || 0);
+                            }, 800);
                         }
                     }"
                     x-init="$el.value = price ? parseInt(price, 10).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''"
                     @input="format()"
                     @change="$wire.updateItemPrice('{{ $record->id }}', $el.value.replace(/\./g, ''))"
+                    @blur="$wire.updateItemPrice('{{ $record->id }}', $el.value.replace(/\./g, ''))"
                     class="font-medium text-gray-900 dark:text-white"
                 />
             </x-filament::input.wrapper>
@@ -67,7 +74,9 @@
                         type="number"
                         value="{{ $qty }}"
                         wire:key="qty-input-{{ $record->id }}-{{ $qty }}"
-                        wire:change="updateItemQty('{{ $record->id }}', $event.target.value)"
+                        @input.debounce.800ms="$wire.updateItemQty('{{ $record->id }}', $event.target.value)"
+                        @blur="$wire.updateItemQty('{{ $record->id }}', $event.target.value)"
+                        @change="$wire.updateItemQty('{{ $record->id }}', $event.target.value)"
                         class="text-center font-bold text-lg p-1.5 w-full"
                         placeholder="0"
                     />
