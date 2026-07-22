@@ -2,7 +2,6 @@
 
 namespace App\Filament\Staff\Resources\History\Tables;
 
-use App\Filament\Actions\PrintReportAction;
 use App\Filament\Staff\Resources\History\HistoryResource;
 use App\Models\StockMovement;
 use Filament\Forms\Components\DatePicker;
@@ -163,9 +162,7 @@ class HistoryTable
                             ->when($data['until'], fn ($q, $date) => $q->whereDate('created_at', '<=', $date));
                     }),
             ])
-            ->recordActions([
-                PrintReportAction::make('print_report'),
-            ])
+            ->recordActions([])
             ->defaultSort('created_at', 'desc');
     }
 }

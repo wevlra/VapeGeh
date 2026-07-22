@@ -16,6 +16,7 @@ use App\Filament\Admin\Widgets\AdminStockAssetMobile;
 use App\Filament\Admin\Widgets\OperationalQuickActionsWidget;
 use App\Filament\Admin\Widgets\StockQuickActionsWidget;
 use App\Filament\Middleware\RedirectPanelUser;
+use App\Http\Middleware\RedirectAuthenticatedStaff;
 use Filament\Auth\Http\Responses\Contracts\LogoutResponse;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -106,6 +107,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                RedirectAuthenticatedStaff::class,
             ])
             ->authMiddleware([
                 RedirectPanelUser::class,

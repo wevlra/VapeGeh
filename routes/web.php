@@ -2,9 +2,10 @@
 
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ReceiptController;
+use App\Http\Middleware\RedirectAuthenticatedStaff;
 use Illuminate\Support\Facades\Route;
 
-Route::livewire('/', 'landing');
+Route::livewire('/', 'landing')->middleware(RedirectAuthenticatedStaff::class);
 
 Route::middleware(['web', 'auth', 'throttle:120,1'])->group(function () {
     Route::get('/admin/history/{stockMovement}/receipt', ReceiptController::class)->name('admin.history.receipt');
