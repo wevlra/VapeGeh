@@ -15,7 +15,6 @@ use Livewire\Attributes\Url;
 
 class StaffStatsOverview extends StatsOverviewWidget
 {
-    protected string $view = 'filament.admin.widgets.stats-overview';
 
     #[Url(as: 'period')]
     public string $period = 'all';
