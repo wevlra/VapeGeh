@@ -6,8 +6,12 @@ use App\Filament\Actions\PrintInvoiceAction;
 use App\Filament\Actions\PrintReceiptAction;
 use App\Filament\Actions\PrintReportAction;
 use App\Filament\Admin\Resources\History\HistoryResource;
+use App\Models\Location;
 use App\Models\Sale;
+use App\Models\StockEntry;
 use App\Models\StockMovement;
+use App\Models\StockOpname;
+use App\Models\StockTransfer;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -124,21 +128,26 @@ class HistoryTable
                         } elseif ($related instanceof StockEntry) {
                             $total = $related->items->sum('qty');
                         } elseif ($related instanceof StockOpname) {
-                            $total = $related->items->sum('difference');
+                            $total = $related->items->count();
                         } elseif ($related === null && $record->related_type === Location::class) {
                             $total = $record->sibling_movements->sum('quantity');
                         } else {
                             $total = abs($record->quantity);
                         }
 
-                        $prefix = $total > 0 && (! ($related instanceof StockOpname) || $total > 0) ? '+' : '';
                         if ($related instanceof StockOpname) {
-                            return $total > 0 ? '+'.$total : (string) $total;
+                            return (string) $total;
                         }
 
                         return $record->quantity > 0 ? '+'.$total : (string) (-$total);
                     })
-                    ->color(fn (StockMovement $record): string => $record->quantity > 0 ? 'success' : 'danger'),
+                    ->color(function (StockMovement $record): string {
+                        if ($record->related instanceof StockOpname) {
+                            return 'gray';
+                        }
+
+                        return $record->quantity > 0 ? 'success' : 'danger';
+                    }),
                 TextColumn::make('creator.name')
                     ->label('Staf')
                     ->sortable(),

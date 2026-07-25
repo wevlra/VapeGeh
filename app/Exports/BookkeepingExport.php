@@ -42,6 +42,10 @@ class BookkeepingExport implements FromQuery, ShouldAutoSize, WithHeadings, With
         $catLabel = match ($catStr) {
             'sale' => 'Penjualan',
             'debt_payment' => 'Pembayaran Hutang',
+            'service' => 'Jasa / Service',
+            'cashback' => 'Cashback & Rebate',
+            'opname' => 'Penyesuaian Stok',
+            'investment' => 'Modal / Investasi',
             'purchase' => 'Pembelian',
             'salary' => 'Gaji',
             'utilities' => 'Utilitas',

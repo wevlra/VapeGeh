@@ -1,5 +1,7 @@
 <?php
 
+use App\Filament\Admin\Resources\Expenses\ExpenseResource;
+use App\Filament\Admin\Resources\Incomes\IncomeResource;
 use App\Models\Expense;
 use App\Models\Income;
 use App\Models\Location;
@@ -61,4 +63,25 @@ it('relates expense to location and creator', function () {
 
     expect($expense->location->is($location))->toBeTrue()
         ->and($expense->creator->is($user))->toBeTrue();
+});
+
+it('correctly identifies manual vs system income and expense records', function () {
+    $manualIncome = Income::factory()->create(['description' => 'Pendapatan sewa booth']);
+    $systemIncome = Income::factory()->create(['description' => 'Penjualan POS #INV-260725-0001']);
+    $stockOutIncome = Income::factory()->create(['description' => 'Stok Keluar ke Customer (Entry #123)']);
+
+    expect($manualIncome->isManual())->toBeTrue()
+        ->and($systemIncome->isManual())->toBeFalse()
+        ->and($stockOutIncome->isManual())->toBeFalse();
+
+    $manualExpense = Expense::factory()->create(['description' => 'Bayar sewa toko']);
+    $systemExpense = Expense::factory()->create(['description' => 'Stok Masuk dari Vendor (Entry #456)']);
+
+    expect($manualExpense->isManual())->toBeTrue()
+        ->and($systemExpense->isManual())->toBeFalse();
+
+    expect(IncomeResource::canEdit($manualIncome))->toBeTrue()
+        ->and(IncomeResource::canEdit($systemIncome))->toBeFalse()
+        ->and(ExpenseResource::canEdit($manualExpense))->toBeTrue()
+        ->and(ExpenseResource::canEdit($systemExpense))->toBeFalse();
 });

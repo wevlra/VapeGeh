@@ -51,6 +51,9 @@ class SalesReportExport implements FromQuery, ShouldAutoSize, WithHeadings, With
             default => $row->payment_method ? ucfirst($row->payment_method) : '-'
         };
 
+        $extraCosts = StockEntry::parseAdditionalCostsTotal($row->additional_costs ?? null);
+        $finalTotal = (float) $row->total + $extraCosts;
+
         return [
             Carbon::parse($row->created_at)->format('d/m/Y H:i'),
             $typeLabel,
@@ -58,7 +61,7 @@ class SalesReportExport implements FromQuery, ShouldAutoSize, WithHeadings, With
             $row->location_name,
             $row->kasir_name,
             $payLabel,
-            $row->total,
+            $finalTotal,
         ];
     }
 

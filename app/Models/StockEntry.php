@@ -44,4 +44,35 @@ class StockEntry extends Model
             'additional_costs' => 'array',
         ];
     }
+
+    public function getAdditionalCostsTotalAttribute(): float
+    {
+        return static::parseAdditionalCostsTotal($this->additional_costs);
+    }
+
+    public function getTotalAmountAttribute(): float
+    {
+        $itemsTotal = (float) $this->items->sum(fn ($item) => $item->qty * $item->unit_price);
+
+        return $itemsTotal + $this->additional_costs_total;
+    }
+
+    public static function parseAdditionalCostsTotal(array|string|null $additionalCosts): float
+    {
+        if (empty($additionalCosts)) {
+            return 0;
+        }
+
+        $costs = is_string($additionalCosts) ? json_decode($additionalCosts, true) : $additionalCosts;
+        if (! is_array($costs)) {
+            return 0;
+        }
+
+        $total = 0;
+        foreach ($costs as $cost) {
+            $total += (float) ($cost['amount'] ?? 0);
+        }
+
+        return $total;
+    }
 }

@@ -15,7 +15,6 @@ use Livewire\Attributes\Url;
 
 class StaffStatsOverview extends StatsOverviewWidget
 {
-
     #[Url(as: 'period')]
     public string $period = 'all';
 

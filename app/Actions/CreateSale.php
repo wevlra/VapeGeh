@@ -2,13 +2,17 @@
 
 namespace App\Actions;
 
+use App\Models\Buyer;
+use App\Models\Income;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\Stock;
 use App\Models\StockMovement;
 use App\Models\User;
+use DateTimeInterface;
 use DomainException;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class CreateSale
@@ -24,10 +28,12 @@ class CreateSale
         float $paidAmount = 0,
         ?string $notes = null,
         ?string $buyerId = null,
+        ?DateTimeInterface $createdAt = null,
     ): Sale {
-        return DB::transaction(function () use ($user, $locationId, $items, $paymentMethod, $paidAmount, $notes, $buyerId) {
+        return DB::transaction(function () use ($user, $locationId, $items, $paymentMethod, $paidAmount, $notes, $buyerId, $createdAt) {
             $total = 0;
             $saleItems = [];
+            $saleDate = $createdAt ? Carbon::parse($createdAt) : now();
 
             foreach ($items as $item) {
                 $product = Product::findOrFail($item['product_id']);
@@ -68,6 +74,21 @@ class CreateSale
                 'paid_amount' => $paidAmount,
                 'payment_method' => $paymentMethod,
                 'notes' => $notes,
+                'created_at' => $saleDate,
+                'updated_at' => $saleDate,
+            ]);
+
+            $buyer = $buyerId ? Buyer::find($buyerId) : null;
+            $buyerName = $buyer ? " - {$buyer->name}" : '';
+            Income::create([
+                'location_id' => $locationId,
+                'category' => 'sale',
+                'description' => "Penjualan Kasir {$sale->invoice_number}{$buyerName}",
+                'amount' => $total,
+                'date' => $saleDate->format('Y-m-d'),
+                'created_by' => $user->id,
+                'created_at' => $saleDate,
+                'updated_at' => $saleDate,
             ]);
 
             foreach ($saleItems as $saleItem) {
@@ -77,6 +98,8 @@ class CreateSale
                     'qty' => $saleItem['qty'],
                     'price' => $saleItem['price'],
                     'subtotal' => $saleItem['subtotal'],
+                    'created_at' => $saleDate,
+                    'updated_at' => $saleDate,
                 ]);
 
                 $stock = $saleItem['stock'];
@@ -93,6 +116,8 @@ class CreateSale
                     'buyer_id' => $buyerId,
                     'created_by' => $user->id,
                     'notes' => "Penjualan #{$sale->invoice_number}",
+                    'created_at' => $saleDate,
+                    'updated_at' => $saleDate,
                 ]);
             }
 

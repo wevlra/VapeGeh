@@ -25,6 +25,10 @@
                             $catLabel = match($catStr) {
                                 'sale' => 'Penjualan',
                                 'debt_payment' => 'Pembayaran Hutang',
+                                'service' => 'Jasa / Service',
+                                'cashback' => 'Cashback & Rebate',
+                                'opname' => 'Penyesuaian Stok',
+                                'investment' => 'Modal / Investasi',
                                 'purchase' => 'Pembelian',
                                 'salary' => 'Gaji',
                                 'utilities' => 'Utilitas',
@@ -35,6 +39,9 @@
                             $badgeClass = match($catStr) {
                                 'sale' => 'badge-success',
                                 'debt_payment' => 'badge-info',
+                                'service' => 'badge-primary',
+                                'cashback' => 'badge-warning',
+                                'investment' => 'badge-success',
                                 'purchase' => 'badge-warning',
                                 'salary' => 'badge-primary',
                                 'utilities' => 'badge-info',

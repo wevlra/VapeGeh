@@ -3,6 +3,7 @@
 namespace App\Filament\Staff\Pages;
 
 use App\Models\Sale;
+use App\Models\StockEntry;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\View;
@@ -69,6 +70,7 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
                 'sales.total',
                 'sales.payment_method',
                 'sales.created_at',
+                DB::raw('NULL as additional_costs'),
             ]);
 
         $stockQ = DB::table('stock_entries')
@@ -91,6 +93,7 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
                 DB::raw('COALESCE(totals.total, 0) as total'),
                 'stock_entries.payment_method',
                 'stock_entries.created_at',
+                'stock_entries.additional_costs',
             ]);
 
         $union = $salesQ->union($stockQ);
@@ -127,7 +130,11 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
                     ->searchable(),
                 TextColumn::make('total')
                     ->label('Total')
-                    ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
+                    ->formatStateUsing(function (float $state, $record): string {
+                        $finalTotal = $state + StockEntry::parseAdditionalCostsTotal($record->additional_costs ?? null);
+
+                        return 'Rp '.number_format($finalTotal, 0, ',', '.');
+                    })
                     ->sortable(),
                 TextColumn::make('payment_method')
                     ->label('Pembayaran')

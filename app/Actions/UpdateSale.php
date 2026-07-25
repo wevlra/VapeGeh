@@ -2,6 +2,8 @@
 
 namespace App\Actions;
 
+use App\Models\Buyer;
+use App\Models\Income;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\Stock;
@@ -106,6 +108,21 @@ class UpdateSale
                 'paid_amount' => $data['paid_amount'] ?? $sale->paid_amount,
                 'notes' => $data['notes'] ?? $sale->notes,
             ]);
+
+            Income::where('description', 'like', "Penjualan Kasir {$sale->invoice_number}%")->delete();
+
+            if ($total > 0) {
+                $buyer = $sale->buyer_id ? Buyer::find($sale->buyer_id) : null;
+                $buyerName = $buyer ? " - {$buyer->name}" : '';
+                Income::create([
+                    'location_id' => $sale->location_id,
+                    'category' => 'sale',
+                    'description' => "Penjualan Kasir {$sale->invoice_number}{$buyerName}",
+                    'amount' => $total,
+                    'date' => $sale->created_at ?? now(),
+                    'created_by' => $sale->user_id ?? auth()->id(),
+                ]);
+            }
         });
     }
 }

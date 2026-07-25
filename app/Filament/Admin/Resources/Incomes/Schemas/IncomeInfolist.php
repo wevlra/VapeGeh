@@ -22,18 +22,30 @@ class IncomeInfolist
                             ->formatStateUsing(fn (string $state): string => match ($state) {
                                 'sale' => 'Penjualan',
                                 'debt_payment' => 'Pembayaran Hutang',
+                                'service' => 'Jasa / Service',
+                                'cashback' => 'Cashback & Rebate',
+                                'opname' => 'Penyesuaian Stok',
+                                'investment' => 'Modal / Investasi',
                                 'other' => 'Lainnya',
                                 default => ucfirst($state),
                             })
                             ->color(fn (string $state): string => match ($state) {
                                 'sale' => 'success',
                                 'debt_payment' => 'info',
+                                'service' => 'primary',
+                                'cashback' => 'warning',
+                                'opname' => 'gray',
+                                'investment' => 'success',
                                 'other' => 'gray',
                                 default => 'gray',
                             })
                             ->icon(fn (string $state): ?string => match ($state) {
                                 'sale' => 'heroicon-o-banknotes',
                                 'debt_payment' => 'heroicon-o-receipt-refund',
+                                'service' => 'heroicon-o-wrench-screwdriver',
+                                'cashback' => 'heroicon-o-gift',
+                                'opname' => 'heroicon-o-adjustments-horizontal',
+                                'investment' => 'heroicon-o-currency-dollar',
                                 'other' => 'heroicon-o-folder',
                                 default => null,
                             }),

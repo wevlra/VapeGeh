@@ -73,14 +73,14 @@ class HistoryExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapp
         if ($related instanceof Sale || $related instanceof StockTransfer || $related instanceof StockEntry) {
             $total = collect($related->items)->sum('qty');
         } elseif ($related instanceof StockOpname) {
-            $total = collect($related->items)->sum('difference');
+            $total = collect($related->items)->count();
         } else {
             $total = abs($row->quantity);
         }
 
         $qtyStr = '';
         if ($related instanceof StockOpname) {
-            $qtyStr = $total > 0 ? '+'.$total : (string) $total;
+            $qtyStr = (string) $total;
         } else {
             $qtyStr = $row->quantity > 0 ? '+'.$total : (string) (-$total);
         }

@@ -16,6 +16,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class IncomeResource extends Resource
 {
@@ -73,6 +74,12 @@ class IncomeResource extends Resource
             'edit' => EditIncome::route('/{record}/edit'),
             'view' => ViewIncome::route('/{record}'),
         ];
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        /** @var Income $record */
+        return $record->isManual();
     }
 
     public static function getNavigationBadge(): string

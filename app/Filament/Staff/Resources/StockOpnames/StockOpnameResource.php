@@ -33,6 +33,11 @@ class StockOpnameResource extends Resource
         return $schema;
     }
 
+    public static function canViewAny(): bool
+    {
+        return false;
+    }
+
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()

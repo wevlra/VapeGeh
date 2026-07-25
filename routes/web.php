@@ -5,6 +5,12 @@ use App\Http\Controllers\ReceiptController;
 use App\Http\Middleware\RedirectAuthenticatedStaff;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/manifest.json', function () {
+    return response()->file(public_path('manifest.json'), [
+        'Content-Type' => 'application/json',
+    ]);
+});
+
 Route::livewire('/', 'landing')->middleware(RedirectAuthenticatedStaff::class);
 
 Route::middleware(['web', 'auth:web,staff', 'throttle:120,1'])->group(function () {

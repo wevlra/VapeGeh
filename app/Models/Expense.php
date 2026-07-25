@@ -47,4 +47,23 @@ class Expense extends Model
             'date' => 'date',
         ];
     }
+
+    public function isManual(): bool
+    {
+        if (blank($this->description)) {
+            return true;
+        }
+
+        $desc = $this->description;
+
+        if (
+            str_contains($desc, 'Stok Masuk') ||
+            str_contains($desc, 'Stock Opname') ||
+            str_contains($desc, '(Entry #')
+        ) {
+            return false;
+        }
+
+        return true;
+    }
 }

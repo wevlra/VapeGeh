@@ -99,6 +99,19 @@ class ReceiptController extends Controller
             ];
         }
 
+        $extraCosts = $related?->additional_costs ?? $movement->additional_costs ?? [];
+        if (! empty($extraCosts) && is_array($extraCosts)) {
+            foreach ($extraCosts as $index => $cost) {
+                $products[] = [
+                    'id' => 'extra-'.$index,
+                    'name' => $cost['description'] ?? $cost['name'] ?? 'Biaya Tambahan',
+                    'qty' => 1,
+                    'unit' => 'item',
+                    'price' => (float) ($cost['amount'] ?? 0),
+                ];
+            }
+        }
+
         // Payment method
         $paymentMethod = match (true) {
             $isSale => $related->payment_method ?? 'cash',
@@ -109,7 +122,7 @@ class ReceiptController extends Controller
         // Total
         $total = match (true) {
             $isSale => (float) $related->total,
-            $isStockEntry => (float) $related->items->sum(fn ($i) => $i->qty * (float) $i->unit_price),
+            $isStockEntry => (float) $related->total_amount,
             $isStockTransfer => (float) $related->items->sum(fn ($i) => $i->qty * (float) ($i->price ?? 0)),
             default => (float) collect($products)->sum(fn ($p) => $p['price'] * $p['qty']),
         };

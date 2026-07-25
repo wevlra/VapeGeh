@@ -6,12 +6,14 @@ use App\Models\Stock;
 use App\Models\StockMovement;
 use App\Models\StockTransfer;
 use App\Models\User;
+use DateTimeInterface;
 use DomainException;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class CompleteStockTransfer
 {
-    public function execute(StockTransfer $transfer, User $completedBy): void
+    public function execute(StockTransfer $transfer, User $completedBy, ?DateTimeInterface $completedAt = null): void
     {
         if ($transfer->status !== 'pending') {
             throw new DomainException('Only pending transfers can be completed.');
@@ -21,7 +23,9 @@ class CompleteStockTransfer
             throw new DomainException('Transfer source and destination cannot be the same location.');
         }
 
-        DB::transaction(function () use ($transfer, $completedBy) {
+        $transferDate = $completedAt ? Carbon::parse($completedAt) : ($transfer->created_at ?? now());
+
+        DB::transaction(function () use ($transfer, $completedBy, $transferDate) {
             $transfer->load('items.product');
 
             foreach ($transfer->items as $item) {
@@ -66,6 +70,8 @@ class CompleteStockTransfer
                     'related_id' => $transfer->id,
                     'created_by' => $completedBy->id,
                     'notes' => "Transfer #{$transfer->transfer_number}",
+                    'created_at' => $transferDate,
+                    'updated_at' => $transferDate,
                 ]);
 
                 StockMovement::create([
@@ -77,11 +83,13 @@ class CompleteStockTransfer
                     'related_id' => $transfer->id,
                     'created_by' => $completedBy->id,
                     'notes' => "Transfer #{$transfer->transfer_number}",
+                    'created_at' => $transferDate,
+                    'updated_at' => $transferDate,
                 ]);
             }
 
             $transfer->status = 'completed';
-            $transfer->completed_at = now();
+            $transfer->completed_at = $transferDate;
             $transfer->save();
         });
     }

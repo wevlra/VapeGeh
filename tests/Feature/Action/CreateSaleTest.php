@@ -44,6 +44,11 @@ it('creates a sale and deducts stock', function () {
         'related_id' => $sale->id,
         'type' => 'out',
     ]);
+    $this->assertDatabaseHas('incomes', [
+        'location_id' => $location->id,
+        'category' => 'sale',
+        'amount' => 150000,
+    ]);
 });
 
 it('throws DomainException when stock is insufficient', function () {

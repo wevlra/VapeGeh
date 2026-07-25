@@ -39,6 +39,17 @@ class AppServiceProvider extends ServiceProvider
         EditAction::configureUsing(fn (EditAction $action) => $action->icon('heroicon-o-pencil-square'));
 
         FilamentView::registerRenderHook(
+            PanelsRenderHook::HEAD_END,
+            fn (): string => Blade::render('
+                <link rel="manifest" href="/manifest.json">
+                <link rel="apple-touch-icon" href="/icon-180.png">
+                <meta name="apple-mobile-web-app-capable" content="yes">
+                <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+                <meta name="theme-color" content="#F59E0B">
+            '),
+        );
+
+        FilamentView::registerRenderHook(
             PanelsRenderHook::USER_MENU_BEFORE,
             fn (): string => Blade::render('
                 <div class="px-2" x-data="{

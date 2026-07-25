@@ -60,19 +60,18 @@
                             if ($related instanceof \App\Models\Sale || $related instanceof \App\Models\StockTransfer || $related instanceof \App\Models\StockEntry) {
                                 $total = collect($related->items)->sum('qty');
                             } elseif ($related instanceof \App\Models\StockOpname) {
-                                $total = collect($related->items)->sum('difference');
+                                $total = collect($related->items)->count();
                             } else {
                                 $total = abs($record->quantity);
                             }
-                            
-                            $prefix = $total > 0 && (!($related instanceof \App\Models\StockOpname) || $total > 0) ? '+' : '';
-                            $qtyStr = '';
+
                             if ($related instanceof \App\Models\StockOpname) {
-                                $qtyStr = $total > 0 ? '+' . $total : (string) $total;
+                                $qtyStr = (string) $total;
+                                $color = '#6b7280';
                             } else {
                                 $qtyStr = $record->quantity > 0 ? '+' . $total : (string) (-$total);
+                                $color = $record->quantity > 0 ? 'green' : 'red';
                             }
-                            $color = $record->quantity > 0 ? 'green' : 'red';
                         @endphp
                         <span style="color: {{ $color }}; font-weight: bold;">{{ $qtyStr }}</span>
                     </td>

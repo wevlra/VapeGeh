@@ -22,7 +22,7 @@ class ListHistory extends ListRecords
         return $config
             ->only(['type', 'location.name', 'quantity'])
             ->cardTitle(fn ($record) => $record->related instanceof Sale
-                ? 'Sale ('.$record->related->invoice_number.')'
+                ? 'Penjualan ('.$record->related->invoice_number.')'
                 : ($record->product?->name ?? '-'));
     }
 

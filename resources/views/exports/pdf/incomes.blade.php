@@ -25,12 +25,19 @@
                             $catLabel = match($catStr) {
                                 'sale' => 'Penjualan',
                                 'debt_payment' => 'Pembayaran Hutang',
+                                'service' => 'Jasa / Service',
+                                'cashback' => 'Cashback & Rebate',
+                                'opname' => 'Penyesuaian Stok',
+                                'investment' => 'Modal / Investasi',
                                 'other' => 'Lainnya',
                                 default => ucfirst($catStr)
                             };
                             $badgeClass = match($catStr) {
                                 'sale' => 'badge-success',
                                 'debt_payment' => 'badge-info',
+                                'service' => 'badge-primary',
+                                'cashback' => 'badge-warning',
+                                'investment' => 'badge-success',
                                 default => 'badge-gray'
                             };
                         @endphp

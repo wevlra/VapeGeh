@@ -123,7 +123,10 @@
             Lokasi Tujuan: {{ $related->toLocation?->name }}
         </div>
     @elseif ($related instanceof \App\Models\StockEntry)
-        @php $stockIn = $related->type === 'in'; @endphp
+        @php
+            $stockIn = $related->type === 'in';
+            $extraCosts = $related->additional_costs ?? $movement->additional_costs ?? [];
+        @endphp
         <table>
             <thead>
                 <tr><th>Item</th><th>Jumlah</th><th>Harga</th></tr>
@@ -137,10 +140,19 @@
                     <td>{{ number_format((float) $item->unit_price, 0, ',', '.') }}</td>
                 </tr>
                 @endforeach
+                @if (!empty($extraCosts) && is_array($extraCosts))
+                    @foreach ($extraCosts as $cost)
+                    <tr>
+                        <td>{{ $cost['description'] ?? $cost['name'] ?? 'Biaya Tambahan' }}</td>
+                        <td>1</td>
+                        <td>{{ number_format((float) ($cost['amount'] ?? 0), 0, ',', '.') }}</td>
+                    </tr>
+                    @endforeach
+                @endif
             </tbody>
         </table>
         <div class="totals">
-            <div>Total: Rp {{ number_format($related->items->sum(fn ($i) => $i->qty * (float) $i->unit_price), 0, ',', '.') }}</div>
+            <div>Total: Rp {{ number_format((float) $related->total_amount, 0, ',', '.') }}</div>
             @if (! $stockIn && $related->buyer)
                 <div>Pembeli: {{ $related->buyer->name }}</div>
             @endif
@@ -166,32 +178,42 @@
         </table>
         <div style="margin-top: 6px; font-size: 10px;">Pemindahan stok otomatis saat lokasi dihapus.</div>
     @else
+        @php
+            $extraCosts = $movement->additional_costs ?? [];
+            $itemTotal = abs((int) $movement->quantity) * (float) ($movement->unit_price ?? 0);
+            $extraTotal = 0;
+            if (is_array($extraCosts)) {
+                foreach ($extraCosts as $c) {
+                    $extraTotal += (float) ($c['amount'] ?? 0);
+                }
+            }
+            $movementGrandTotal = $itemTotal + $extraTotal;
+        @endphp
         <table>
             <thead>
-                <tr><th>Item</th><th>Jumlah</th></tr>
-                <tr class="th-divider"><td colspan="2"></td></tr>
+                <tr><th>Item</th><th>Jumlah</th><th>Harga</th></tr>
+                <tr class="th-divider"><td colspan="3"></td></tr>
             </thead>
             <tbody>
                 <tr>
                     <td>{{ $movement->product->name }}</td>
                     <td>{{ abs((int) $movement->quantity) }}</td>
+                    <td>{{ number_format((float) ($movement->unit_price ?? 0), 0, ',', '.') }}</td>
                 </tr>
+                @if (!empty($extraCosts) && is_array($extraCosts))
+                    @foreach ($extraCosts as $cost)
+                    <tr>
+                        <td>{{ $cost['description'] ?? $cost['name'] ?? 'Biaya Tambahan' }}</td>
+                        <td>1</td>
+                        <td>{{ number_format((float) ($cost['amount'] ?? 0), 0, ',', '.') }}</td>
+                    </tr>
+                    @endforeach
+                @endif
             </tbody>
         </table>
-        @if ($movement->unit_price)
-            <div class="totals">Harga Satuan: Rp {{ number_format((float) $movement->unit_price, 0, ',', '.') }}</div>
+        @if ($movement->unit_price || $extraTotal > 0)
+            <div class="totals">Total: Rp {{ number_format((float) $movementGrandTotal, 0, ',', '.') }}</div>
         @endif
-    @endif
-
-    @if ($movement->additional_costs && count($movement->additional_costs))
-        <div class="additional">
-            <strong>Biaya Tambahan:</strong>
-            <ul>
-                @foreach ($movement->additional_costs as $cost)
-                    <li>{{ $cost['description'] ?? '' }}: Rp {{ number_format((float) ($cost['amount'] ?? 0), 0, ',', '.') }}</li>
-                @endforeach
-            </ul>
-        </div>
     @endif
 
     @if ($movement->notes)

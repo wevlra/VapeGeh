@@ -126,6 +126,8 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Carrying Case (Small)', 'category_id' => $catAccessory, 'purchase_price' => 20000, 'price_1' => 35000, 'reseller_price' => 28000, 'price_2' => 30000],
         ])->map(fn ($data) => Product::create($data));
 
+        $now = Carbon::now();
+
         // ── Stock at warehouse ─────────────────────────────────────
         foreach ($products as $product) {
             Stock::create([
@@ -138,9 +140,9 @@ class DatabaseSeeder extends Seeder
         // ── Stock transfers (spread over past 2 weeks) ────────────
         $allStores = [$mainStore, $branch1, $branch2];
         $transferDates = [
-            Carbon::now()->subDays(20),
-            Carbon::now()->subDays(14),
-            Carbon::now()->subDays(10),
+            $now->copy()->subDays(20)->setTime(10, 0, 0),
+            $now->copy()->subDays(14)->setTime(11, 30, 0),
+            $now->copy()->subDays(10)->setTime(14, 15, 0),
         ];
 
         foreach ($allStores as $index => $store) {
@@ -162,7 +164,7 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
 
-            app(CompleteStockTransfer::class)->execute($transfer, $admin);
+            app(CompleteStockTransfer::class)->execute($transfer, $admin, $transferDates[$index]);
         }
 
         // ── Sales (spread over last 14 days) ──────────────────────
@@ -183,19 +185,35 @@ class DatabaseSeeder extends Seeder
                 $qty = rand(1, 2);
                 $subtotal = $product->price_1 * $qty;
 
+                $saleDate = $now->copy()->subDays($day);
+                if ($day === 0) {
+                    $startHour = 8;
+                    $currentHour = (int) $now->format('H');
+                    if ($currentHour > $startHour) {
+                        $hour = rand($startHour, $currentHour - 1);
+                        $minute = rand(0, 59);
+                    } else {
+                        $hour = (int) $now->format('H');
+                        $minute = rand(0, max(0, (int) $now->format('i') - 1));
+                    }
+                    $saleDate = $saleDate->setTime($hour, $minute, rand(0, 59));
+                } else {
+                    $saleDate = $saleDate->setTime(rand(8, 20), rand(0, 59));
+                }
+
+                if ($saleDate->isAfter($now)) {
+                    $saleDate = $now->copy()->subMinutes(rand(1, 60));
+                }
+
                 try {
-                    $sale = app(CreateSale::class)->execute(
+                    app(CreateSale::class)->execute(
                         user: $assign['staff'],
                         locationId: $assign['location'],
                         items: [['product_id' => $product->id, 'qty' => $qty]],
                         paymentMethod: $assign['payment'],
                         paidAmount: $subtotal,
+                        createdAt: $saleDate,
                     );
-
-                    $sale->update([
-                        'created_at' => Carbon::now()->subDays($day)->setTime(rand(8, 20), rand(0, 59)),
-                        'updated_at' => Carbon::now()->subDays($day)->setTime(rand(8, 20), rand(0, 59)),
-                    ]);
                 } catch (\DomainException $e) {
                     // skip sale if stock insufficient
                 }
@@ -209,25 +227,39 @@ class DatabaseSeeder extends Seeder
             ['category' => 'sale', 'description' => 'Pembelian online via QRIS', 'amount' => 180000],
             ['category' => 'debt_payment', 'description' => 'Pembayaran hutang pelanggan', 'amount' => 500000],
             ['category' => 'debt_payment', 'description' => 'Pelunasan cicilan stok', 'amount' => 350000],
+            ['category' => 'service', 'description' => 'Jasa coil master / wicking service', 'amount' => 75000],
+            ['category' => 'cashback', 'description' => 'Cashback promo e-wallet', 'amount' => 120000],
+            ['category' => 'investment', 'description' => 'Suntikan modal tambahan usaha', 'amount' => 1000000],
             ['category' => 'opname', 'description' => 'Surplus Opname Stok Barang', 'amount' => 50000],
-            ['category' => 'other', 'description' => 'Refund dari vendor', 'amount' => 120000],
-            ['category' => 'sale', 'description' => 'Biaya penjualan restock', 'amount' => 200000],
+            ['category' => 'other', 'description' => 'Refund biaya sampel dari vendor', 'amount' => 120000],
             ['category' => 'sale', 'description' => 'Penjualan POD mingguan', 'amount' => 320000],
-            ['category' => 'other', 'description' => 'Bonus distributor', 'amount' => 150000],
+            ['category' => 'other', 'description' => 'Bonus distributor supplier', 'amount' => 150000],
             ['category' => 'sale', 'description' => 'Penjualan coil dan cartridge', 'amount' => 285000],
         ];
 
         foreach ($allStores as $store) {
             foreach ($incomeData as $index => $data) {
+                $daysAgo = rand(0, 30);
+                $incomeDate = $now->copy()->subDays($daysAgo);
+                if ($daysAgo === 0) {
+                    $incomeDate = $now->copy()->subMinutes(rand(5, 300));
+                } else {
+                    $incomeDate = $incomeDate->setTime(rand(8, 20), rand(0, 59));
+                }
+
+                if ($incomeDate->isAfter($now)) {
+                    $incomeDate = $now->copy()->subMinutes(rand(1, 60));
+                }
+
                 Income::create([
                     'location_id' => $store->id,
                     'category' => $data['category'],
                     'description' => $data['description'],
                     'amount' => $data['amount'],
-                    'date' => Carbon::now()->subDays(rand(0, 30)),
+                    'date' => $incomeDate->format('Y-m-d'),
                     'created_by' => $admin->id,
-                    'created_at' => Carbon::now()->subDays(rand(0, 30)),
-                    'updated_at' => Carbon::now()->subDays(rand(0, 30)),
+                    'created_at' => $incomeDate,
+                    'updated_at' => $incomeDate,
                 ]);
             }
         }
@@ -251,15 +283,27 @@ class DatabaseSeeder extends Seeder
 
         foreach ($allStores as $store) {
             foreach ($expenseData as $index => $data) {
+                $daysAgo = rand(0, 30);
+                $expenseDate = $now->copy()->subDays($daysAgo);
+                if ($daysAgo === 0) {
+                    $expenseDate = $now->copy()->subMinutes(rand(5, 300));
+                } else {
+                    $expenseDate = $expenseDate->setTime(rand(8, 20), rand(0, 59));
+                }
+
+                if ($expenseDate->isAfter($now)) {
+                    $expenseDate = $now->copy()->subMinutes(rand(1, 60));
+                }
+
                 Expense::create([
                     'location_id' => $store->id,
                     'category' => $data['category'],
                     'description' => $data['description'],
                     'amount' => $data['amount'],
-                    'date' => Carbon::now()->subDays(rand(0, 30)),
+                    'date' => $expenseDate->format('Y-m-d'),
                     'created_by' => $admin->id,
-                    'created_at' => Carbon::now()->subDays(rand(0, 30)),
-                    'updated_at' => Carbon::now()->subDays(rand(0, 30)),
+                    'created_at' => $expenseDate,
+                    'updated_at' => $expenseDate,
                 ]);
             }
         }

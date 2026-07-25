@@ -178,7 +178,7 @@ class HistoryInfolist
                         if ($record->related instanceof StockEntry) {
                             $entry = $record->related;
                             $stockIn = $entry->type === 'in';
-                            $total = $entry->items->sum(fn ($i) => $i->qty * (float) $i->unit_price);
+                            $total = $entry->total_amount;
 
                             return [
                                 TextEntry::make('related.vendor.name')

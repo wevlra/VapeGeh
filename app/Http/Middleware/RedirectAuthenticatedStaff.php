@@ -20,7 +20,7 @@ class RedirectAuthenticatedStaff
         $hasStaffSession = Auth::guard('staff')->check();
         $hasAdminSession = Auth::guard('web')->check();
 
-        if ($hasAdminSession || !$isStaffHost) {
+        if ($hasAdminSession || ! $isStaffHost) {
             return $next($request);
         }
 

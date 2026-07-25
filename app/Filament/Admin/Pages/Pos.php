@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Pages;
 use App\Filament\Concerns\NotifiesWithDetail;
 use App\Filament\Staff\Pages\Pos as StaffPos;
 use App\Models\Buyer;
+use App\Models\Income;
 use App\Models\Location;
 use App\Models\Product;
 use App\Models\Sale;
@@ -308,6 +309,17 @@ class Pos extends StaffPos
                     'paid_amount' => $paidAmount,
                     'payment_method' => $paymentMethod,
                     'notes' => $data['notes'] ?? null,
+                ]);
+
+                $buyer = Buyer::find($data['buyer_id'] ?? null);
+                $buyerName = $buyer ? " - {$buyer->name}" : '';
+                Income::create([
+                    'location_id' => $this->items[0]['location_id'],
+                    'category' => 'sale',
+                    'description' => "Penjualan Kasir {$sale->invoice_number}{$buyerName}",
+                    'amount' => $total,
+                    'date' => now(),
+                    'created_by' => auth()->id(),
                 ]);
 
                 foreach ($saleItems as $saleItem) {

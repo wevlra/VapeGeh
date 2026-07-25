@@ -27,6 +27,10 @@ class IncomeForm
                     ->options([
                         'sale' => 'Penjualan',
                         'debt_payment' => 'Pembayaran Hutang',
+                        'service' => 'Jasa / Service',
+                        'cashback' => 'Cashback & Rebate',
+                        'opname' => 'Penyesuaian Stok',
+                        'investment' => 'Modal / Investasi',
                         'other' => 'Lainnya',
                     ]),
                 TextInput::make('amount')

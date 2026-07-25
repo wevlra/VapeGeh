@@ -3,6 +3,8 @@
 namespace App\Filament\Staff\Pages;
 
 use App\Filament\Concerns\NotifiesWithDetail;
+use App\Models\Buyer;
+use App\Models\Income;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\Stock;
@@ -332,6 +334,17 @@ class Pos extends Page implements HasTable
                     'paid_amount' => $paidAmount,
                     'payment_method' => $paymentMethod,
                     'notes' => $data['notes'] ?? null,
+                ]);
+
+                $buyer = Buyer::find($data['buyer_id'] ?? null);
+                $buyerName = $buyer ? " - {$buyer->name}" : '';
+                Income::create([
+                    'location_id' => $locationId,
+                    'category' => 'sale',
+                    'description' => "Penjualan Kasir {$sale->invoice_number}{$buyerName}",
+                    'amount' => $total,
+                    'date' => now(),
+                    'created_by' => auth()->id(),
                 ]);
 
                 foreach ($saleItems as $saleItem) {

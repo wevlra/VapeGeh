@@ -45,15 +45,43 @@
 @endif
 [L]Metode:[R]{{ match($related->payment_method) { 'qris' => 'QRIS', default => ucfirst($related->payment_method) } }}
 @elseif ($related instanceof \App\Models\StockEntry)
+@php
+    $extraCosts = $related->additional_costs ?? $movement->additional_costs ?? [];
+@endphp
 @foreach ($related->items as $item)
 [L]{{ $item->product->name ?? 'Produk #'.$item->product_id }}
 [L]  {{ $item->qty }}x {{ number_format((float) $item->unit_price, 0, ',', '.') }}
 @endforeach
+@if (!empty($extraCosts) && is_array($extraCosts))
+@foreach ($extraCosts as $cost)
+[L]{{ $cost['description'] ?? $cost['name'] ?? 'Biaya Tambahan' }}
+[L]  1x {{ number_format((float) ($cost['amount'] ?? 0), 0, ',', '.') }}
+@endforeach
+@endif
 --------------------------------
-[L]Total:[R]Rp {{ number_format($related->items->sum(fn ($i) => $i->qty * (float) $i->unit_price), 0, ',', '.') }}
+[L]Total:[R]Rp {{ number_format((float) $related->total_amount, 0, ',', '.') }}
 @else
+@php
+    $extraCosts = $movement->additional_costs ?? [];
+    $itemTotal = abs((int) $movement->quantity) * (float) ($movement->unit_price ?? 0);
+    $extraTotal = 0;
+    if (is_array($extraCosts)) {
+        foreach ($extraCosts as $c) {
+            $extraTotal += (float) ($c['amount'] ?? 0);
+        }
+    }
+    $movementGrandTotal = $itemTotal + $extraTotal;
+@endphp
 [L]{{ $movement->product->name }}
-[L]  Jumlah:[R]{{ abs((int) $movement->quantity) }}
+[L]  {{ abs((int) $movement->quantity) }}x {{ number_format((float) ($movement->unit_price ?? 0), 0, ',', '.') }}
+@if (!empty($extraCosts) && is_array($extraCosts))
+@foreach ($extraCosts as $cost)
+[L]{{ $cost['description'] ?? $cost['name'] ?? 'Biaya Tambahan' }}
+[L]  1x {{ number_format((float) ($cost['amount'] ?? 0), 0, ',', '.') }}
+@endforeach
+@endif
+--------------------------------
+[L]Total:[R]Rp {{ number_format((float) $movementGrandTotal, 0, ',', '.') }}
 @endif
 --------------------------------
 [C]{!! nl2br(e(config('store.receipt_footer'))) !!}

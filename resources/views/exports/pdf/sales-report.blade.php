@@ -16,7 +16,11 @@
         <tbody>
             @php $grandTotal = 0; @endphp
             @forelse($records as $record)
-                @php $grandTotal += $record->total; @endphp
+                @php
+                    $extraCosts = \App\Models\StockEntry::parseAdditionalCostsTotal($record->additional_costs ?? null);
+                    $recordTotal = (float) $record->total + $extraCosts;
+                    $grandTotal += $recordTotal;
+                @endphp
                 <tr>
                     <td>{{ \Carbon\Carbon::parse($record->created_at)->format('d/m/Y H:i') }}</td>
                     <td>
@@ -48,7 +52,7 @@
                         @endphp
                         {{ $payLabel }}
                     </td>
-                    <td style="text-align: right;">{{ number_format($record->total, 0, ',', '.') }}</td>
+                    <td style="text-align: right;">{{ number_format($recordTotal, 0, ',', '.') }}</td>
                 </tr>
             @empty
                 <tr>

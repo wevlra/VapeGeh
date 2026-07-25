@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Models\Income;
 use App\Models\Sale;
 use App\Models\Stock;
 use DomainException;
@@ -40,6 +41,8 @@ class DeleteSale
                     ]);
                 }
             }
+
+            Income::where('description', 'like', "Penjualan Kasir {$sale->invoice_number}%")->delete();
 
             $sale->stockMovements()->delete();
             $sale->items()->delete();

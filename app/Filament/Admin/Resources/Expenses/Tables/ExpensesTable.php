@@ -88,7 +88,8 @@ class ExpensesTable
                     ]),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->visible(fn (Expense $record): bool => $record->isManual()),
                 DeleteAction::make()
                     ->successNotification(
                         NotifiesWithDetail::buildErrorNotification(

@@ -46,6 +46,10 @@ class IncomesExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapp
         $catLabel = match ($catStr) {
             'sale' => 'Penjualan',
             'debt_payment' => 'Pembayaran Hutang',
+            'service' => 'Jasa / Service',
+            'cashback' => 'Cashback & Rebate',
+            'opname' => 'Penyesuaian Stok',
+            'investment' => 'Modal / Investasi',
             'other' => 'Lainnya',
             default => ucfirst($catStr)
         };

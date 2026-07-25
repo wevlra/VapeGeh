@@ -16,6 +16,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class ExpenseResource extends Resource
 {
@@ -63,6 +64,12 @@ class ExpenseResource extends Resource
     public static function infolist(Schema $schema): Schema
     {
         return ExpenseInfolist::configure($schema);
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        /** @var Expense $record */
+        return $record->isManual();
     }
 
     public static function getPages(): array
