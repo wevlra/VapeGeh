@@ -5,12 +5,14 @@ namespace App\Filament\Staff\Widgets;
 use App\Models\Income;
 use App\Models\Sale;
 use App\Models\Stock;
+use App\Models\StockEntry;
 use Carbon\Carbon;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Url;
 
 class StaffStatsOverview extends StatsOverviewWidget
@@ -74,15 +76,32 @@ class StaffStatsOverview extends StatsOverviewWidget
         $locationId = auth()->user()->location_id;
         $start = $this->periodStart();
 
-        $saleQuery = Sale::where('location_id', $locationId);
-        $incomeQuery = Income::where('location_id', $locationId);
+        $saleQuery = Sale::where('sales.location_id', $locationId);
+        $stockOutQuery = StockEntry::where('stock_entries.type', 'out')->where('stock_entries.location_id', $locationId);
+        $incomeQuery = Income::where('incomes.location_id', $locationId);
+
         if ($start) {
-            $saleQuery->where('created_at', '>=', $start);
-            $incomeQuery->where('date', '>=', $start->toDateString());
+            $saleQuery->where('sales.created_at', '>=', $start);
+            $stockOutQuery->where('stock_entries.created_at', '>=', $start);
+            $incomeQuery->where('incomes.date', '>=', $start->toDateString());
         }
 
-        $totalSales = $saleQuery->count();
-        $totalRevenue = $incomeQuery->sum('amount');
+        $totalSales = $saleQuery->count() + $stockOutQuery->count();
+
+        $posRevenue = (float) $saleQuery->sum('total');
+
+        $stockOutItemsRevenue = (clone $stockOutQuery)
+            ->join('stock_entry_items', 'stock_entries.id', '=', 'stock_entry_items.stock_entry_id')
+            ->sum(DB::raw('stock_entry_items.qty * stock_entry_items.unit_price'));
+
+        $stockOutAdditionalCosts = (clone $stockOutQuery)
+            ->pluck('additional_costs')
+            ->sum(fn ($costs) => StockEntry::parseAdditionalCostsTotal($costs));
+
+        $stockOutRevenue = (float) $stockOutItemsRevenue + (float) $stockOutAdditionalCosts;
+
+        $totalRevenue = $posRevenue + $stockOutRevenue;
+
         $totalStock = Stock::where('location_id', $locationId)->sum('qty');
 
         $days = match ($this->period) {
@@ -93,13 +112,39 @@ class StaffStatsOverview extends StatsOverviewWidget
         };
 
         $chartStart = $start ?? now()->subMonths($days - 1)->startOfMonth();
+        $chartEnd = now();
 
-        $chartValues = collect(range($days - 1, 0))->map(function ($i) use ($chartStart, $locationId) {
-            $day = $chartStart->copy()->addDays($i);
+        $dateExprSale = DB::connection()->getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m-%d', created_at) as day_key"
+            : "DATE_FORMAT(created_at, '%Y-%m-%d') as day_key";
 
-            return (int) Income::where('location_id', $locationId)
-                ->where('date', $day->toDateString())
-                ->sum('amount');
+        $salesByDayPos = Sale::where('location_id', $locationId)
+            ->whereBetween('created_at', [$chartStart->toDateTimeString(), $chartEnd->toDateTimeString()])
+            ->selectRaw("{$dateExprSale}, SUM(total) as total")
+            ->groupBy('day_key')
+            ->pluck('total', 'day_key');
+
+        $stockOutsDaily = StockEntry::with('items')->where('type', 'out')
+            ->where('location_id', $locationId)
+            ->whereBetween('created_at', [$chartStart->toDateTimeString(), $chartEnd->toDateTimeString()])
+            ->get()
+            ->groupBy(fn ($entry) => $entry->created_at->format('Y-m-d'));
+
+        $chartValues = collect(range($days - 1, 0))->map(function ($i) use ($chartStart, $salesByDayPos, $stockOutsDaily) {
+            $day = $chartStart->copy()->addDays($i)->format('Y-m-d');
+
+            $posTotal = (float) ($salesByDayPos[$day] ?? 0);
+
+            $stockOutTotal = 0;
+            if (isset($stockOutsDaily[$day])) {
+                foreach ($stockOutsDaily[$day] as $entry) {
+                    $itemsTotal = $entry->items->sum(fn ($item) => $item->qty * $item->unit_price);
+                    $costs = StockEntry::parseAdditionalCostsTotal($entry->additional_costs);
+                    $stockOutTotal += $itemsTotal + $costs;
+                }
+            }
+
+            return (int) ($posTotal + $stockOutTotal);
         })->toArray();
 
         return [

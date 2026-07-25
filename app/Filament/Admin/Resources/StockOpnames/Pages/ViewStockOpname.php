@@ -6,6 +6,7 @@ use App\Actions\CompleteStockOpname;
 use App\Filament\Admin\Resources\StockOpnames\StockOpnameResource;
 use App\Filament\Concerns\NotifiesWithDetail;
 use Barryvdh\DomPDF\Facade\Pdf;
+use DomainException;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -46,7 +47,7 @@ class ViewStockOpname extends ViewRecord
                         );
 
                         $this->refreshFormData(['status', 'completed_at']);
-                    } catch (\DomainException $e) {
+                    } catch (DomainException $e) {
                         $this->notifyError(
                             'Gagal Menyelesaikan Stock Opname',
                             $e->getMessage()

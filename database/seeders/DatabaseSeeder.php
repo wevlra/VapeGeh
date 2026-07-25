@@ -15,6 +15,7 @@ use App\Models\StockTransferItem;
 use App\Models\User;
 use App\Models\Vendor;
 use App\Settings\StoreSettings;
+use DomainException;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 
@@ -214,7 +215,7 @@ class DatabaseSeeder extends Seeder
                         paidAmount: $subtotal,
                         createdAt: $saleDate,
                     );
-                } catch (\DomainException $e) {
+                } catch (DomainException $e) {
                     // skip sale if stock insufficient
                 }
             }

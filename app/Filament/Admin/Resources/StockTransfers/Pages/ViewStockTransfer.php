@@ -6,6 +6,7 @@ use App\Actions\CompleteStockTransfer;
 use App\Filament\Admin\Resources\StockTransfers\StockTransferResource;
 use App\Filament\Concerns\NotifiesWithDetail;
 use Barryvdh\DomPDF\Facade\Pdf;
+use DomainException;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -40,7 +41,7 @@ class ViewStockTransfer extends ViewRecord
                         );
 
                         $this->refreshFormData(['status', 'completed_at']);
-                    } catch (\DomainException $e) {
+                    } catch (DomainException $e) {
                         $this->notifyError(
                             'Gagal Menyelesaikan Transfer Stok',
                             $e->getMessage()

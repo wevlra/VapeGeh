@@ -28,6 +28,8 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
+use Throwable;
+use UnitEnum;
 
 class Pos extends Page implements HasTable
 {
@@ -39,7 +41,7 @@ class Pos extends Page implements HasTable
 
     protected static ?string $navigationLabel = 'Kasir';
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Penjualan';
+    protected static UnitEnum|string|null $navigationGroup = 'Penjualan';
 
     protected static ?int $navigationSort = 1;
 
@@ -378,7 +380,7 @@ class Pos extends Page implements HasTable
             $this->notifyError('Penjualan Gagal', $e->getMessage());
 
             return;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             report($e);
 
             $this->notifyError(

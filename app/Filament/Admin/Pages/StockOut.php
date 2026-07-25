@@ -37,6 +37,8 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
+use Throwable;
+use UnitEnum;
 
 class StockOut extends Page implements HasForms, HasTable
 {
@@ -47,7 +49,7 @@ class StockOut extends Page implements HasForms, HasTable
 
     protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedArrowDownTray;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Inventaris';
+    protected static UnitEnum|string|null $navigationGroup = 'Inventaris';
 
     protected static ?string $navigationLabel = 'Stok Keluar';
 
@@ -406,7 +408,7 @@ class StockOut extends Page implements HasForms, HasTable
             );
 
             return;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             report($e);
 
             $this->notifyError(

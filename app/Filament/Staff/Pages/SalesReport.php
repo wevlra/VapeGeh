@@ -14,6 +14,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Url;
+use UnitEnum;
 use Wezlo\FilamentResponsiveTable\Concerns\HasResponsiveTable;
 use Wezlo\FilamentResponsiveTable\ResponsiveTableConfiguration;
 
@@ -24,7 +25,7 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingCart;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Laporan';
+    protected static UnitEnum|string|null $navigationGroup = 'Laporan';
 
     protected static ?string $title = 'Laporan Penjualan';
 

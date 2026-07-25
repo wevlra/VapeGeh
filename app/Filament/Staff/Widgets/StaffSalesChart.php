@@ -2,7 +2,8 @@
 
 namespace App\Filament\Staff\Widgets;
 
-use App\Models\Income;
+use App\Models\Sale;
+use App\Models\StockEntry;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -20,17 +21,42 @@ class StaffSalesChart extends ChartWidget
         $end = now()->endOfMonth();
 
         $dateExpr = DB::connection()->getDriverName() === 'sqlite'
-            ? "strftime('%Y-%m', date) as month_key"
-            : "DATE_FORMAT(date, '%Y-%m') as month_key";
+            ? "strftime('%Y-%m', created_at) as month_key"
+            : "DATE_FORMAT(created_at, '%Y-%m') as month_key";
 
-        $salesByMonth = Income::where('location_id', $locationId)
-            ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
-            ->selectRaw("{$dateExpr}, SUM(amount) as total")
+        $salesByMonthPos = Sale::where('location_id', $locationId)
+            ->whereBetween('created_at', [$start->toDateTimeString(), $end->toDateTimeString()])
+            ->selectRaw("{$dateExpr}, SUM(total) as total")
             ->groupBy('month_key')
             ->pluck('total', 'month_key');
 
+        $stockOuts = StockEntry::with('items')->where('type', 'out')
+            ->where('location_id', $locationId)
+            ->whereBetween('created_at', [$start->toDateTimeString(), $end->toDateTimeString()])
+            ->get();
+
+        $stockOutByMonth = $stockOuts->groupBy(function ($entry) {
+            return $entry->created_at->format('Y-m');
+        });
+
         $months = collect(range(5, 0))->map(fn ($i) => now()->subMonths($i));
-        $data = $months->map(fn (Carbon $month) => (float) ($salesByMonth[$month->format('Y-m')] ?? 0));
+
+        $data = $months->map(function (Carbon $month) use ($salesByMonthPos, $stockOutByMonth) {
+            $monthKey = $month->format('Y-m');
+            $posTotal = (float) ($salesByMonthPos[$monthKey] ?? 0);
+
+            $stockOutTotal = 0;
+            if (isset($stockOutByMonth[$monthKey])) {
+                foreach ($stockOutByMonth[$monthKey] as $entry) {
+                    $itemsTotal = $entry->items->sum(fn ($i) => $i->qty * $i->unit_price);
+                    $costs = StockEntry::parseAdditionalCostsTotal($entry->additional_costs);
+                    $stockOutTotal += $itemsTotal + $costs;
+                }
+            }
+
+            return $posTotal + $stockOutTotal;
+        });
+
         $labels = $months->map(fn (Carbon $month) => $month->format('M Y'));
 
         return [

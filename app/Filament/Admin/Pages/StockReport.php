@@ -13,6 +13,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use UnitEnum;
 use Wezlo\FilamentResponsiveTable\Concerns\HasResponsiveTable;
 use Wezlo\FilamentResponsiveTable\ResponsiveTableConfiguration;
 
@@ -24,7 +25,7 @@ class StockReport extends Page implements Tables\Contracts\HasTable
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Laporan';
+    protected static UnitEnum|string|null $navigationGroup = 'Laporan';
 
     protected static ?string $title = 'Laporan Stok';
 

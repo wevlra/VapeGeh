@@ -17,6 +17,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use UnitEnum;
 
 class ExpenseResource extends Resource
 {
@@ -26,7 +27,7 @@ class ExpenseResource extends Resource
 
     protected static ?string $navigationLabel = 'Pengeluaran';
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Pembukuan';
+    protected static UnitEnum|string|null $navigationGroup = 'Pembukuan';
 
     public static function getModelLabel(): string
     {

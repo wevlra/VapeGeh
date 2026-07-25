@@ -30,6 +30,7 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Throwable;
 
 class StockOpnameCreate extends Page implements HasForms, HasTable
 {
@@ -238,7 +239,7 @@ class StockOpnameCreate extends Page implements HasForms, HasTable
 
                 return $opname;
             });
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             report($e);
             $this->notifyError('Terjadi Kesalahan', 'Silakan coba lagi atau hubungi administrator.');
 

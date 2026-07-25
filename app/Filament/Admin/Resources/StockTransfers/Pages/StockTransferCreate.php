@@ -28,6 +28,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class StockTransferCreate extends Page implements HasForms, HasTable
 {
@@ -280,7 +281,7 @@ class StockTransferCreate extends Page implements HasForms, HasTable
 
                 return $transfer;
             });
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             report($e);
             $this->notifyError('Terjadi Kesalahan', 'Silakan coba lagi atau hubungi administrator.');
 

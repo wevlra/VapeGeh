@@ -10,6 +10,7 @@ use App\Models\Location;
 use App\Models\Product;
 use App\Models\Stock;
 use App\Models\StockOpname;
+use DomainException;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
@@ -30,7 +31,9 @@ use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class StockOpnameEdit extends Page implements HasForms, HasTable
 {
@@ -47,7 +50,7 @@ class StockOpnameEdit extends Page implements HasForms, HasTable
 
     protected string $view = 'filament.admin.pages.stock-opname-edit';
 
-    public \Illuminate\Database\Eloquent\Model|int|string|null $record;
+    public Model|int|string|null $record;
 
     public ?array $data = [];
 
@@ -103,7 +106,7 @@ class StockOpnameEdit extends Page implements HasForms, HasTable
                             "Opname \"{$this->record->opname_number}\" telah selesai."
                         );
                         $this->redirect(StockOpnameResource::getUrl('view', ['record' => $this->record->id]));
-                    } catch (\DomainException $e) {
+                    } catch (DomainException $e) {
                         $this->notifyError('Gagal Menyelesaikan Stock Opname', $e->getMessage());
                     }
                 }),
@@ -290,7 +293,7 @@ class StockOpnameEdit extends Page implements HasForms, HasTable
                     ]);
                 }
             });
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             report($e);
             $this->notifyError('Terjadi Kesalahan', 'Silakan coba lagi atau hubungi administrator.');
 

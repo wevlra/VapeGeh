@@ -13,6 +13,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
 
 class StockOpnameResource extends Resource
 {
@@ -26,7 +27,7 @@ class StockOpnameResource extends Resource
 
     protected static ?string $modelLabel = 'Penyesuaian Stok';
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Manajemen';
+    protected static UnitEnum|string|null $navigationGroup = 'Manajemen';
 
     public static function form(Schema $schema): Schema
     {

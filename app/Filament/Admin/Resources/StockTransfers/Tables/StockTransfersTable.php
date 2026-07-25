@@ -7,6 +7,7 @@ use App\Filament\Admin\Resources\StockTransfers\StockTransferResource;
 use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\StockTransfer;
 use Barryvdh\DomPDF\Facade\Pdf;
+use DomainException;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -88,7 +89,7 @@ class StockTransfersTable
                                 'Transfer Selesai',
                                 "Transfer \"{$record->transfer_number}\" telah selesai. Stok telah dipindahkan antar lokasi."
                             )->send();
-                        } catch (\DomainException $e) {
+                        } catch (DomainException $e) {
                             NotifiesWithDetail::buildErrorNotification(
                                 'Transfer Gagal',
                                 $e->getMessage()

@@ -10,6 +10,7 @@ use App\Models\Location;
 use App\Models\Product;
 use App\Models\StockMovement;
 use App\Models\StockTransfer;
+use DomainException;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -30,7 +31,9 @@ use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class StockTransferEdit extends Page implements HasForms, HasTable
 {
@@ -47,7 +50,7 @@ class StockTransferEdit extends Page implements HasForms, HasTable
 
     protected string $view = 'filament.admin.pages.stock-transfer-edit';
 
-    public \Illuminate\Database\Eloquent\Model|int|string|null $record;
+    public Model|int|string|null $record;
 
     public ?array $data = [];
 
@@ -112,7 +115,7 @@ class StockTransferEdit extends Page implements HasForms, HasTable
                             "Transfer \"{$this->record->transfer_number}\" telah selesai. Stok telah dipindahkan antar lokasi."
                         );
                         $this->redirect(StockTransferResource::getUrl('view', ['record' => $this->record->id]));
-                    } catch (\DomainException $e) {
+                    } catch (DomainException $e) {
                         $this->notifyError('Gagal Menyelesaikan Transfer Stok', $e->getMessage());
                     }
                 }),
@@ -376,7 +379,7 @@ class StockTransferEdit extends Page implements HasForms, HasTable
                     ]);
                 }
             });
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             report($e);
             $this->notifyError('Terjadi Kesalahan', 'Silakan coba lagi atau hubungi administrator.');
 

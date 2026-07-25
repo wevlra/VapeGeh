@@ -26,6 +26,8 @@ use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
+use Throwable;
+use UnitEnum;
 
 class Pos extends StaffPos
 {
@@ -35,7 +37,7 @@ class Pos extends StaffPos
 
     protected static ?string $navigationLabel = 'Kasir';
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Penjualan';
+    protected static UnitEnum|string|null $navigationGroup = 'Penjualan';
 
     protected static ?int $navigationSort = 1;
 
@@ -353,7 +355,7 @@ class Pos extends StaffPos
             $this->notifyError('Penjualan Gagal', $e->getMessage());
 
             return;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             report($e);
 
             $this->notifyError(

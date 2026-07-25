@@ -12,6 +12,7 @@ use Filament\View\PanelsRenderHook;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
+use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -88,7 +89,7 @@ class AppServiceProvider extends ServiceProvider
                 'store.phone' => $settings->phone,
                 'store.receipt_footer' => $settings->receipt_footer,
             ]);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             // Settings table may not exist yet (fresh install / no DB).
             // Fallback to env-based defaults from config/store.php.
         }

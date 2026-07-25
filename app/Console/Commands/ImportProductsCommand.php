@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Category;
 use App\Models\Product;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -106,7 +107,7 @@ class ImportProductsCommand extends Command
 
         try {
             Excel::import($importClass, $file);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Error importing file: '.$e->getMessage());
 
             return Command::FAILURE;

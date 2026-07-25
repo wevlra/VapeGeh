@@ -6,6 +6,7 @@ use App\Actions\CompleteStockOpname;
 use App\Filament\Admin\Resources\StockOpnames\StockOpnameResource;
 use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\StockOpname;
+use DomainException;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -90,7 +91,7 @@ class StockOpnamesTable
                                 'Stock Opname Selesai',
                                 "Opname \"{$record->opname_number}\" telah selesai."
                             )->send();
-                        } catch (\DomainException $e) {
+                        } catch (DomainException $e) {
                             NotifiesWithDetail::buildErrorNotification(
                                 'Gagal Menyelesaikan Stock Opname',
                                 $e->getMessage()

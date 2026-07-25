@@ -13,6 +13,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
 
 class StockTransferResource extends Resource
 {
@@ -22,7 +23,7 @@ class StockTransferResource extends Resource
 
     protected static ?string $navigationLabel = 'Transfer Stok';
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Inventaris';
+    protected static UnitEnum|string|null $navigationGroup = 'Inventaris';
 
     public static function getModelLabel(): string
     {

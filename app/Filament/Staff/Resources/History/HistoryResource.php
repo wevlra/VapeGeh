@@ -18,6 +18,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use UnitEnum;
 
 class HistoryResource extends Resource
 {
@@ -29,7 +30,7 @@ class HistoryResource extends Resource
 
     protected static ?string $navigationLabel = 'Riwayat Transfer';
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Inventaris';
+    protected static UnitEnum|string|null $navigationGroup = 'Inventaris';
 
     protected static ?int $navigationSort = 5;
 

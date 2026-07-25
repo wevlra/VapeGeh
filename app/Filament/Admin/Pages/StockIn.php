@@ -34,6 +34,8 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
+use Throwable;
+use UnitEnum;
 
 class StockIn extends Page implements HasForms, HasTable
 {
@@ -44,7 +46,7 @@ class StockIn extends Page implements HasForms, HasTable
 
     protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedArrowUpTray;
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Inventaris';
+    protected static UnitEnum|string|null $navigationGroup = 'Inventaris';
 
     protected static ?string $navigationLabel = 'Stok Masuk';
 
@@ -267,7 +269,7 @@ class StockIn extends Page implements HasForms, HasTable
                     'related_id' => $entry->id,
                 ]);
             });
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             report($e);
 
             $this->notifyError(
