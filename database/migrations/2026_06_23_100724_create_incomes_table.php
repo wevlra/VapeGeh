@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('incomes', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('location_id')->constrained()->cascadeOnDelete();
-            $table->enum('category', ['sale', 'debt_payment', 'opname', 'other']);
+            $table->enum('category', ['sale', 'debt_payment', 'service', 'cashback', 'opname', 'investment', 'other']);
             $table->string('description');
             $table->decimal('amount', 12, 2);
             $table->date('date');
