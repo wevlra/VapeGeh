@@ -6,7 +6,7 @@
         body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11px; color: #1a1a2e; margin: 0; padding: 20px; }
         .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 2px solid #1a1a2e; padding-bottom: 10px; }
         .logo-container { text-align: left; }
-        .logo-container img { max-height: 50px; }
+        .logo-container img { max-height: 120px; }
         .title-container { text-align: right; }
         .title-container h1 { margin: 0; font-size: 20px; color: #1a1a2e; }
         .meta { display: flex; flex-direction: column; gap: 2px; font-size: 10px; margin-top: 8px; opacity: 0.8; text-align: right; }

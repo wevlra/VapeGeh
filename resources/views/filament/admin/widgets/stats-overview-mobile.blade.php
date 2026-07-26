@@ -22,7 +22,7 @@
                 </dd>
             </div>
             <div class="rounded-md bg-gray-50 p-2.5 dark:bg-gray-900/40">
-                <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Laba</dt>
+                <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Untung</dt>
                 <dd @class([
                     'mt-0.5 text-base font-semibold',
                     'text-success-600 dark:text-success-400' => $profit >= 0,

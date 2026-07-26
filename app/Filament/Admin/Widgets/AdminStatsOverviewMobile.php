@@ -35,9 +35,18 @@ class AdminStatsOverviewMobile extends Widget
             ->sum(DB::raw('ABS(quantity)'));
 
         $income = (float) Income::where('date', '>=', $todayDate)->sum('amount');
-        $expense = (float) Expense::where('date', '>=', $todayDate)->sum('amount');
+
+        $cogs = (float) StockMovement::where('type', 'out')
+            ->where('stock_movements.created_at', '>=', $today)
+            ->join('products', 'products.id', '=', 'stock_movements.product_id')
+            ->sum(DB::raw('ABS(stock_movements.quantity) * products.purchase_price'));
+
+        $opExpense = (float) Expense::where('date', '>=', $todayDate)
+            ->where('category', '!=', 'purchase')
+            ->sum('amount');
+
         $revenue = $income;
-        $profit = $income - $expense;
+        $profit = $income - $cogs - $opExpense;
 
         return [
             'stockIn' => $stockIn,

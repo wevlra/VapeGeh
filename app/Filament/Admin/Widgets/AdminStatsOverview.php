@@ -93,7 +93,21 @@ class AdminStatsOverview extends StatsOverviewWidget
         $revenue = (float) $incomeQuery->sum('amount');
         $stockIn = (int) $stockMovIn->sum('quantity');
         $stockOut = (int) $stockMovOut->sum(DB::raw('ABS(quantity)'));
-        $profit = (float) $incomeQuery->sum('amount') - (float) $expenseQuery->sum('amount');
+
+        $cogsQuery = StockMovement::where('type', 'out')
+            ->join('products', 'products.id', '=', 'stock_movements.product_id');
+
+        if ($start) {
+            $cogsQuery->where('stock_movements.created_at', '>=', $start);
+        }
+
+        $cogs = (float) $cogsQuery->sum(DB::raw('ABS(stock_movements.quantity) * products.purchase_price'));
+
+        $opExpenseQuery = clone $expenseQuery;
+        $opExpenseQuery->where('category', '!=', 'purchase');
+        $operationalExpense = (float) $opExpenseQuery->sum('amount');
+
+        $profit = $revenue - $cogs - $operationalExpense;
 
         $days = match ($this->period) {
             'today' => 1,
@@ -116,8 +130,8 @@ class AdminStatsOverview extends StatsOverviewWidget
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->chart($chartValues)
                 ->color('success'),
-            Stat::make('Laba', 'Rp '.number_format($profit, 0, ',', '.'))
-                ->description('Pendapatan - Pengeluaran')
+            Stat::make('Untung', 'Rp '.number_format($profit, 0, ',', '.'))
+                ->description('Pendapatan - (Modal + Pengeluaran)')
                 ->color($profit >= 0 ? 'success' : 'danger'),
             Stat::make('Stok Masuk', number_format($stockIn))
                 ->description('Unit diterima')

@@ -259,15 +259,25 @@ class StockIn extends Page implements HasForms, HasTable
                     ]);
                 }
 
-                return StockMovement::create([
-                    'product_id' => $items[0]['product_id'],
-                    'location_id' => $data['location_id'],
-                    'type' => 'in',
-                    'quantity' => collect($items)->sum('qty'),
-                    'notes' => $data['notes'] ?? null,
-                    'related_type' => StockEntry::class,
-                    'related_id' => $entry->id,
-                ]);
+                $firstMovement = null;
+                foreach ($items as $item) {
+                    $movement = StockMovement::create([
+                        'product_id' => $item['product_id'],
+                        'location_id' => $data['location_id'],
+                        'type' => 'in',
+                        'quantity' => (int) $item['qty'],
+                        'unit_price' => (float) $item['price'],
+                        'notes' => $data['notes'] ?? null,
+                        'related_type' => StockEntry::class,
+                        'related_id' => $entry->id,
+                    ]);
+
+                    if (! $firstMovement) {
+                        $firstMovement = $movement;
+                    }
+                }
+
+                return $firstMovement;
             });
         } catch (Throwable $e) {
             report($e);
