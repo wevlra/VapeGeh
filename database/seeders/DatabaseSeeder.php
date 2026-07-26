@@ -10,6 +10,7 @@ use App\Models\Income;
 use App\Models\Location;
 use App\Models\Product;
 use App\Models\Stock;
+use App\Models\StockMovement;
 use App\Models\StockTransfer;
 use App\Models\StockTransferItem;
 use App\Models\User;
@@ -182,7 +183,7 @@ class DatabaseSeeder extends Seeder
                     ]);
 
                     if ($stock->wasRecentlyCreated) {
-                        \App\Models\StockMovement::create([
+                        StockMovement::create([
                             'product_id' => $product->id,
                             'location_id' => $loc->id,
                             'type' => 'in',
