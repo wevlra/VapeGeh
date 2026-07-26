@@ -174,12 +174,23 @@ class DatabaseSeeder extends Seeder
 
             foreach ($products as $product) {
                 foreach ($availableLocations as $loc) {
-                    Stock::firstOrCreate([
+                    $stock = Stock::firstOrCreate([
                         'product_id' => $product->id,
                         'location_id' => $loc->id,
                     ], [
                         'qty' => rand(80, 250),
                     ]);
+
+                    if ($stock->wasRecentlyCreated) {
+                        \App\Models\StockMovement::create([
+                            'product_id' => $product->id,
+                            'location_id' => $loc->id,
+                            'type' => 'in',
+                            'quantity' => $stock->qty,
+                            'unit_price' => $product->purchase_price,
+                            'notes' => 'Stok Awal (Seeder)',
+                        ]);
+                    }
                 }
             }
         }
