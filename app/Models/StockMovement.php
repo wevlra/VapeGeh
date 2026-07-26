@@ -75,17 +75,26 @@ class StockMovement extends Model
      */
     public function getSiblingMovementsAttribute(): Collection
     {
-        if ($this->related_type !== Location::class) {
-            return collect();
+        if ($this->related_type === Location::class) {
+            return static::where('related_type', $this->related_type)
+                ->where('related_id', $this->related_id)
+                ->where('location_id', $this->location_id)
+                ->where('type', $this->type)
+                ->where('quantity', '>', 0)
+                ->with(['product', 'location', 'creator', 'related'])
+                ->get();
         }
 
-        return static::where('related_type', $this->related_type)
-            ->where('related_id', $this->related_id)
-            ->where('location_id', $this->location_id)
-            ->where('type', $this->type)
-            ->where('quantity', '>', 0)
-            ->with(['product', 'location', 'creator', 'related'])
-            ->get();
+        if (is_null($this->related_type) && is_null($this->related_id)) {
+            return static::whereNull('related_type')
+                ->whereNull('related_id')
+                ->where('location_id', $this->location_id)
+                ->where('type', $this->type)
+                ->with(['product', 'location', 'creator'])
+                ->get();
+        }
+
+        return new Collection;
     }
 
     protected function casts(): array

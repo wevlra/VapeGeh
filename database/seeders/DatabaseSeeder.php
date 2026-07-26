@@ -179,7 +179,7 @@ class DatabaseSeeder extends Seeder
                         'product_id' => $product->id,
                         'location_id' => $loc->id,
                     ], [
-                        'qty' => rand(80, 250),
+                        'qty' => rand(10, 30),
                     ]);
 
                     if ($stock->wasRecentlyCreated) {
@@ -240,7 +240,7 @@ class DatabaseSeeder extends Seeder
                         StockTransferItem::create([
                             'stock_transfer_id' => $transfer->id,
                             'product_id' => $product->id,
-                            'qty' => rand(10, 40),
+                            'qty' => rand(2, 5),
                         ]);
                     }
 

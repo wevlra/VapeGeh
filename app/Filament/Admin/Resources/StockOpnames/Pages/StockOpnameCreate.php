@@ -16,7 +16,6 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Resources\Pages\Page;
 use Filament\Schemas\Components\EmbeddedTable;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
@@ -68,25 +67,22 @@ class StockOpnameCreate extends Page implements HasForms, HasTable
                             ->description('Pilih lokasi dan catatan')
                             ->icon(Heroicon::OutlinedMapPin)
                             ->schema([
-                                Grid::make(2)
-                                    ->schema([
-                                        Select::make('location_id')
-                                            ->label('Lokasi')
-                                            ->options(fn () => Location::where('status', 'active')->pluck('name', 'id'))
-                                            ->required()
-                                            ->searchable()
-                                            ->preload()
-                                            ->live()
-                                            ->afterStateUpdated(function (callable $set) {
-                                                $this->items = [];
-                                            }),
-                                        Hidden::make('price_type')
-                                            ->default('reseller_price'),
-                                        Textarea::make('notes')
-                                            ->label('Catatan')
-                                            ->rows(2)
-                                            ->columnSpanFull(),
-                                    ]),
+                                Select::make('location_id')
+                                    ->label('Lokasi')
+                                    ->options(fn () => Location::where('status', 'active')->pluck('name', 'id'))
+                                    ->required()
+                                    ->searchable()
+                                    ->preload()
+                                    ->live()
+                                    ->afterStateUpdated(function (callable $set) {
+                                        $this->items = [];
+                                    }),
+                                Hidden::make('price_type')
+                                    ->default('reseller_price'),
+                                Textarea::make('notes')
+                                    ->label('Catatan')
+                                    ->rows(2)
+                                    ->columnSpanFull(),
                             ]),
                         Step::make('Input Stok Fisik')
                             ->description('Masukkan stok fisik untuk setiap produk')

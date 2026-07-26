@@ -102,7 +102,7 @@ class HistoryTable
                             return $items[0] ?? '-';
                         }
 
-                        if ($related === null && $record->related_type === Location::class) {
+                        if ($related === null && (is_null($record->related_type) || $record->related_type === Location::class)) {
                             $names = $record->sibling_movements->pluck('product.name')->filter()->toArray();
                             $count = count($names);
                             if ($count > 1) {
@@ -129,7 +129,7 @@ class HistoryTable
                             $total = $related->items->sum('qty');
                         } elseif ($related instanceof StockOpname) {
                             $total = $related->items->count();
-                        } elseif ($related === null && $record->related_type === Location::class) {
+                        } elseif ($related === null && (is_null($record->related_type) || $record->related_type === Location::class)) {
                             $total = $record->sibling_movements->sum('quantity');
                         } else {
                             $total = abs($record->quantity);
