@@ -57,7 +57,22 @@ class PrintReportAction extends Action
                     $data = ['records' => $siblings, 'title' => $title, 'filterInfo' => ($sourceLocation ? 'Dari: '.$sourceLocation.' | ' : '').'Ke: '.$destLocation];
                     $fileName = "location-deletion-{$record->id}-{$timestamp}.pdf";
                 } else {
-                    return;
+                    $record->load(['product', 'location', 'creator']);
+                    $typeLabel = match ($record->type) {
+                        'in' => 'Stok Masuk',
+                        'out' => 'Stok Keluar',
+                        'transfer' => 'Transfer',
+                        'opname' => 'Penyesuaian Stok',
+                        default => 'Riwayat Stok',
+                    };
+                    $title = 'Laporan '.$typeLabel;
+                    $view = 'exports.pdf.history';
+                    $siblings = $record->sibling_movements->load(['product', 'location', 'creator', 'related']);
+                    if ($siblings->isEmpty()) {
+                        $siblings = collect([$record]);
+                    }
+                    $data = ['records' => $siblings, 'title' => $title, 'filterInfo' => ''];
+                    $fileName = "report-{$record->type}-{$record->id}-{$timestamp}.pdf";
                 }
 
                 $pdf = Pdf::loadView($view, $data)->setPaper('a4', 'portrait');

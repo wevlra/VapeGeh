@@ -160,6 +160,24 @@
                 <div>Vendor: {{ $related->vendor->name }}</div>
             @endif
         </div>
+    @elseif ($related instanceof \App\Models\StockOpname)
+        <table>
+            <thead>
+                <tr><th>Item</th><th>Selisih</th></tr>
+                <tr class="th-divider"><td colspan="2"></td></tr>
+            </thead>
+            <tbody>
+                @foreach ($related->items as $item)
+                <tr>
+                    <td>{{ $item->product->name ?? 'Produk #'.$item->product_id }}</td>
+                    <td>{{ $item->difference > 0 ? '+' : '' }}{{ $item->difference }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        <div style="margin-top: 6px; font-size: 10px;">
+            No Opname: {{ $related->opname_number }}
+        </div>
     @elseif ($isLocationDeletion)
         @php $siblings = $movement->sibling_movements; @endphp
         <table>
@@ -180,7 +198,14 @@
     @else
         @php
             $extraCosts = $movement->additional_costs ?? [];
-            $itemTotal = abs((int) $movement->quantity) * (float) ($movement->unit_price ?? 0);
+            $siblings = $movement->sibling_movements;
+            if ($siblings->isEmpty()) {
+                $siblings = collect([$movement]);
+            }
+            $itemTotal = 0;
+            foreach ($siblings as $sm) {
+                $itemTotal += abs((int) $sm->quantity) * (float) ($sm->unit_price ?? 0);
+            }
             $extraTotal = 0;
             if (is_array($extraCosts)) {
                 foreach ($extraCosts as $c) {
@@ -195,11 +220,13 @@
                 <tr class="th-divider"><td colspan="3"></td></tr>
             </thead>
             <tbody>
+                @foreach ($siblings as $sm)
                 <tr>
-                    <td>{{ $movement->product->name }}</td>
-                    <td>{{ abs((int) $movement->quantity) }}</td>
-                    <td>{{ number_format((float) ($movement->unit_price ?? 0), 0, ',', '.') }}</td>
+                    <td>{{ $sm->product->name ?? 'Produk #'.$sm->product_id }}</td>
+                    <td>{{ abs((int) $sm->quantity) }}</td>
+                    <td>{{ number_format((float) ($sm->unit_price ?? 0), 0, ',', '.') }}</td>
                 </tr>
+                @endforeach
                 @if (!empty($extraCosts) && is_array($extraCosts))
                     @foreach ($extraCosts as $cost)
                     <tr>
@@ -211,7 +238,7 @@
                 @endif
             </tbody>
         </table>
-        @if ($movement->unit_price || $extraTotal > 0)
+        @if ($itemTotal > 0 || $extraTotal > 0)
             <div class="totals">Total: Rp {{ number_format((float) $movementGrandTotal, 0, ',', '.') }}</div>
         @endif
     @endif

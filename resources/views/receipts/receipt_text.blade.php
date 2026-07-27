@@ -60,10 +60,24 @@
 @endif
 --------------------------------
 [L]Total:[R]Rp {{ number_format((float) $related->total_amount, 0, ',', '.') }}
+@elseif ($related instanceof \App\Models\StockOpname)
+@foreach ($related->items as $item)
+[L]{{ $item->product->name ?? 'Produk #'.$item->product_id }}
+[L]  {{ $item->difference > 0 ? '+' : '' }}{{ $item->difference }} (Selisih)
+@endforeach
+--------------------------------
+[L]No Opname:[R]{{ $related->opname_number }}
 @else
 @php
     $extraCosts = $movement->additional_costs ?? [];
-    $itemTotal = abs((int) $movement->quantity) * (float) ($movement->unit_price ?? 0);
+    $siblings = $movement->sibling_movements;
+    if ($siblings->isEmpty()) {
+        $siblings = collect([$movement]);
+    }
+    $itemTotal = 0;
+    foreach ($siblings as $sm) {
+        $itemTotal += abs((int) $sm->quantity) * (float) ($sm->unit_price ?? 0);
+    }
     $extraTotal = 0;
     if (is_array($extraCosts)) {
         foreach ($extraCosts as $c) {
@@ -72,8 +86,10 @@
     }
     $movementGrandTotal = $itemTotal + $extraTotal;
 @endphp
-[L]{{ $movement->product->name }}
-[L]  {{ abs((int) $movement->quantity) }}x {{ number_format((float) ($movement->unit_price ?? 0), 0, ',', '.') }}
+@foreach ($siblings as $sm)
+[L]{{ $sm->product->name ?? 'Produk #'.$sm->product_id }}
+[L]  {{ abs((int) $sm->quantity) }}x {{ number_format((float) ($sm->unit_price ?? 0), 0, ',', '.') }}
+@endforeach
 @if (!empty($extraCosts) && is_array($extraCosts))
 @foreach ($extraCosts as $cost)
 [L]{{ $cost['description'] ?? $cost['name'] ?? 'Biaya Tambahan' }}

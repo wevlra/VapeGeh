@@ -61,7 +61,7 @@
                 </tr>
             @endforelse
             
-            @if($entry->additional_costs && count($entry->additional_costs) > 0)
+            @if(is_array($entry->additional_costs) && count($entry->additional_costs) > 0)
                 <tr>
                     <td colspan="5" style="background-color: #f3f4f6; font-weight: bold;">Biaya Tambahan</td>
                 </tr>

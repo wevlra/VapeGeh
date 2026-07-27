@@ -17,7 +17,7 @@ class ReceiptController extends Controller
 
         if ($stockMovement->related instanceof Sale) {
             $stockMovement->related->load(['buyer', 'items.product']);
-        } elseif ($stockMovement->related instanceof StockEntry || $stockMovement->related instanceof StockTransfer) {
+        } elseif ($stockMovement->related instanceof StockEntry || $stockMovement->related instanceof StockTransfer || $stockMovement->related instanceof StockOpname) {
             $stockMovement->related->load(['items.product']);
         }
 
@@ -76,7 +76,14 @@ class ReceiptController extends Controller
         };
 
         // Get all line items
-        $items = $related?->items ?? collect([$movement]);
+        if ($related) {
+            $items = $related->items;
+        } else {
+            $items = $movement->sibling_movements;
+            if ($items->isEmpty()) {
+                $items = collect([$movement]);
+            }
+        }
         $products = [];
 
         foreach ($items as $item) {
@@ -90,10 +97,12 @@ class ReceiptController extends Controller
                 default => $item->product?->price_1 ?? 0,
             };
 
+            $qty = abs((int) ($item->qty ?? $item->quantity ?? $item->difference ?? 0));
+
             $products[] = [
                 'id' => (string) $item->product_id,
                 'name' => $item->product->name,
-                'qty' => abs((int) ($item->qty ?? $item->quantity ?? 0)),
+                'qty' => $qty,
                 'unit' => 'pcs',
                 'price' => $price,
             ];

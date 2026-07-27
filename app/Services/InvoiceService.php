@@ -145,9 +145,15 @@ class InvoiceService
                     ->quantity((int) $item->qty);
             }
         } else {
-            $items[] = InvoiceItem::make($stockMovement->product->name ?? 'Product')
-                ->pricePerUnit((float) ($stockMovement->unit_price ?? 0))
-                ->quantity(abs((int) $stockMovement->quantity));
+            $siblings = $stockMovement->sibling_movements;
+            if ($siblings->isEmpty()) {
+                $siblings = collect([$stockMovement]);
+            }
+            foreach ($siblings as $sibling) {
+                $items[] = InvoiceItem::make($sibling->product->name ?? 'Product')
+                    ->pricePerUnit((float) ($sibling->unit_price ?? 0))
+                    ->quantity(abs((int) $sibling->quantity));
+            }
         }
 
         $serialNumber = $isSale ? $related->invoice_number : ($isStockEntry ? '#SM-'.$stockMovement->id : '#SM-'.$stockMovement->id);
