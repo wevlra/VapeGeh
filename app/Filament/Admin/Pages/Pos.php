@@ -110,8 +110,7 @@ class Pos extends StaffPos
             ->filters([
                 SelectFilter::make('location_id')
                     ->label('Lokasi')
-                    ->options(fn () => Location::pluck('name', 'id'))
-                    ->visible(! $locationId),
+                    ->options(fn () => Location::pluck('name', 'id')),
                 SelectFilter::make('price_type')
                     ->label('Tipe Harga')
                     ->options([
