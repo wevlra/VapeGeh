@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Products\Pages;
 use App\Filament\Admin\Resources\Products\ProductResource;
 use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\Product;
+use DomainException;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\QueryException;
@@ -32,7 +33,13 @@ class EditProduct extends EditRecord
                             return;
                         }
 
-                        throw $e;
+                    } catch (DomainException $e) {
+                        NotifiesWithDetail::buildErrorNotification(
+                            'Produk Tidak Dapat Dihapus',
+                            $e->getMessage()
+                        )->send();
+
+                        return;
                     }
 
                     $this->getDeletedNotification()?->send();

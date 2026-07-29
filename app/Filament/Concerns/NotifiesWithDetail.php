@@ -148,7 +148,7 @@ trait NotifiesWithDetail
 
     protected function getDeletedNotification(): ?Notification
     {
-        return static::buildErrorNotification(
+        return static::buildSuccessNotification(
             $this->getDeletedNotificationTitle(),
             $this->getDeletedNotificationBody()
         );

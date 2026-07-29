@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\ProductFactory;
+use DomainException;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'category_id', 'purchase_price', 'reseller_price', 'price_1', 'price_2'])]
+#[Fillable(['name', 'category_id', 'purchase_price', 'reseller_price', 'price_1', 'price_2', 'status'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
@@ -53,6 +54,16 @@ class Product extends Model
             'reseller_price' => 'float',
             'price_1' => 'float',
             'price_2' => 'float',
+            'status' => 'string',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Product $product) {
+            if ($product->movements()->exists() || $product->stocks()->exists()) {
+                throw new DomainException('Produk ini terkait dengan riwayat stok/penjualan. Silakan ubah status menjadi Nonaktif alih-alih menghapus.');
+            }
+        });
     }
 }

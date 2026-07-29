@@ -7,6 +7,7 @@ use App\Filament\Admin\Resources\Products\RelationManagers\HistoryRelationManage
 use App\Filament\Admin\Resources\Products\RelationManagers\StockRelationManager;
 use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\Product;
+use DomainException;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
@@ -36,7 +37,13 @@ class ViewProduct extends ViewRecord
                             return;
                         }
 
-                        throw $e;
+                    } catch (DomainException $e) {
+                        NotifiesWithDetail::buildErrorNotification(
+                            'Produk Tidak Dapat Dihapus',
+                            $e->getMessage()
+                        )->send();
+
+                        return;
                     }
 
                     $this->getDeletedNotification()?->send();

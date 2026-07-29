@@ -99,7 +99,7 @@ class IncomesTable
                     ->visible(fn (Income $record): bool => $record->isManual()),
                 DeleteAction::make()
                     ->successNotification(
-                        NotifiesWithDetail::buildErrorNotification(
+                        NotifiesWithDetail::buildSuccessNotification(
                             'Data Berhasil Dihapus',
                             'Data pendapatan telah berhasil dihapus dari sistem.'
                         )

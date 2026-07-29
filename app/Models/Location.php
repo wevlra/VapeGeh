@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\LocationFactory;
+use DomainException;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -58,5 +59,14 @@ class Location extends Model
         return [
             'status' => 'string',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Location $location) {
+            if ($location->stocks()->exists() || $location->users()->exists()) {
+                throw new DomainException('Lokasi ini terkait dengan data stok/staf. Silakan ubah status menjadi Nonaktif alih-alih menghapus.');
+            }
+        });
     }
 }

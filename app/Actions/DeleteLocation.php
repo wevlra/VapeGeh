@@ -9,6 +9,8 @@ use App\Models\StockMovement;
 use DomainException;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
+use Filament\Notifications\Notification;
+use Filament\Support\Exceptions\Halt;
 use Illuminate\Support\Facades\DB;
 
 class DeleteLocation
@@ -41,64 +43,80 @@ class DeleteLocation
                     ->required()
                     ->native(false),
             ])
-            ->action(function (array $data, Location $record) {
-                $destination = Location::findOrFail($data['destination_id']);
+            ->action(function (array $data, Location $record, Action $action) {
+                try {
+                    $destination = Location::findOrFail($data['destination_id']);
 
-                if ($destination->id === $record->id) {
-                    throw new DomainException('Lokasi tujuan harus berbeda dari lokasi yang dihapus.');
-                }
+                    if ($destination->id === $record->id) {
+                        throw new DomainException('Lokasi tujuan harus berbeda dari lokasi yang dihapus.');
+                    }
 
-                $hasUsers = $record->users()->exists();
-                if ($hasUsers) {
-                    throw new DomainException("Tidak dapat menghapus \"{$record->name}\" — staf masih terdaftar di lokasi ini.");
-                }
+                    $hasUsers = $record->users()->exists();
+                    if ($hasUsers) {
+                        throw new DomainException("Tidak dapat menghapus \"{$record->name}\" — staf masih terdaftar di lokasi ini.");
+                    }
 
-                DB::transaction(function () use ($record, $destination) {
-                    $stocks = $record->stocks()->where('qty', '>', 0)->get();
+                    DB::transaction(function () use ($record, $destination) {
+                        $stocks = $record->stocks()->where('qty', '>', 0)->get();
 
-                    foreach ($stocks as $stock) {
-                        $destStock = Stock::where('product_id', $stock->product_id)
-                            ->where('location_id', $destination->id)
-                            ->lockForUpdate()
-                            ->first();
+                        foreach ($stocks as $stock) {
+                            $destStock = Stock::where('product_id', $stock->product_id)
+                                ->where('location_id', $destination->id)
+                                ->lockForUpdate()
+                                ->first();
 
-                        if ($destStock) {
-                            $destStock->increment('qty', $stock->qty);
-                        } else {
-                            Stock::create([
+                            if ($destStock) {
+                                $destStock->increment('qty', $stock->qty);
+                            } else {
+                                Stock::create([
+                                    'product_id' => $stock->product_id,
+                                    'location_id' => $destination->id,
+                                    'qty' => $stock->qty,
+                                ]);
+                            }
+
+                            StockMovement::create([
+                                'product_id' => $stock->product_id,
+                                'location_id' => $record->id,
+                                'type' => 'transfer',
+                                'quantity' => -$stock->qty,
+                                'related_type' => Location::class,
+                                'related_id' => $destination->id,
+                                'notes' => "Transfer to {$destination->name} (location deletion)",
+                                'created_by' => auth()->id(),
+                            ]);
+
+                            StockMovement::create([
                                 'product_id' => $stock->product_id,
                                 'location_id' => $destination->id,
-                                'qty' => $stock->qty,
+                                'type' => 'transfer',
+                                'quantity' => $stock->qty,
+                                'related_type' => Location::class,
+                                'related_id' => $record->id,
+                                'notes' => "Transfer from {$record->name} (location deletion)",
+                                'created_by' => auth()->id(),
                             ]);
                         }
 
-                        StockMovement::create([
-                            'product_id' => $stock->product_id,
-                            'location_id' => $record->id,
-                            'type' => 'transfer',
-                            'quantity' => -$stock->qty,
-                            'related_type' => Location::class,
-                            'related_id' => $destination->id,
-                            'notes' => "Transfer to {$destination->name} (location deletion)",
-                            'created_by' => auth()->id(),
-                        ]);
+                        $record->stocks()->delete();
 
-                        StockMovement::create([
-                            'product_id' => $stock->product_id,
-                            'location_id' => $destination->id,
-                            'type' => 'transfer',
-                            'quantity' => $stock->qty,
-                            'related_type' => Location::class,
-                            'related_id' => $record->id,
-                            'notes' => "Transfer from {$record->name} (location deletion)",
-                            'created_by' => auth()->id(),
-                        ]);
-                    }
+                        $record->delete();
+                    });
+                } catch (DomainException $e) {
+                    Notification::make()
+                        ->danger()
+                        ->title('Tidak Dapat Menghapus Lokasi')
+                        ->body($e->getMessage())
+                        ->send();
 
-                    $record->stocks()->delete();
+                    throw new Halt;
+                }
 
-                    $record->delete();
-                });
+                Notification::make()
+                    ->success()
+                    ->title('Data Berhasil Dihapus')
+                    ->body('Data lokasi telah berhasil dihapus dari sistem.')
+                    ->send();
 
                 redirect(LocationResource::getUrl('index'));
             });

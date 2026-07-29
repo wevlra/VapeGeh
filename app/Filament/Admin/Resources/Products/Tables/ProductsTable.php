@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Products\Tables;
 use App\Filament\Admin\Resources\Products\ProductResource;
 use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\Product;
+use DomainException;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -27,6 +28,24 @@ class ProductsTable
                     ->searchable()
                     ->sortable()
                     ->badge(),
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'active' => 'Aktif',
+                        'inactive' => 'Nonaktif',
+                        default => ucfirst($state),
+                    })
+                    ->icon(fn (string $state): string => match ($state) {
+                        'active' => 'heroicon-o-check-circle',
+                        'inactive' => 'heroicon-o-x-circle',
+                        default => 'heroicon-o-minus',
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'active' => 'success',
+                        'inactive' => 'danger',
+                        default => 'gray',
+                    }),
                 TextColumn::make('purchase_price')
                     ->label('Harga Beli')
                     ->formatStateUsing(fn ($state) => 'Rp '.number_format($state, 0, ',', '.'))
@@ -69,9 +88,16 @@ class ProductsTable
                             }
 
                             throw $e;
+                        } catch (DomainException $e) {
+                            NotifiesWithDetail::buildErrorNotification(
+                                'Produk Tidak Dapat Dihapus',
+                                $e->getMessage()
+                            )->send();
+
+                            return;
                         }
 
-                        NotifiesWithDetail::buildErrorNotification(
+                        NotifiesWithDetail::buildSuccessNotification(
                             'Data Berhasil Dihapus',
                             'Data produk telah berhasil dihapus dari sistem.'
                         )->send();

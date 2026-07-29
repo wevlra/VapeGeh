@@ -91,7 +91,7 @@ class ExpensesTable
                     ->visible(fn (Expense $record): bool => $record->isManual()),
                 DeleteAction::make()
                     ->successNotification(
-                        NotifiesWithDetail::buildErrorNotification(
+                        NotifiesWithDetail::buildSuccessNotification(
                             'Data Berhasil Dihapus',
                             'Data pengeluaran telah berhasil dihapus dari sistem.'
                         )

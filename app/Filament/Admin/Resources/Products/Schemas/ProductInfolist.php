@@ -18,6 +18,27 @@ class ProductInfolist
                     ->schema([
                         TextEntry::make('name')
                             ->label('Nama'),
+                        TextEntry::make('category.name')
+                            ->label('Kategori')
+                            ->badge(),
+                        TextEntry::make('status')
+                            ->label('Status')
+                            ->badge()
+                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                'active' => 'Aktif',
+                                'inactive' => 'Nonaktif',
+                                default => ucfirst($state),
+                            })
+                            ->icon(fn (string $state): string => match ($state) {
+                                'active' => 'heroicon-o-check-circle',
+                                'inactive' => 'heroicon-o-x-circle',
+                                default => 'heroicon-o-minus',
+                            })
+                            ->color(fn (string $state): string => match ($state) {
+                                'active' => 'success',
+                                'inactive' => 'danger',
+                                default => 'gray',
+                            }),
                         TextEntry::make('purchase_price')
                             ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
                             ->label('Harga Beli'),

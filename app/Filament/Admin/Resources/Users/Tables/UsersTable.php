@@ -84,7 +84,7 @@ class UsersTable
                 DeleteAction::make()
                     ->hidden(fn (User $record): bool => $record->id === auth()->id())
                     ->successNotification(
-                        NotifiesWithDetail::buildErrorNotification(
+                        NotifiesWithDetail::buildSuccessNotification(
                             'Data Berhasil Dihapus',
                             'Data pengguna/staf telah berhasil dihapus dari sistem.'
                         )

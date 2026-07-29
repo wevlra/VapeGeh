@@ -18,6 +18,7 @@ class ProductFactory extends Factory
             'price_1' => fake()->randomFloat(2, 20, 200),
             'reseller_price' => fake()->randomFloat(2, 15, 150),
             'price_2' => fake()->randomFloat(2, 25, 250),
+            'status' => 'active',
         ];
     }
 }

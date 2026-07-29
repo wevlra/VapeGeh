@@ -32,6 +32,14 @@ class ProductForm
                             ->label('Deskripsi (opsional)')
                             ->maxLength(255),
                     ]),
+                Select::make('status')
+                    ->label('Status')
+                    ->options([
+                        'active' => 'Aktif',
+                        'inactive' => 'Nonaktif',
+                    ])
+                    ->default('active')
+                    ->required(),
                 TextInput::make('purchase_price')
                     ->label('Harga Beli')
                     ->required()

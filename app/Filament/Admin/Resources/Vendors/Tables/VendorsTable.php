@@ -38,7 +38,7 @@ class VendorsTable
                 EditAction::make(),
                 DeleteAction::make()
                     ->successNotification(
-                        NotifiesWithDetail::buildErrorNotification(
+                        NotifiesWithDetail::buildSuccessNotification(
                             'Data Berhasil Dihapus',
                             'Data vendor telah berhasil dihapus dari sistem.'
                         )
