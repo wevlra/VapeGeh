@@ -9,6 +9,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToCollection;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -19,7 +20,7 @@ class ImportProductsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:import-products {file : Path to the CSV or Excel file}';
+    protected $signature = 'app:import-products {file : Path to the CSV or Excel file} {--chunk=500 : Number of products to import per phase}';
 
     /**
      * The console command description.
@@ -41,34 +42,45 @@ class ImportProductsCommand extends Command
             return Command::FAILURE;
         }
 
-        $this->info("Importing products from {$file}...");
+        $chunkSize = (int) $this->option('chunk');
+        $this->info("Importing products from {$file} (Chunk size: {$chunkSize})...");
 
-        $importClass = new class($this) implements ToCollection, WithHeadingRow
+        $importClass = new class($this, $chunkSize) implements ToCollection, WithChunkReading, WithHeadingRow
         {
             private $command;
 
-            public function __construct($command)
+            private $chunkSize;
+
+            public $created = 0;
+
+            public $updated = 0;
+
+            public function __construct($command, $chunkSize)
             {
                 $this->command = $command;
+                $this->chunkSize = $chunkSize;
             }
 
             public function collection(Collection $rows)
             {
+                $this->command->info('Processing phase with '.count($rows).' rows...');
                 DB::transaction(function () use ($rows) {
-                    $created = 0;
-                    $updated = 0;
+                    $bar = $this->command->getOutput()->createProgressBar(count($rows));
+                    $bar->start();
 
                     foreach ($rows as $index => $row) {
                         // Support various heading names
                         $name = $row['product_name'] ?? null;
                         $categoryName = $row['category'] ?? null;
 
-                        $price1 = $row['price_1'] ?? $row['price_1'] ?? 0;
-                        $price2 = $row['price_2'] ?? $row['price_2'] ?? 0;
+                        $price1 = $row['price_1'] ?? 0;
+                        $price2 = $row['price_2'] ?? 0;
                         $resellerPrice = $row['reseller_price'] ?? 0;
+                        $purchasePrice = $row['purchase_price'] ?? 0;
 
                         if (empty($name)) {
                             $this->command->warn('Skipping row '.($index + 2).': Product name is missing.');
+                            $bar->advance();
 
                             continue;
                         }
@@ -77,7 +89,7 @@ class ImportProductsCommand extends Command
                         if (! empty($categoryName)) {
                             $category = Category::firstOrCreate(
                                 ['name' => trim($categoryName)],
-                                ['description' => 'Dibuat otomatis dari import']
+                                ['description' => 'Automatically created from import']
                             );
                             $categoryId = $category->id;
                         }
@@ -89,24 +101,34 @@ class ImportProductsCommand extends Command
                                 'price_1' => (float) $price1,
                                 'price_2' => (float) $price2,
                                 'reseller_price' => (float) $resellerPrice,
-                                'purchase_price' => 0, // default if not provided
+                                'purchase_price' => (float) $purchasePrice,
                             ]
                         );
 
                         if ($product->wasRecentlyCreated) {
-                            $created++;
+                            $this->created++;
                         } else {
-                            $updated++;
+                            $this->updated++;
                         }
+
+                        $bar->advance();
                     }
 
-                    $this->command->info("Import selesai! Dibuat: {$created}, Diupdate: {$updated}");
+                    $bar->finish();
+                    $this->command->newLine();
+                    $this->command->newLine();
                 });
+            }
+
+            public function chunkSize(): int
+            {
+                return $this->chunkSize;
             }
         };
 
         try {
             Excel::import($importClass, $file);
+            $this->info("All phases completed! Total Created: {$importClass->created}, Total Updated: {$importClass->updated}");
         } catch (Exception $e) {
             $this->error('Error importing file: '.$e->getMessage());
 
