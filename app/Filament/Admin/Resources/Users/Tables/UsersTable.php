@@ -47,7 +47,7 @@ class UsersTable
                     ->sortable(),
                 TextColumn::make('location.name')
                     ->label('Lokasi')
-                    ->placeholder('—'),
+                    ->placeholder('Lokasi belum ditentukan'),
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()

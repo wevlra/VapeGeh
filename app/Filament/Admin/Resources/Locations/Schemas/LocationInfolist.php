@@ -18,6 +18,26 @@ class LocationInfolist
                     ->schema([
                         TextEntry::make('name')
                             ->label('Nama'),
+                        TextEntry::make('type')
+                            ->label('Tipe')
+                            ->badge()
+                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                'store' => 'Toko',
+                                'warehouse' => 'Gudang',
+                                default => ucfirst($state),
+                            })
+                            ->color(fn (string $state): string => match ($state) {
+                                'store' => 'primary',
+                                'warehouse' => 'info',
+                                default => 'gray',
+                            }),
+                        TextEntry::make('address')
+                            ->label('Alamat')
+                            ->placeholder('Tidak ada alamat')
+                            ->columnSpanFull(),
+                        TextEntry::make('phone')
+                            ->label('Telepon')
+                            ->placeholder('Tidak ada telepon'),
                         TextEntry::make('status')
                             ->label('Status')
                             ->badge()
@@ -36,13 +56,6 @@ class LocationInfolist
                                 'inactive' => 'danger',
                                 default => 'gray',
                             }),
-                        TextEntry::make('address')
-                            ->label('Alamat')
-                            ->placeholder('—')
-                            ->columnSpanFull(),
-                        TextEntry::make('phone')
-                            ->label('Telepon')
-                            ->placeholder('—'),
                         TextEntry::make('users_count')
                             ->counts('users')
                             ->label('Staf'),

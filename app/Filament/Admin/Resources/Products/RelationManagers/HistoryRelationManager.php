@@ -63,8 +63,7 @@ class HistoryRelationManager extends RelationManager
                 TextColumn::make('notes')
                     ->label('Catatan')
                     ->limit(30)
-                    ->default('Tidak ada catatan')
-                    ->color(fn ($state, $record) => blank($record->notes) ? 'gray' : null),
+                    ->placeholder('Tidak ada catatan'),
                 TextColumn::make('creator.name')
                     ->label('Oleh'),
             ])

@@ -30,8 +30,7 @@ class LocationForm
                         'store' => 'Toko',
                         'warehouse' => 'Gudang',
                     ])
-                    ->default('store')
-                    ->visible(fn ($record) => ! $record),
+                    ->default('store'),
                 Select::make('status')
                     ->label('Status')
                     ->required()

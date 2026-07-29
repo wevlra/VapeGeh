@@ -48,8 +48,7 @@ class ExpenseInfolist
                             ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                         TextEntry::make('description')
                             ->label('Deskripsi')
-                            ->default('Tidak ada deskripsi')
-                            ->color(fn ($state, $record) => blank($record->description) ? 'gray' : null)
+                            ->placeholder('Tidak ada deskripsi')
                             ->columnSpanFull(),
                         TextEntry::make('location.name')
                             ->label('Lokasi'),

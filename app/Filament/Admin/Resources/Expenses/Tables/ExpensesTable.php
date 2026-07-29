@@ -56,8 +56,7 @@ class ExpensesTable
                     ->label('Deskripsi')
                     ->searchable()
                     ->limit(50)
-                    ->default('Tidak ada deskripsi')
-                    ->color(fn ($state, $record) => blank($record->description) ? 'gray' : null),
+                    ->placeholder('Tidak ada deskripsi'),
                 TextColumn::make('amount')
                     ->label('Jumlah')
                     ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))

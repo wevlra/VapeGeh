@@ -40,7 +40,7 @@ class LocationResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->where('type', 'store');
+        return parent::getEloquentQuery();
     }
 
     public static function form(Schema $schema): Schema

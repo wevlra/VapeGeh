@@ -23,12 +23,26 @@ class LocationsTable
                     ->label('Nama')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('type')
+                    ->label('Tipe')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'store' => 'Toko',
+                        'warehouse' => 'Gudang',
+                        default => ucfirst($state),
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'store' => 'primary',
+                        'warehouse' => 'info',
+                        default => 'gray',
+                    }),
                 TextColumn::make('address')
                     ->label('Alamat')
+                    ->placeholder('Tidak ada alamat')
                     ->limit(40),
                 TextColumn::make('phone')
                     ->label('Telepon')
-                    ->placeholder('—'),
+                    ->placeholder('Tidak ada telepon'),
                 TextColumn::make('users_count')
                     ->counts('users')
                     ->label('Staf'),

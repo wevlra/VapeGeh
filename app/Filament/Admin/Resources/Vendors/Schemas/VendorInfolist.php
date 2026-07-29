@@ -20,16 +20,16 @@ class VendorInfolist
                             ->label('Nama'),
                         TextEntry::make('contact_person')
                             ->label('Kontak Person')
-                            ->placeholder('—'),
+                            ->placeholder('Tidak ada kontak person'),
                         TextEntry::make('phone')
                             ->label('Telepon')
-                            ->placeholder('—'),
+                            ->placeholder('Tidak ada telepon'),
                         TextEntry::make('email')
                             ->label('Email')
-                            ->placeholder('—'),
+                            ->placeholder('Tidak ada email'),
                         TextEntry::make('address')
                             ->label('Alamat')
-                            ->placeholder('—')
+                            ->placeholder('Tidak ada alamat')
                             ->columnSpanFull(),
                     ]),
             ]);

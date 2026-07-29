@@ -52,8 +52,7 @@ class StockTransferInfolist
                             ->dateTime(),
                         TextEntry::make('notes')
                             ->label('Catatan')
-                            ->default('Tidak ada catatan')
-                            ->color(fn ($state, $record) => blank($record->notes) ? 'gray' : null)
+                            ->placeholder('Tidak ada catatan')
                             ->columnSpanFull(),
                     ]),
 

@@ -58,7 +58,7 @@ class UserInfolist
                             }),
                         TextEntry::make('location.name')
                             ->label('Lokasi')
-                            ->placeholder('—'),
+                            ->placeholder('Lokasi belum ditentukan'),
                     ]),
             ]);
     }
