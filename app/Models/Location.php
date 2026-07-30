@@ -42,7 +42,7 @@ class Location extends Model
         return (float) DB::table('stocks')
             ->join('products', 'products.id', '=', 'stocks.product_id')
             ->where('stocks.location_id', $this->id)
-            ->selectRaw('SUM(stocks.qty * COALESCE(products.price_1, 0)) as total')
+            ->selectRaw('SUM(stocks.qty * COALESCE(products.purchase_price, 0)) as total')
             ->value('total') ?? 0;
     }
 
@@ -50,7 +50,7 @@ class Location extends Model
     {
         return (float) DB::table('stocks')
             ->join('products', 'products.id', '=', 'stocks.product_id')
-            ->selectRaw('SUM(stocks.qty * COALESCE(products.price_1, 0)) as total')
+            ->selectRaw('SUM(stocks.qty * COALESCE(products.purchase_price, 0)) as total')
             ->value('total') ?? 0;
     }
 
