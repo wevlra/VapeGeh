@@ -160,6 +160,26 @@ class StockIn extends Page implements HasForms, HasTable
                             ->label('Harga Beli Terakhir')
                             ->formatStateUsing(fn (float $state): string => 'Harga beli: Rp '.number_format($state, 0, ',', '.'))
                             ->color('gray'),
+                        TextColumn::make('stock_info')
+                            ->label('Stok')
+                            ->getStateUsing(function (Product $record) {
+                                $locationId = $this->data['location_id'] ?? null;
+                                if (! $locationId) {
+                                    return 'Pilih lokasi terlebih dahulu';
+                                }
+                                $stock = $record->stocks()->where('location_id', $locationId)->first();
+
+                                return $stock ? $stock->qty : 0;
+                            })
+                            ->formatStateUsing(fn ($state) => is_numeric($state) ? "Stok {$state}" : $state)
+                            ->color(function ($state) {
+                                if (! is_numeric($state)) {
+                                    return 'gray';
+                                }
+
+                                return $state <= 0 ? 'danger' : ($state < 10 ? 'warning' : 'success');
+                            })
+                            ->badge(fn ($state) => is_numeric($state)),
                     ]),
                     ViewColumn::make('controls')
                         ->label('Kontrol')
