@@ -221,17 +221,13 @@ class StockIn extends Page implements HasForms, HasTable
                         ->lockForUpdate()
                         ->first();
 
+                    // Update product master price as simple average (for reference only)
                     $oldPrice = (float) $product->purchase_price;
 
-                    $avgPrice = ($oldPrice > 0)
-                        ? ($oldPrice + $newPrice) / 2
-                        : $newPrice;
-
-                    $product->update(['purchase_price' => round($avgPrice, 2)]);
-
                     if ($stock) {
-                        // Weighted average cost: (oldQty × oldStockPrice + newQty × newPrice) / (oldQty + newQty)
-                        $oldStockPrice = (float) ($stock->purchase_price ?? $oldPrice);
+                        // Weighted average cost: (oldQty × oldStockWAC + newQty × newPrice) / (oldQty + newQty)
+                        // Always use stock->purchase_price (the running WAC), NOT product->purchase_price
+                        $oldStockPrice = (float) ($stock->purchase_price > 0 ? $stock->purchase_price : $newPrice);
                         $oldStockQty = (int) $stock->qty;
                         $newTotalQty = $oldStockQty + $newQty;
                         $wac = $newTotalQty > 0
@@ -242,6 +238,7 @@ class StockIn extends Page implements HasForms, HasTable
                         $stock->purchase_price = round($wac, 2);
                         $stock->save();
                     } else {
+                        $wac = $newPrice;
                         $stock = Stock::create([
                             'product_id' => $item['product_id'],
                             'location_id' => $data['location_id'],
@@ -249,6 +246,9 @@ class StockIn extends Page implements HasForms, HasTable
                             'purchase_price' => round($newPrice, 2),
                         ]);
                     }
+
+                    // Sync product master price with WAC (same as stock purchase_price)
+                    $product->update(['purchase_price' => round($wac, 2)]);
 
                     $entry->items()->create([
                         'product_id' => $item['product_id'],
