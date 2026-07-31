@@ -35,22 +35,20 @@ class Location extends Model
 
     /**
      * Total asset value: sum of (qty * price) for all stocks at this location.
-     * Price uses the highest available selling price (Store tier) per product.
+     * Price uses the weighted average cost (WAC) stored in stocks.price per location.
      */
     public function getTotalAssetAttribute(): float
     {
         return (float) DB::table('stocks')
-            ->join('products', 'products.id', '=', 'stocks.product_id')
-            ->where('stocks.location_id', $this->id)
-            ->selectRaw('SUM(stocks.qty * COALESCE(products.purchase_price, 0)) as total')
+            ->where('location_id', $this->id)
+            ->selectRaw('SUM(qty * COALESCE(price, 0)) as total')
             ->value('total') ?? 0;
     }
 
     public static function getTotalAssetOfAll(): float
     {
         return (float) DB::table('stocks')
-            ->join('products', 'products.id', '=', 'stocks.product_id')
-            ->selectRaw('SUM(stocks.qty * COALESCE(products.purchase_price, 0)) as total')
+            ->selectRaw('SUM(qty * COALESCE(price, 0)) as total')
             ->value('total') ?? 0;
     }
 

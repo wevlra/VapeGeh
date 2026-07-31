@@ -230,13 +230,23 @@ class StockIn extends Page implements HasForms, HasTable
                     $product->update(['purchase_price' => round($avgPrice, 2)]);
 
                     if ($stock) {
-                        $stock->increment('qty', $newQty);
+                        // Weighted average cost: (oldQty × oldStockPrice + newQty × newPrice) / (oldQty + newQty)
+                        $oldStockPrice = (float) ($stock->price ?? $oldPrice);
+                        $oldStockQty = (int) $stock->qty;
+                        $newTotalQty = $oldStockQty + $newQty;
+                        $wac = $newTotalQty > 0
+                            ? (($oldStockQty * $oldStockPrice) + ($newQty * $newPrice)) / $newTotalQty
+                            : $newPrice;
+
+                        $stock->qty += $newQty;
+                        $stock->price = round($wac, 2);
+                        $stock->save();
                     } else {
                         $stock = Stock::create([
                             'product_id' => $item['product_id'],
                             'location_id' => $data['location_id'],
                             'qty' => $newQty,
-                            'price' => null,
+                            'price' => round($newPrice, 2),
                         ]);
                     }
 

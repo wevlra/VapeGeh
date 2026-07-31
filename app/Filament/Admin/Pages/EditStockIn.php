@@ -216,14 +216,33 @@ class EditStockIn extends Page implements HasForms, HasTable
 
         try {
             $movement = DB::transaction(function () use ($data, $items, $locationId) {
-                // Restore old stock (subtract from stock since we are reverting a stock in)
+                // Restore old stock (subtract qty and recompute WAC from remaining movements)
                 foreach ($this->entry->items as $oldItem) {
                     $stock = Stock::where('product_id', $oldItem->product_id)
                         ->where('location_id', $this->entry->location_id)
                         ->lockForUpdate()
                         ->first();
                     if ($stock) {
-                        $stock->qty -= $oldItem->qty;
+                        $remainingQty = $stock->qty - $oldItem->qty;
+                        if ($remainingQty <= 0) {
+                            $stock->qty = 0;
+                            $stock->price = null;
+                        } else {
+                            // Recompute WAC from stock_movements excluding this entry's movements
+                            $remainingValue = DB::table('stock_movements')
+                                ->where('product_id', $oldItem->product_id)
+                                ->where('location_id', $this->entry->location_id)
+                                ->where('type', 'in')
+                                ->where('related_type', StockEntry::class)
+                                ->where('related_id', '!=', $this->entry->id)
+                                ->selectRaw('SUM(quantity * unit_price) as total_value, SUM(quantity) as total_qty')
+                                ->first();
+
+                            if ($remainingValue && $remainingValue->total_qty > 0) {
+                                $stock->price = round($remainingValue->total_value / $remainingValue->total_qty, 2);
+                            }
+                            $stock->qty = $remainingQty;
+                        }
                         $stock->save();
                     }
                 }
@@ -264,13 +283,23 @@ class EditStockIn extends Page implements HasForms, HasTable
                     $product->update(['purchase_price' => round($avgPrice, 2)]);
 
                     if ($stock) {
-                        $stock->increment('qty', $newQty);
+                        // Weighted average cost: (oldQty × oldStockPrice + newQty × newPrice) / (oldQty + newQty)
+                        $oldStockPrice = (float) ($stock->price ?? $oldPrice);
+                        $oldStockQty = (int) $stock->qty;
+                        $newTotalQty = $oldStockQty + $newQty;
+                        $wac = $newTotalQty > 0
+                            ? (($oldStockQty * $oldStockPrice) + ($newQty * $newPrice)) / $newTotalQty
+                            : $newPrice;
+
+                        $stock->qty += $newQty;
+                        $stock->price = round($wac, 2);
+                        $stock->save();
                     } else {
                         $stock = Stock::create([
                             'product_id' => $item['product_id'],
                             'location_id' => $locationId,
                             'qty' => $newQty,
-                            'price' => null,
+                            'price' => round($newPrice, 2),
                         ]);
                     }
 
