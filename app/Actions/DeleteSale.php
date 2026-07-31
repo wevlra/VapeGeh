@@ -31,13 +31,25 @@ class DeleteSale
                     ->first();
 
                 if ($stock) {
-                    $stock->qty += $item->qty;
+                    $oldStockQty = $stock->qty;
+                    $oldStockPrice = (float) $stock->purchase_price;
+                    $returnQty = $item->qty;
+                    $returnPrice = (float) $movement->unit_price;
+                    
+                    $newTotalQty = $oldStockQty + $returnQty;
+                    $wac = $newTotalQty > 0 
+                        ? (($oldStockQty * $oldStockPrice) + ($returnQty * $returnPrice)) / $newTotalQty 
+                        : $returnPrice;
+
+                    $stock->qty = $newTotalQty;
+                    $stock->purchase_price = round($wac, 2);
                     $stock->save();
                 } else {
                     Stock::create([
                         'product_id' => $item->product_id,
                         'location_id' => $sale->location_id,
                         'qty' => $item->qty,
+                        'purchase_price' => $movement->unit_price,
                     ]);
                 }
             }

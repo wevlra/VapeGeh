@@ -33,13 +33,28 @@ class UpdateSale
                     ->first();
 
                 if ($stock) {
-                    $stock->qty += $item->qty;
+                    $movement = $sale->stockMovements->firstWhere('product_id', $item->product_id);
+                    $returnPrice = $movement ? (float) $movement->unit_price : 0;
+                    
+                    $oldStockQty = $stock->qty;
+                    $oldStockPrice = (float) $stock->purchase_price;
+                    $returnQty = $item->qty;
+                    
+                    $newTotalQty = $oldStockQty + $returnQty;
+                    $wac = $newTotalQty > 0 
+                        ? (($oldStockQty * $oldStockPrice) + ($returnQty * $returnPrice)) / $newTotalQty 
+                        : $returnPrice;
+
+                    $stock->qty = $newTotalQty;
+                    $stock->purchase_price = round($wac, 2);
                     $stock->save();
                 } else {
+                    $movement = $sale->stockMovements->firstWhere('product_id', $item->product_id);
                     Stock::create([
                         'product_id' => $item->product_id,
                         'location_id' => $sale->location_id,
                         'qty' => $item->qty,
+                        'purchase_price' => $movement ? $movement->unit_price : null,
                     ]);
                 }
             }

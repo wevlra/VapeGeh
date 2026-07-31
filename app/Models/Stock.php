@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['product_id', 'location_id', 'qty', 'price'])]
+#[Fillable(['product_id', 'location_id', 'qty', 'purchase_price'])]
 class Stock extends Model
 {
     /** @use HasFactory<StockFactory> */
@@ -35,7 +35,7 @@ class Stock extends Model
     {
         return [
             'qty' => 'integer',
-            'price' => 'float',
+            'purchase_price' => 'float',
         ];
     }
 }
