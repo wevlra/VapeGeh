@@ -133,10 +133,10 @@ class AdminStatsOverview extends StatsOverviewWidget
             Stat::make('Untung', 'Rp '.number_format($profit, 0, ',', '.'))
                 ->description('Pendapatan - (Modal + Pengeluaran)')
                 ->color($profit >= 0 ? 'success' : 'danger'),
-            Stat::make('Stok Masuk', number_format($stockIn))
+            Stat::make('Stok Masuk', number_format($stockIn, 0, ',', '.'))
                 ->description('Unit diterima')
                 ->color('success'),
-            Stat::make('Stok Keluar', number_format($stockOut))
+            Stat::make('Stok Keluar', number_format($stockOut, 0, ',', '.'))
                 ->description('Unit terjual/dikirim')
                 ->color('danger'),
             Stat::make('Total Stok', number_format((int) Stock::sum('qty'), 0, ',', '.'))

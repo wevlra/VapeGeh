@@ -50,7 +50,7 @@ class RecalculateStockPricesCommand extends Command
                 $affected = DB::table('stocks')
                     ->where('product_id', $m->product_id)
                     ->where('location_id', $m->location_id)
-                    ->update(['price' => round($wac, 2)]);
+                    ->update(['purchase_price' => round($wac, 2)]);
 
                 if ($affected) {
                     $updated++;
@@ -62,10 +62,10 @@ class RecalculateStockPricesCommand extends Command
         $bar->finish();
         $this->newLine(2);
 
-        $this->info("Done! Successfully updated price in stocks table for {$updated} records.");
+        $this->info("Done! Successfully updated purchase_price in stocks table for {$updated} records.");
 
         $assetTotal = DB::table('stocks')
-            ->selectRaw('SUM(qty * COALESCE(price, 0)) as total')
+            ->selectRaw('SUM(qty * COALESCE(purchase_price, 0)) as total')
             ->value('total');
 
         $this->info('Current Total Asset: Rp '.number_format($assetTotal, 0, ',', '.'));

@@ -84,6 +84,7 @@ class UpdateSale
                     'location_id' => $sale->location_id,
                     'type' => 'out',
                     'quantity' => -$qty,
+                    'unit_price' => $stock->purchase_price,
                     'related_type' => Sale::class,
                     'related_id' => $sale->id,
                     'notes' => "Sale {$sale->invoice_number}",
