@@ -24,7 +24,7 @@ class ListUsers extends ListRecords
     public function responsiveTable(ResponsiveTableConfiguration $config): ResponsiveTableConfiguration
     {
         return $config
-            ->only(['name', 'role', 'status'])
+            ->only(['email', 'role', 'status'])
             ->cardTitle(fn ($record) => $record->name);
     }
 }

@@ -3,8 +3,8 @@
 namespace App\Filament\Admin\Widgets;
 
 use App\Models\Location;
+use App\Models\Product;
 use App\Models\Stock;
-use App\Models\StockMovement;
 use App\Models\User;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Facades\Auth;
@@ -29,11 +29,10 @@ class AdminOtherInformationsMobile extends Widget
 
         $user = Auth::user();
 
-        $totalProducts = 0;
+        $totalProducts = Product::count();
         $totalStaff = 0;
 
         if ($user && $user->location_id) {
-            $totalProducts = StockMovement::where('location_id', $user->location_id)->distinct('product_id')->count('product_id');
             $totalStaff = User::where('location_id', $user->location_id)->count();
         }
 
