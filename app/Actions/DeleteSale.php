@@ -35,10 +35,10 @@ class DeleteSale
                     $oldStockPrice = (float) $stock->purchase_price;
                     $returnQty = $item->qty;
                     $returnPrice = (float) $movement->unit_price;
-                    
+
                     $newTotalQty = $oldStockQty + $returnQty;
-                    $wac = $newTotalQty > 0 
-                        ? (($oldStockQty * $oldStockPrice) + ($returnQty * $returnPrice)) / $newTotalQty 
+                    $wac = $newTotalQty > 0
+                        ? (($oldStockQty * $oldStockPrice) + ($returnQty * $returnPrice)) / $newTotalQty
                         : $returnPrice;
 
                     $stock->qty = $newTotalQty;

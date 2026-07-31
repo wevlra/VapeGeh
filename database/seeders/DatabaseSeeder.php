@@ -180,6 +180,7 @@ class DatabaseSeeder extends Seeder
                         'location_id' => $loc->id,
                     ], [
                         'qty' => rand(10, 30),
+                        'purchase_price' => $product->purchase_price,
                     ]);
 
                     if ($stock->wasRecentlyCreated) {

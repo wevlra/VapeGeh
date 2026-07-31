@@ -35,14 +35,14 @@ class UpdateSale
                 if ($stock) {
                     $movement = $sale->stockMovements->firstWhere('product_id', $item->product_id);
                     $returnPrice = $movement ? (float) $movement->unit_price : 0;
-                    
+
                     $oldStockQty = $stock->qty;
                     $oldStockPrice = (float) $stock->purchase_price;
                     $returnQty = $item->qty;
-                    
+
                     $newTotalQty = $oldStockQty + $returnQty;
-                    $wac = $newTotalQty > 0 
-                        ? (($oldStockQty * $oldStockPrice) + ($returnQty * $returnPrice)) / $newTotalQty 
+                    $wac = $newTotalQty > 0
+                        ? (($oldStockQty * $oldStockPrice) + ($returnQty * $returnPrice)) / $newTotalQty
                         : $returnPrice;
 
                     $stock->qty = $newTotalQty;

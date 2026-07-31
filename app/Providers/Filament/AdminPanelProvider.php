@@ -8,11 +8,11 @@ use App\Filament\Admin\Pages\Pos;
 use App\Filament\Admin\Pages\StockIn;
 use App\Filament\Admin\Pages\StockOut;
 use App\Filament\Admin\Widgets\AdminExpenseCategoryChart;
+use App\Filament\Admin\Widgets\AdminOtherInformationsMobile;
 use App\Filament\Admin\Widgets\AdminPaymentMethodChart;
 use App\Filament\Admin\Widgets\AdminSalesChart;
 use App\Filament\Admin\Widgets\AdminStatsOverview;
 use App\Filament\Admin\Widgets\AdminStatsOverviewMobile;
-use App\Filament\Admin\Widgets\AdminStockAssetMobile;
 use App\Filament\Admin\Widgets\OperationalQuickActionsWidget;
 use App\Filament\Admin\Widgets\StockQuickActionsWidget;
 use App\Filament\Middleware\RedirectPanelUser;
@@ -90,7 +90,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 AdminStatsOverview::class,
                 AdminStatsOverviewMobile::class,
-                AdminStockAssetMobile::class,
+                AdminOtherInformationsMobile::class,
                 StockQuickActionsWidget::class,
                 OperationalQuickActionsWidget::class,
                 AdminSalesChart::class,

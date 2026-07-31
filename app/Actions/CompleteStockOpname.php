@@ -34,7 +34,10 @@ class CompleteStockOpname
                         'product_id' => $item->product_id,
                         'location_id' => $lockedOpname->location_id,
                     ],
-                    ['qty' => 0]
+                    [
+                        'qty' => 0,
+                        'purchase_price' => $item->product->purchase_price,
+                    ]
                 );
 
                 $stock->qty = $item->actual_qty;

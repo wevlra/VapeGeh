@@ -71,8 +71,8 @@ class DeleteLocation
                                 $oldDestPrice = (float) $destStock->purchase_price;
                                 $newTotalQty = $oldDestQty + $stock->qty;
                                 $transferPrice = (float) $stock->purchase_price;
-                                $wac = $newTotalQty > 0 
-                                    ? (($oldDestQty * $oldDestPrice) + ($stock->qty * $transferPrice)) / $newTotalQty 
+                                $wac = $newTotalQty > 0
+                                    ? (($oldDestQty * $oldDestPrice) + ($stock->qty * $transferPrice)) / $newTotalQty
                                     : $transferPrice;
 
                                 $destStock->qty = $newTotalQty;

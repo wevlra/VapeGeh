@@ -1,6 +1,6 @@
 <?php
 
-use App\Filament\Admin\Widgets\AdminStockAssetMobile;
+use App\Filament\Admin\Widgets\AdminOtherInformationsMobile;
 use App\Models\Location;
 use App\Models\Product;
 use App\Models\Stock;
@@ -11,9 +11,9 @@ use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
-it('renders admin stock asset mobile widget with correct data', function () {
-    $admin = User::factory()->admin()->create();
+it('renders admin other informations mobile widget with correct data', function () {
     $location = Location::factory()->create();
+    $admin = User::factory()->admin()->create(['location_id' => $location->id]);
     $product = Product::factory()->create();
 
     Stock::factory()->create([
@@ -25,8 +25,10 @@ it('renders admin stock asset mobile widget with correct data', function () {
     $this->actingAs($admin);
     Filament::setCurrentPanel(Filament::getPanel('admin'));
 
-    Livewire::test(AdminStockAssetMobile::class)
+    Livewire::test(AdminOtherInformationsMobile::class)
         ->assertSee('Total Stok')
         ->assertSee('Total Aset')
+        ->assertSee('Total Produk')
+        ->assertSee('Total Staff')
         ->assertSuccessful();
 });
