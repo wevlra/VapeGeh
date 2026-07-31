@@ -94,14 +94,13 @@ class AdminStatsOverview extends StatsOverviewWidget
         $stockIn = (int) $stockMovIn->sum('quantity');
         $stockOut = (int) $stockMovOut->sum(DB::raw('ABS(quantity)'));
 
-        $cogsQuery = StockMovement::where('type', 'out')
-            ->join('products', 'products.id', '=', 'stock_movements.product_id');
+        $cogsQuery = StockMovement::where('type', 'out');
 
         if ($start) {
-            $cogsQuery->where('stock_movements.created_at', '>=', $start);
+            $cogsQuery->where('created_at', '>=', $start);
         }
 
-        $cogs = (float) $cogsQuery->sum(DB::raw('ABS(stock_movements.quantity) * products.purchase_price'));
+        $cogs = (float) $cogsQuery->sum(DB::raw('ABS(quantity) * COALESCE(unit_price, 0)'));
 
         $opExpenseQuery = clone $expenseQuery;
         $opExpenseQuery->where('category', '!=', 'purchase');
@@ -133,10 +132,10 @@ class AdminStatsOverview extends StatsOverviewWidget
             Stat::make('Untung', 'Rp '.number_format($profit, 0, ',', '.'))
                 ->description('Pendapatan - (Modal + Pengeluaran)')
                 ->color($profit >= 0 ? 'success' : 'danger'),
-            Stat::make('Stok Masuk', number_format($stockIn))
+            Stat::make('Stok Masuk', number_format($stockIn, 0, ',', '.'))
                 ->description('Unit diterima')
                 ->color('success'),
-            Stat::make('Stok Keluar', number_format($stockOut))
+            Stat::make('Stok Keluar', number_format($stockOut, 0, ',', '.'))
                 ->description('Unit terjual/dikirim')
                 ->color('danger'),
             Stat::make('Total Stok', number_format((int) Stock::sum('qty'), 0, ',', '.'))

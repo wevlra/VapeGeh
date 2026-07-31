@@ -41,14 +41,14 @@ class Location extends Model
     {
         return (float) DB::table('stocks')
             ->where('location_id', $this->id)
-            ->selectRaw('SUM(qty * COALESCE(price, 0)) as total')
+            ->selectRaw('SUM(qty * COALESCE(purchase_price, 0)) as total')
             ->value('total') ?? 0;
     }
 
     public static function getTotalAssetOfAll(): float
     {
         return (float) DB::table('stocks')
-            ->selectRaw('SUM(qty * COALESCE(price, 0)) as total')
+            ->selectRaw('SUM(qty * COALESCE(purchase_price, 0)) as total')
             ->value('total') ?? 0;
     }
 

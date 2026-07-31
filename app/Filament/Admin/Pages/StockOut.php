@@ -338,6 +338,8 @@ class StockOut extends Page implements HasForms, HasTable
 
                 $totalAmount = 0;
 
+                $firstMovement = null;
+
                 foreach ($items as $item) {
                     $productId = $item['product_id'];
                     $qty = (int) $item['qty'];
@@ -364,8 +366,25 @@ class StockOut extends Page implements HasForms, HasTable
                     $entry->items()->create([
                         'product_id' => $productId,
                         'qty' => $qty,
-                        'unit_price' => $unitPrice,
+                        'unit_price' => $unitPrice, // This is the selling price for StockEntryItem
                     ]);
+
+                    $movement = StockMovement::create([
+                        'product_id' => $productId,
+                        'location_id' => $locationId,
+                        'type' => 'out',
+                        'quantity' => -$qty,
+                        'unit_price' => $stock->purchase_price, // COGS is historical WAC
+                        'related_type' => StockEntry::class,
+                        'related_id' => $entry->id,
+                        'buyer_id' => $data['buyer_id'] ?? null,
+                        'additional_costs' => $data['additional_costs'] ?? null,
+                        'notes' => $data['notes'] ?? null,
+                    ]);
+
+                    if (! $firstMovement) {
+                        $firstMovement = $movement;
+                    }
                 }
 
                 $additionalCostsTotal = 0;
@@ -386,26 +405,6 @@ class StockOut extends Page implements HasForms, HasTable
                         'amount' => $totalIncome,
                         'date' => now(),
                     ]);
-                }
-
-                $firstMovement = null;
-                foreach ($items as $item) {
-                    $movement = StockMovement::create([
-                        'product_id' => $item['product_id'],
-                        'location_id' => $locationId,
-                        'type' => 'out',
-                        'quantity' => -(int) $item['qty'],
-                        'unit_price' => (float) $item['price'],
-                        'related_type' => StockEntry::class,
-                        'related_id' => $entry->id,
-                        'buyer_id' => $data['buyer_id'] ?? null,
-                        'additional_costs' => $data['additional_costs'] ?? null,
-                        'notes' => $data['notes'] ?? null,
-                    ]);
-
-                    if (! $firstMovement) {
-                        $firstMovement = $movement;
-                    }
                 }
 
                 return $firstMovement;

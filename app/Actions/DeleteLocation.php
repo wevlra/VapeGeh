@@ -66,12 +66,24 @@ class DeleteLocation
                                 ->first();
 
                             if ($destStock) {
-                                $destStock->increment('qty', $stock->qty);
+                                // Recompute WAC
+                                $oldDestQty = $destStock->qty;
+                                $oldDestPrice = (float) $destStock->purchase_price;
+                                $newTotalQty = $oldDestQty + $stock->qty;
+                                $transferPrice = (float) $stock->purchase_price;
+                                $wac = $newTotalQty > 0 
+                                    ? (($oldDestQty * $oldDestPrice) + ($stock->qty * $transferPrice)) / $newTotalQty 
+                                    : $transferPrice;
+
+                                $destStock->qty = $newTotalQty;
+                                $destStock->purchase_price = round($wac, 2);
+                                $destStock->save();
                             } else {
                                 Stock::create([
                                     'product_id' => $stock->product_id,
                                     'location_id' => $destination->id,
                                     'qty' => $stock->qty,
+                                    'purchase_price' => $stock->purchase_price,
                                 ]);
                             }
 

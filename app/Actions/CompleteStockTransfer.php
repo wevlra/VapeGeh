@@ -52,12 +52,14 @@ class CompleteStockTransfer
                         'product_id' => $item->product_id,
                         'location_id' => $transfer->to_location_id,
                         'qty' => $item->qty,
-                        'price' => $item->price > 0 ? $item->price : null,
+                        'purchase_price' => $item->purchase_price > 0 ? $item->purchase_price : null,
                     ]);
                 } else {
-                    $destinationStock->increment('qty', $item->qty);
-                    if ($item->price !== null) {
-                        $destinationStock->update(['price' => $item->price > 0 ? $item->price : null]);
+                    $destinationStock->qty += $item->qty;
+                    if ($item->purchase_price !== null) {
+                        $destinationStock->update(['purchase_price' => $item->purchase_price > 0 ? $item->purchase_price : null]);
+                    } else {
+                        $destinationStock->save();
                     }
                 }
 

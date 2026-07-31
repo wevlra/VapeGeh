@@ -413,6 +413,19 @@ class EditStockOut extends Page implements HasForms, HasTable
                         'qty' => $qty,
                         'unit_price' => $unitPrice,
                     ]);
+
+                    StockMovement::create([
+                        'product_id' => $productId,
+                        'location_id' => $locationId,
+                        'type' => 'out',
+                        'quantity' => -$qty,
+                        'unit_price' => $stock->purchase_price, // COGS is historical WAC
+                        'related_type' => StockEntry::class,
+                        'related_id' => $this->entry->id,
+                        'buyer_id' => $data['buyer_id'] ?? null,
+                        'additional_costs' => $data['additional_costs'] ?? null,
+                        'notes' => $data['notes'] ?? null,
+                    ]);
                 }
 
                 $additionalCostsTotal = 0;
@@ -435,18 +448,7 @@ class EditStockOut extends Page implements HasForms, HasTable
                     ]);
                 }
 
-                return StockMovement::create([
-                    'product_id' => $items[0]['product_id'],
-                    'location_id' => $locationId,
-                    'type' => 'out',
-                    'quantity' => -collect($items)->sum('qty'),
-                    'unit_price' => 0,
-                    'related_type' => StockEntry::class,
-                    'related_id' => $this->entry->id,
-                    'buyer_id' => $data['buyer_id'] ?? null,
-                    'additional_costs' => $data['additional_costs'] ?? null,
-                    'notes' => $data['notes'] ?? null,
-                ]);
+                return true;
             });
         } catch (DomainException $e) {
             $this->notifyError(

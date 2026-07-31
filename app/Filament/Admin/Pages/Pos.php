@@ -340,6 +340,7 @@ class Pos extends StaffPos
                         'location_id' => $stock->location_id,
                         'type' => 'out',
                         'quantity' => -$saleItem['qty'],
+                        'unit_price' => $stock->purchase_price, // Save WAC as COGS
                         'related_type' => Sale::class,
                         'related_id' => $sale->id,
                         'buyer_id' => $data['buyer_id'] ?? null,
