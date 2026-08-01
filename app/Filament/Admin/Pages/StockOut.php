@@ -172,7 +172,7 @@ class StockOut extends Page implements HasForms, HasTable
                                     ->columnSpanFull(),
                             ]),
                         Step::make('Daftar Produk')
-                            ->description('Pilih produk dan harga jual')
+                            ->description('Pilih produk dan jumlah')
                             ->icon(Heroicon::OutlinedCube)
                             ->schema([
                                 EmbeddedTable::make(),

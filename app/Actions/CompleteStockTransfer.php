@@ -26,9 +26,18 @@ class CompleteStockTransfer
         $transferDate = $completedAt ? Carbon::parse($completedAt) : ($transfer->created_at ?? now());
 
         DB::transaction(function () use ($transfer, $completedBy, $transferDate) {
-            $transfer->load('items.product');
+            $transfer->load(['items.product', 'toLocation']);
+            $targetPriceType = $transfer->toLocation ? $transfer->toLocation->price_type : '1';
 
             foreach ($transfer->items as $item) {
+                // Ensure correct price based on destination location price type
+                $priceField = $targetPriceType === '2' ? 'price_2' : 'price_1';
+                $productPrice = $item->product ? (float) $item->product->{$priceField} : 0;
+                if ($item->purchase_price === null || $item->purchase_price <= 0) {
+                    $item->purchase_price = $productPrice;
+                    $item->save();
+                }
+
                 $sourceStock = Stock::where('product_id', $item->product_id)
                     ->where('location_id', $transfer->from_location_id)
                     ->lockForUpdate()

@@ -20,6 +20,7 @@ class LocationFactory extends Factory
         return [
             'name' => fake()->company(),
             'type' => 'store',
+            'price_type' => '1',
             'address' => fake()->address(),
             'phone' => fake()->phoneNumber(),
             'status' => 'active',

@@ -242,6 +242,7 @@ class DatabaseSeeder extends Seeder
                             'stock_transfer_id' => $transfer->id,
                             'product_id' => $product->id,
                             'qty' => rand(2, 5),
+                            'purchase_price' => $product->purchase_price,
                         ]);
                     }
 

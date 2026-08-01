@@ -84,8 +84,8 @@ class StockOpnameCreate extends Page implements HasForms, HasTable
                                     ->rows(2)
                                     ->columnSpanFull(),
                             ]),
-                        Step::make('Input Stok Fisik')
-                            ->description('Masukkan stok fisik untuk setiap produk')
+                        Step::make('Stok Fisik')
+                            ->description('Sesuaikan stok fisik untuk setiap produk')
                             ->icon(Heroicon::OutlinedClipboardDocumentCheck)
                             ->schema([
                                 EmbeddedTable::make(),

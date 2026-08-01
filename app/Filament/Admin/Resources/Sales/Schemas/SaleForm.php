@@ -100,6 +100,7 @@ class SaleForm
                     ->stripCharacters('.'),
                 Textarea::make('notes')
                     ->label('Catatan')
+                    ->columnSpanFull()
                     ->placeholder('Catatan untuk transaksi ini...')
                     ->maxLength(1000),
             ]);

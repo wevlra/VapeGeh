@@ -58,7 +58,7 @@ class HistoryResource extends Resource
                         Sale::class => ['items.product'],
                         StockEntry::class => ['items.product'],
                         StockOpname::class => ['items.product'],
-                        StockTransfer::class => ['items.product'],
+                        StockTransfer::class => ['items.product', 'items.stockTransfer.toLocation'],
                     ]);
                 },
             ])

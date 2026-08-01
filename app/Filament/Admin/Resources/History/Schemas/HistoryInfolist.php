@@ -158,10 +158,8 @@ class HistoryInfolist
                                             ->width(350),
                                         TableColumn::make('Jumlah')
                                             ->width(80),
-                                        ...(auth()->user()?->role !== 'staff' ? [
-                                            TableColumn::make('Harga')->width(180),
-                                            TableColumn::make('Subtotal')->width(180),
-                                        ] : []),
+                                        TableColumn::make('Harga')->width(180),
+                                        TableColumn::make('Subtotal')->width(180),
                                     ])
                                     ->schema([
                                         TextEntry::make('product.name')
@@ -170,14 +168,39 @@ class HistoryInfolist
                                             ->label('Jumlah'),
                                         TextEntry::make('price')
                                             ->label('Harga')
-                                            ->hidden(fn () => auth()->user()?->role === 'staff')
                                             ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
-                                            ->state(fn ($record) => $record->purchase_price ?? 0),
+                                            ->state(function ($record) {
+                                                if ($record->purchase_price !== null) {
+                                                    return $record->purchase_price;
+                                                }
+                                                if ($record->relationLoaded('stockTransfer') || $record->stockTransfer()->exists()) {
+                                                    if ($record->stockTransfer && $record->stockTransfer->toLocation) {
+                                                        $priceType = $record->stockTransfer->toLocation->price_type;
+                                                        $targetPrice = $priceType === '2' ? ($record->product->price_2 ?? 0) : ($record->product->price_1 ?? 0);
+
+                                                        return $targetPrice;
+                                                    }
+                                                }
+
+                                                return $record->product->price_1 ?? 0;
+                                            }),
                                         TextEntry::make('subtotal')
                                             ->label('Subtotal')
-                                            ->hidden(fn () => auth()->user()?->role === 'staff')
                                             ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
-                                            ->state(fn ($record) => $record->qty * ($record->purchase_price ?? 0)),
+                                            ->state(function ($record) {
+                                                if ($record->purchase_price !== null) {
+                                                    return $record->qty * $record->purchase_price;
+                                                }
+                                                $targetPrice = $record->product->price_1 ?? 0;
+                                                if ($record->relationLoaded('stockTransfer') || $record->stockTransfer()->exists()) {
+                                                    if ($record->stockTransfer && $record->stockTransfer->toLocation) {
+                                                        $priceType = $record->stockTransfer->toLocation->price_type;
+                                                        $targetPrice = $priceType === '2' ? ($record->product->price_2 ?? 0) : ($record->product->price_1 ?? 0);
+                                                    }
+                                                }
+
+                                                return $record->qty * $targetPrice;
+                                            }),
                                     ]),
                             ];
                         }

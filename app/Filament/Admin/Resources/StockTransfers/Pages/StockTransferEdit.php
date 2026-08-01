@@ -188,11 +188,16 @@ class StockTransferEdit extends Page implements HasForms, HasTable
 
     protected function buildItemData(Product $record, int $qty, ?array $existing): array
     {
+        $locationId = $this->data['to_location_id'] ?? null;
+        $location = $locationId ? Location::find($locationId) : null;
+        $priceType = $location ? $location->price_type : '1';
+        $priceField = $priceType === '2' ? 'price_2' : 'price_1';
+
         return [
             'product_id' => $record->id,
             'name' => $record->name,
             'qty' => $qty,
-            'purchase_price' => (float) $record->purchase_price, // for selected-items-preview
+            'price' => (float) $record->{$priceField}, // for selected-items-preview
         ];
     }
 
@@ -209,6 +214,21 @@ class StockTransferEdit extends Page implements HasForms, HasTable
                             ->weight('bold')
                             ->searchable(),
 
+                        TextColumn::make('price')
+                            ->label('Harga Tujuan')
+                            ->getStateUsing(function (Product $record) {
+                                $toLocationId = $this->data['to_location_id'] ?? null;
+                                if (! $toLocationId) {
+                                    return $record->price_1;
+                                }
+                                $location = Location::find($toLocationId);
+                                $priceType = $location ? $location->price_type : '1';
+
+                                return $priceType === '2' ? $record->price_2 : $record->price_1;
+                            })
+                            ->formatStateUsing(fn (float $state): string => 'Harga: Rp '.number_format($state, 0, ',', '.'))
+                            ->color('gray'),
+
                         TextColumn::make('stock_info')
                             ->label('Stok')
                             ->getStateUsing(function (Product $record) {
@@ -220,7 +240,7 @@ class StockTransferEdit extends Page implements HasForms, HasTable
 
                                 return $stock ? $stock->qty : 0;
                             })
-                            ->formatStateUsing(fn ($state) => is_numeric($state) ? "Stok: {$state}" : $state)
+                            ->formatStateUsing(fn ($state) => is_numeric($state) ? "Stok {$state}" : $state)
                             ->color(function ($state) {
                                 if (! is_numeric($state)) {
                                     return 'gray';

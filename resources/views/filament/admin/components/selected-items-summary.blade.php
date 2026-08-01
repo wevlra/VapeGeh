@@ -32,13 +32,15 @@
         @forelse ($getLivewire()->items as $index => $item)
             @php
                 $price = $item['price'] ?? $item['purchase_price'] ?? 0;
-                if (array_key_exists('price_1_type', $item)) {
-                    $type = $item['price_1_type'] ?? null;
-                    if ($type === 'default' || !isset($item['price'])) {
-                        $product = \App\Models\Product::find($item['product_id']);
-                        $price = $product ? (float) $product->price_1 : 0;
-                    }
+                $locationId = $getLivewire()->data['to_location_id'] ?? null;
+                $location = $locationId ? \App\Models\Location::find($locationId) : null;
+                $priceType = $location ? $location->price_type : '1';
+
+                $product = \App\Models\Product::find($item['product_id']);
+                if ($product) {
+                    $price = $priceType === '2' ? (float) $product->price_2 : (float) $product->price_1;
                 }
+                
                 $subtotal = $price * $item['qty'];
                 $totalAll += $subtotal;
             @endphp

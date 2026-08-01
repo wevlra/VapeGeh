@@ -31,6 +31,14 @@ class LocationForm
                         'warehouse' => 'Gudang',
                     ])
                     ->default('store'),
+                Select::make('price_type')
+                    ->label('Tipe Harga')
+                    ->required()
+                    ->options([
+                        '1' => 'Harga 1',
+                        '2' => 'Harga 2',
+                    ])
+                    ->default('1'),
                 Select::make('status')
                     ->label('Status')
                     ->required()

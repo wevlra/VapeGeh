@@ -72,9 +72,15 @@ class Pos extends Page implements HasTable
                         ->weight('bold')
                         ->formatStateUsing(fn (string $state): string => mb_strimwidth($state, 0, 40, '...')),
                     TextColumn::make('price_1')
-                        ->color('primary')
-                        ->getStateUsing(fn (Product $record): float => (float) $record->price_1)
-                        ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
+                        ->label('Harga')
+                        ->getStateUsing(function (Product $record) {
+                            $location = auth()->user()?->location;
+                            $priceType = $location ? $location->price_type : '1';
+
+                            return $priceType === '2' ? (float) $record->price_2 : (float) $record->price_1;
+                        })
+                        ->formatStateUsing(fn ($state) => 'Rp '.number_format($state, 0, ',', '.'))
+                        ->weight('bold'),
                     TextColumn::make('stock_qty')
                         ->badge()
                         ->color(fn (int $state): string => match (true) {
@@ -119,14 +125,18 @@ class Pos extends Page implements HasTable
             ->get()
             ->keyBy('product_id');
 
-        return collect($this->items)->map(function ($item) use ($products, $stocks) {
+        $location = auth()->user()?->location;
+        $priceType = $location ? $location->price_type : '1';
+        $priceField = $priceType === '2' ? 'price_2' : 'price_1';
+
+        return collect($this->items)->map(function ($item) use ($products, $stocks, $priceField) {
             $product = $products->get($item['product_id']);
             if (! $product) {
                 return null;
             }
             $item['name'] = $product->name;
             $stock = $stocks->get($item['product_id']);
-            $item['price'] = (float) $product->price_1;
+            $item['price'] = (float) $product->{$priceField};
             $item['subtotal'] = $item['price'] * (int) $item['qty'];
 
             return $item;
@@ -314,7 +324,11 @@ class Pos extends Page implements HasTable
                         );
                     }
 
-                    $price = (float) $product->price_1;
+                    $location = auth()->user()?->location;
+                    $priceType = $location ? $location->price_type : '1';
+                    $priceField = $priceType === '2' ? 'price_2' : 'price_1';
+
+                    $price = (float) $product->{$priceField};
                     $subtotal = $price * $qty;
                     $total += $subtotal;
 
