@@ -53,9 +53,11 @@ class HistoryInfolist
                                 default => null,
                             }),
                         TextEntry::make('location.name')
-                            ->label('Lokasi'),
+                            ->label('Lokasi')
+                            ->placeholder('Lokasi tidak ditentukan'),
                         TextEntry::make('creator.name')
-                            ->label('Staf'),
+                            ->label('Staf')
+                            ->placeholder('Staf tidak diketahui'),
                         TextEntry::make('notes')
                             ->label('Catatan Pergerakan')
                             ->columnSpanFull()
@@ -69,20 +71,23 @@ class HistoryInfolist
                         if ($record->related instanceof Sale) {
                             return [
                                 TextEntry::make('related.invoice_number')
-                                    ->label('No. Invoice'),
+                                    ->label('No. Invoice')
+                                    ->placeholder('Tidak ada no. invoice'),
                                 TextEntry::make('related.total')
                                     ->label('Total')
                                     ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                                 TextEntry::make('related.payment_method')
                                     ->label('Pembayaran')
-                                    ->formatStateUsing(fn ($state) => match ($state) {
+                                    ->placeholder('Metode pembayaran tidak ditentukan')
+                                    ->formatStateUsing(fn (?string $state): ?string => match ($state) {
                                         'qris' => 'QRIS',
                                         'cash' => 'Tunai',
-                                        default => ucfirst($state),
+                                        'transfer' => 'Transfer',
+                                        default => $state ? ucfirst($state) : null,
                                     }),
                                 TextEntry::make('related.buyer.name')
                                     ->label('Pembeli')
-                                    ->default('Walk-in Customer'),
+                                    ->placeholder('Walk-in Customer'),
                                 TextEntry::make('related.notes')
                                     ->label('Catatan')
                                     ->columnSpanFull()
@@ -118,11 +123,14 @@ class HistoryInfolist
                         if ($record->related instanceof StockTransfer) {
                             return [
                                 TextEntry::make('related.transfer_number')
-                                    ->label('No. Transfer'),
+                                    ->label('No. Transfer')
+                                    ->placeholder('Tidak ada no. transfer'),
                                 TextEntry::make('related.fromLocation.name')
-                                    ->label('Dari'),
+                                    ->label('Dari')
+                                    ->placeholder('Lokasi asal tidak ditentukan'),
                                 TextEntry::make('related.toLocation.name')
-                                    ->label('Ke'),
+                                    ->label('Ke')
+                                    ->placeholder('Lokasi tujuan tidak ditentukan'),
                                 TextEntry::make('related.status')
                                     ->label('Status')
                                     ->badge()
@@ -188,12 +196,13 @@ class HistoryInfolist
                                     ->placeholder('Pembeli tidak ditentukan'),
                                 TextEntry::make('related.payment_method')
                                     ->label('Pembayaran')
-                                    ->hidden(fn () => $stockIn || blank($entry->payment_method))
+                                    ->hidden(fn () => $stockIn)
+                                    ->placeholder('Metode pembayaran tidak ditentukan')
                                     ->formatStateUsing(fn (?string $state): ?string => match ($state) {
                                         'cash' => 'Tunai',
                                         'transfer' => 'Transfer',
                                         'qris' => 'QRIS',
-                                        default => $state,
+                                        default => $state ? ucfirst($state) : null,
                                     }),
                                 TextEntry::make('stock_entry_total')
                                     ->label('Total')
@@ -245,7 +254,8 @@ class HistoryInfolist
                         if ($record->related instanceof StockOpname) {
                             return [
                                 TextEntry::make('related.opname_number')
-                                    ->label('No. Opname'),
+                                    ->label('No. Opname')
+                                    ->placeholder('Tidak ada no. opname'),
                                 TextEntry::make('related.total_difference_value')
                                     ->label('Total Selisih Nilai')
                                     ->state(fn ($record) => $record?->related?->total_difference_value)

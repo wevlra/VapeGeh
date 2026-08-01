@@ -1,12 +1,15 @@
 <?php
 
+use App\Filament\Admin\Widgets\AdminPaymentMethodChart;
 use App\Filament\Admin\Widgets\AdminSalesChart;
 use App\Filament\Admin\Widgets\AdminStatsOverview;
 use App\Filament\Staff\Widgets\StaffSalesChart;
 use App\Filament\Staff\Widgets\StaffStatsOverview;
 use App\Models\Location;
 use App\Models\Product;
+use App\Models\Sale;
 use App\Models\Stock;
+use App\Models\StockEntry;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -96,5 +99,30 @@ it('renders staff sales chart widget with scoped data', function () {
 
     Livewire::test(StaffSalesChart::class)
         ->assertSee('Tren Penjualan')
+        ->assertSuccessful();
+});
+
+it('renders admin payment method chart widget with sales and stock out data', function () {
+    $admin = User::factory()->admin()->create();
+    $location = Location::factory()->create();
+
+    Sale::factory()->create([
+        'payment_method' => 'cash',
+        'location_id' => $location->id,
+        'user_id' => $admin->id,
+    ]);
+
+    StockEntry::create([
+        'type' => 'out',
+        'payment_method' => 'transfer',
+        'location_id' => $location->id,
+        'created_by' => $admin->id,
+    ]);
+
+    $this->actingAs($admin);
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+    Livewire::test(AdminPaymentMethodChart::class)
+        ->assertSee('Penjualan per Metode Bayar')
         ->assertSuccessful();
 });

@@ -97,6 +97,38 @@ class StockMovement extends Model
         return new Collection;
     }
 
+    public function getFormattedProductNameAttribute(): string
+    {
+        $related = $this->related;
+
+        if (
+            $related instanceof Sale ||
+            $related instanceof StockTransfer ||
+            $related instanceof StockEntry ||
+            $related instanceof StockOpname
+        ) {
+            $items = $related->items->pluck('product.name')->filter()->values()->toArray();
+            $count = count($items);
+            if ($count > 1) {
+                return $items[0].' + '.($count - 1).' lainnya';
+            }
+
+            return $items[0] ?? '-';
+        }
+
+        if ($related === null && (is_null($this->related_type) || $this->related_type === Location::class)) {
+            $names = $this->sibling_movements->pluck('product.name')->filter()->values()->toArray();
+            $count = count($names);
+            if ($count > 1) {
+                return $names[0].' + '.($count - 1).' lainnya';
+            }
+
+            return $names[0] ?? $this->product?->name ?? '-';
+        }
+
+        return $this->product?->name ?? '-';
+    }
+
     protected function casts(): array
     {
         return [

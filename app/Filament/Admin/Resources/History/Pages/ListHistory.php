@@ -6,6 +6,7 @@ use App\Exports\HistoryExport;
 use App\Filament\Admin\Resources\History\HistoryResource;
 use App\Filament\Concerns\HasExportActions;
 use App\Models\Sale;
+use App\Models\StockMovement;
 use Filament\Resources\Pages\ListRecords;
 use Wezlo\FilamentResponsiveTable\Concerns\HasResponsiveTable;
 use Wezlo\FilamentResponsiveTable\ResponsiveTableConfiguration;
@@ -21,9 +22,9 @@ class ListHistory extends ListRecords
     {
         return $config
             ->only(['type', 'location.name', 'quantity'])
-            ->cardTitle(fn ($record) => $record->related instanceof Sale
+            ->cardTitle(fn (StockMovement $record) => $record->related instanceof Sale
                 ? 'Penjualan ('.$record->related->invoice_number.')'
-                : ($record->product?->name ?? '-'));
+                : $record->formatted_product_name);
     }
 
     protected function getHeaderActions(): array
