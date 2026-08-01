@@ -14,4 +14,5 @@ it('tests the stock opname edit route', function () {
     $opname = StockOpname::factory()->create(['status' => 'draft']);
 
     $response = $this->get('/admin/stock-opnames/'.$opname->id.'/edit');
+    $response->assertStatus(200);
 });

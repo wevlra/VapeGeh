@@ -133,7 +133,7 @@ it('completes a transfer and updates destination stock price correctly', functio
         'stock_transfer_id' => $transfer->id,
         'product_id' => $product->id,
         'qty' => 20,
-        'purchase_price' => 75000.00,
+        'purchase_price' => 75000.00, // Price provided but we'll check it uses product's wac
     ]);
 
     $action = app(CompleteStockTransfer::class);
