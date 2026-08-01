@@ -7,7 +7,6 @@ use App\Filament\Concerns\NotifiesWithDetail;
 use App\Models\Location;
 use App\Models\Stock;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -50,15 +49,11 @@ class StockRelationManager extends RelationManager
                         $state < 10 => 'warning',
                         default => 'success',
                     }),
-                TextColumn::make('price')
-                    ->label('Harga Outlet')
-                    ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
-                    ->placeholder('Harga 1')
-                    ->sortable(),
+
             ])
             ->recordActions([
                 EditAction::make()
-                    ->modalHeading('Sesuaikan Stok & Harga')
+                    ->modalHeading('Sesuaikan Stok')
                     ->form([
                         TextInput::make('qty')
                             ->label('Jumlah')
@@ -66,59 +61,12 @@ class StockRelationManager extends RelationManager
                             ->integer()
                             ->minValue(0)
                             ->default(fn (Stock $record): int => $record->qty),
-                        Select::make('price_type')
-                            ->label('Harga Outlet')
-                            ->options(function (Stock $record): array {
-                                $product = $record->product;
-                                $options = [];
 
-                                if ((float) $product->price_1 > 0) {
-                                    $options['price_1'] = 'Harga 1: Rp '.number_format((float) $product->price_1, 0, ',', '.');
-                                }
-                                if ((float) $product->price_2 > 0) {
-                                    $options['price_2'] = 'Harga 2: Rp '.number_format((float) $product->price_2, 0, ',', '.');
-                                }
-                                if ((float) $product->reseller_price > 0) {
-                                    $options['reseller'] = 'Harga Reseller: Rp '.number_format((float) $product->reseller_price, 0, ',', '.');
-                                }
-
-                                return $options;
-                            })
-                            ->default(function (Stock $record): ?string {
-                                if ($record->price === null) {
-                                    return null;
-                                }
-                                $product = $record->product;
-                                if ((float) $record->price == (float) $product->price_1 && (float) $product->price_1 > 0) {
-                                    return 'price_1';
-                                } elseif ((float) $record->price == (float) $product->price_2 && (float) $product->price_2 > 0) {
-                                    return 'price_2';
-                                } elseif ((float) $record->price == (float) $product->reseller_price && (float) $product->reseller_price > 0) {
-                                    return 'reseller';
-                                }
-
-                                return null;
-                            })
-                            ->nullable(),
                         Textarea::make('notes')
                             ->label('Catatan')
                             ->rows(2),
                     ])
                     ->action(function (Stock $record, array $data): void {
-                        $priceType = $data['price_type'] ?? null;
-                        if ($priceType === 'custom') {
-                            $priceValue = (float) ($data['custom_price'] ?? 0);
-                        } elseif ($priceType === 'reseller') {
-                            $priceValue = (float) $record->product->reseller_price;
-                        } elseif ($priceType === 'price_1') {
-                            $priceValue = (float) $record->product->price_1;
-                        } elseif ($priceType === 'price_2') {
-                            $priceValue = (float) $record->product->price_2;
-                        } else {
-                            $priceValue = null;
-                        }
-
-                        $record->update(['price' => $priceValue]);
 
                         app(AdjustStock::class)->execute(
                             $record,

@@ -72,8 +72,8 @@ it('computes total asset per location and globally', function () {
     $product1 = Product::factory()->create(['price_1' => 100000]);
     $product2 = Product::factory()->create(['price_1' => 80000]);
 
-    Stock::create(['product_id' => $product1->id, 'location_id' => $warehouse->id, 'qty' => 5]);
-    Stock::create(['product_id' => $product2->id, 'location_id' => $store->id, 'qty' => 3]);
+    Stock::create(['product_id' => $product1->id, 'location_id' => $warehouse->id, 'qty' => 5, 'purchase_price' => 100000]);
+    Stock::create(['product_id' => $product2->id, 'location_id' => $store->id, 'qty' => 3, 'purchase_price' => 80000]);
 
     expect((float) $warehouse->total_asset)->toBe(500000.0)
         ->and((float) $store->total_asset)->toBe(240000.0)

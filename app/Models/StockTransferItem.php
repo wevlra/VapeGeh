@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['stock_transfer_id', 'product_id', 'qty', 'price'])]
+#[Fillable(['stock_transfer_id', 'product_id', 'qty', 'purchase_price'])]
 class StockTransferItem extends Model
 {
     use HasFactory, HasUuids;
@@ -35,7 +35,7 @@ class StockTransferItem extends Model
     {
         return [
             'qty' => 'integer',
-            'price' => 'float',
+            'purchase_price' => 'float',
         ];
     }
 }

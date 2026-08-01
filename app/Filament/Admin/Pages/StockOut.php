@@ -133,7 +133,15 @@ class StockOut extends Page implements HasForms, HasTable
                                         ->required()
                                         ->live()
                                         ->afterStateUpdated(function (callable $set) {
-                                            $this->items = [];
+                                            $newItems = [];
+                                            foreach ($this->items as $item) {
+                                                $product = Product::find($item['product_id']);
+                                                if ($product) {
+                                                    $itemData = $this->buildItemData($product, $item['qty'], $item);
+                                                    $newItems[] = $itemData;
+                                                }
+                                            }
+                                            $this->items = $newItems;
                                         }),
                                 ]),
                                 Repeater::make('additional_costs')

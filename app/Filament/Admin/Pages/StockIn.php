@@ -258,12 +258,14 @@ class StockIn extends Page implements HasForms, HasTable
                         $stock->purchase_price = round($wac, 2);
                         $stock->save();
                     } else {
-                        $wac = $newPrice;
+                        $wac = $product->purchase_price > 0
+                            ? ($product->purchase_price + $newPrice) / 2
+                            : $newPrice;
                         $stock = Stock::create([
                             'product_id' => $item['product_id'],
                             'location_id' => $data['location_id'],
                             'qty' => $newQty,
-                            'purchase_price' => round($newPrice, 2),
+                            'purchase_price' => round($wac, 2),
                         ]);
                     }
 

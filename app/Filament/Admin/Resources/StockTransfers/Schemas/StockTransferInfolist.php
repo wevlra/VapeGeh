@@ -66,7 +66,7 @@ class StockTransferInfolist
                                     ->width(350),
                                 TableColumn::make('Jumlah')
                                     ->width(80),
-                                TableColumn::make('Harga')
+                                TableColumn::make('Harga Beli')
                                     ->width(180),
                                 TableColumn::make('Subtotal')
                                     ->width(180),
@@ -77,13 +77,13 @@ class StockTransferInfolist
                                 TextEntry::make('qty')
                                     ->label('Jumlah'),
                                 TextEntry::make('price')
-                                    ->label('Harga')
+                                    ->label('Harga Beli')
                                     ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
-                                    ->state(fn ($record) => empty($record->price) ? $record->product->price_1 : $record->price),
+                                    ->state(fn ($record) => $record->product->purchase_price),
                                 TextEntry::make('subtotal')
                                     ->label('Subtotal')
                                     ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
-                                    ->state(fn ($record) => $record->qty * (empty($record->price) ? $record->product->price_1 : $record->price)),
+                                    ->state(fn ($record) => $record->qty * ($record->product->purchase_price)),
                             ]),
                     ]),
             ]);

@@ -73,23 +73,37 @@ class EditStockOut extends Page implements HasForms, HasTable
     {
         $this->entry = $record->load('items.product');
 
+        $firstItem = $record->items->first();
+        $determinedPriceId = 'price_1';
+
+        if ($firstItem && $firstItem->product) {
+            $product = $firstItem->product;
+            if ((float) $firstItem->unit_price === (float) $product->price_1) {
+                $determinedPriceId = 'price_1';
+            } elseif ((float) $firstItem->unit_price === (float) $product->price_2) {
+                $determinedPriceId = 'price_2';
+            } elseif ((float) $firstItem->unit_price === (float) $product->reseller_price) {
+                $determinedPriceId = 'reseller';
+            }
+        }
+
         $this->data = [
             'location_id' => $record->location_id,
             'buyer_id' => $record->buyer_id,
             'payment_method' => $record->payment_method,
             'additional_costs' => $record->additional_costs ?? [],
             'notes' => $record->notes,
-            'price_id' => 'price_1',
+            'price_id' => $determinedPriceId,
         ];
 
         $this->form->fill($this->data);
 
-        $this->items = $record->items->map(function ($item) {
+        $this->items = $record->items->map(function ($item) use ($determinedPriceId) {
             return [
                 'product_id' => $item->product_id,
                 'name' => $item->product->name ?? 'Produk',
                 'qty' => $item->qty,
-                'price_id' => 'custom',
+                'price_id' => $determinedPriceId,
                 'price' => (float) $item->unit_price,
             ];
         })->toArray();
@@ -152,11 +166,18 @@ class EditStockOut extends Page implements HasForms, HasTable
                                             'price_2' => 'Harga 2',
                                             'reseller' => 'Harga Reseller',
                                         ])
-                                        ->default('price_1')
                                         ->required()
                                         ->live()
                                         ->afterStateUpdated(function (callable $set) {
-                                            $this->items = [];
+                                            $newItems = [];
+                                            foreach ($this->items as $item) {
+                                                $product = Product::find($item['product_id']);
+                                                if ($product) {
+                                                    $itemData = $this->buildItemData($product, $item['qty'], $item);
+                                                    $newItems[] = $itemData;
+                                                }
+                                            }
+                                            $this->items = $newItems;
                                         }),
                                 ]),
                                 Repeater::make('additional_costs')
@@ -384,6 +405,7 @@ class EditStockOut extends Page implements HasForms, HasTable
                 ]);
 
                 $totalAmount = 0;
+                $firstMovement = null;
 
                 foreach ($items as $item) {
                     $productId = $item['product_id'];
@@ -414,7 +436,7 @@ class EditStockOut extends Page implements HasForms, HasTable
                         'unit_price' => $unitPrice,
                     ]);
 
-                    StockMovement::create([
+                    $movement = StockMovement::create([
                         'product_id' => $productId,
                         'location_id' => $locationId,
                         'type' => 'out',
@@ -426,6 +448,10 @@ class EditStockOut extends Page implements HasForms, HasTable
                         'additional_costs' => $data['additional_costs'] ?? null,
                         'notes' => $data['notes'] ?? null,
                     ]);
+
+                    if (! $firstMovement) {
+                        $firstMovement = $movement;
+                    }
                 }
 
                 $additionalCostsTotal = 0;
@@ -448,7 +474,7 @@ class EditStockOut extends Page implements HasForms, HasTable
                     ]);
                 }
 
-                return true;
+                return $firstMovement;
             });
         } catch (DomainException $e) {
             $this->notifyError(

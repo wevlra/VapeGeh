@@ -17,7 +17,7 @@ it('sets stocks price to unit price on first stock entry', function () {
         'product_id' => $this->product->id,
         'location_id' => $this->location->id,
         'qty' => 10,
-        'price' => 100000.0,
+        'purchase_price' => 100000.0,
     ]);
 
     expect($this->location->total_asset)->toBe(1000000.0);
@@ -29,7 +29,7 @@ it('computes weighted average cost on second stock entry', function () {
         'product_id' => $this->product->id,
         'location_id' => $this->location->id,
         'qty' => 10,
-        'price' => 100000.0,
+        'purchase_price' => 100000.0,
     ]);
 
     // Entry 2: 10 units @ 120,000
@@ -37,15 +37,15 @@ it('computes weighted average cost on second stock entry', function () {
     $newPrice = 120000.0;
     $newQty = 10;
     $oldQty = (int) $stock->qty;
-    $oldPrice = (float) $stock->price;
+    $oldPrice = (float) $stock->purchase_price;
     $newTotalQty = $oldQty + $newQty;
     $wac = (($oldQty * $oldPrice) + ($newQty * $newPrice)) / $newTotalQty;
 
     $stock->qty = $newTotalQty;
-    $stock->price = round($wac, 2);
+    $stock->purchase_price = round($wac, 2);
     $stock->save();
 
-    expect($stock->price)->toBe(110000.0);
+    expect($stock->purchase_price)->toBe(110000.0);
     // Total aset = 20 × 110,000 = 2,200,000 = total stok masuk (10×100k + 10×120k)
     expect($this->location->total_asset)->toBe(2200000.0);
 });
@@ -56,27 +56,27 @@ it('total asset equals total stock in value when using wac', function () {
         'product_id' => $this->product->id,
         'location_id' => $this->location->id,
         'qty' => 5,
-        'price' => 80000.0,
+        'purchase_price' => 80000.0,
     ]);
 
     $entries = [
-        ['qty' => 5, 'price' => 100000.0],
-        ['qty' => 10, 'price' => 110000.0],
+        ['qty' => 5, 'purchase_price' => 100000.0],
+        ['qty' => 10, 'purchase_price' => 110000.0],
     ];
 
     $totalStockIn = 5 * 80000.0;
 
     foreach ($entries as $entry) {
-        $totalStockIn += $entry['qty'] * $entry['price'];
+        $totalStockIn += $entry['qty'] * $entry['purchase_price'];
         $oldQty = (int) $stock->qty;
-        $oldPrice = (float) $stock->price;
+        $oldPrice = (float) $stock->purchase_price;
         $newQty = $entry['qty'];
-        $newPrice = $entry['price'];
+        $newPrice = $entry['purchase_price'];
         $newTotalQty = $oldQty + $newQty;
         $wac = (($oldQty * $oldPrice) + ($newQty * $newPrice)) / $newTotalQty;
 
         $stock->qty = $newTotalQty;
-        $stock->price = round($wac, 2);
+        $stock->purchase_price = round($wac, 2);
         $stock->save();
     }
 
@@ -93,7 +93,7 @@ it('total asset uses stocks price not products purchase price', function () {
         'product_id' => $this->product->id,
         'location_id' => $this->location->id,
         'qty' => 10,
-        'price' => 100000.0,
+        'purchase_price' => 100000.0,
     ]);
 
     // Should use stocks.price (100,000 × 10 = 1,000,000), not products.purchase_price (99,999 × 10 = 999,990)

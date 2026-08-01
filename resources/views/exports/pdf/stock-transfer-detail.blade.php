@@ -38,7 +38,7 @@
                 <th>No</th>
                 <th>Produk</th>
                 <th style="text-align: center;">Jumlah</th>
-                <th style="text-align: right;">Harga Satuan</th>
+                <th style="text-align: right;">Harga Beli/th>
                 <th style="text-align: right;">Subtotal</th>
             </tr>
         </thead>
@@ -47,7 +47,7 @@
             @forelse ($transfer->items as $i => $item)
                 @php
                     $qty = $item->qty;
-                    $price = empty($item->price) ? $item->product->price_1 : $item->price;
+                    $price = $item->product->purchase_price;
                     $subtotal = $qty * $price;
                     $totalQty += $qty;
                     $totalValue += $subtotal;

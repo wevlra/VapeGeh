@@ -31,10 +31,10 @@
     <div class="space-y-0 divide-y divide-gray-100 dark:divide-gray-700/50">
         @forelse ($getLivewire()->items as $index => $item)
             @php
-                $price = $item['price'] ?? 0;
+                $price = $item['price'] ?? $item['purchase_price'] ?? 0;
                 if (array_key_exists('price_1_type', $item)) {
                     $type = $item['price_1_type'] ?? null;
-                    if ($type === 'default' || $item['price'] === null) {
+                    if ($type === 'default' || !isset($item['price'])) {
                         $product = \App\Models\Product::find($item['product_id']);
                         $price = $product ? (float) $product->price_1 : 0;
                     }

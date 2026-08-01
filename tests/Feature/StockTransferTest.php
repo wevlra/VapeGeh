@@ -119,7 +119,7 @@ it('completes a transfer and updates destination stock price correctly', functio
         'product_id' => $product->id,
         'location_id' => $warehouse->id,
         'qty' => 50,
-        'price' => null,
+        'purchase_price' => null,
     ]);
 
     $transfer = StockTransfer::factory()->create([
@@ -133,7 +133,7 @@ it('completes a transfer and updates destination stock price correctly', functio
         'stock_transfer_id' => $transfer->id,
         'product_id' => $product->id,
         'qty' => 20,
-        'price' => 75000.00,
+        'purchase_price' => 75000.00,
     ]);
 
     $action = app(CompleteStockTransfer::class);
@@ -144,7 +144,7 @@ it('completes a transfer and updates destination stock price correctly', functio
         ->first();
 
     expect($destinationStock->qty)->toBe(20)
-        ->and($destinationStock->price)->toBe(75000.00);
+        ->and($destinationStock->purchase_price)->toBe(75000.00);
 });
 
 it('throws exception when source stock is insufficient', function () {

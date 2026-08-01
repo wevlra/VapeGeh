@@ -73,7 +73,7 @@ class Pos extends Page implements HasTable
                         ->formatStateUsing(fn (string $state): string => mb_strimwidth($state, 0, 40, '...')),
                     TextColumn::make('price_1')
                         ->color('primary')
-                        ->getStateUsing(fn (Product $record): float => $record->stocks->first()?->price > 0 ? (float) $record->stocks->first()?->price : (float) $record->price_1)
+                        ->getStateUsing(fn (Product $record): float => (float) $record->price_1)
                         ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.')),
                     TextColumn::make('stock_qty')
                         ->badge()
@@ -126,7 +126,7 @@ class Pos extends Page implements HasTable
             }
             $item['name'] = $product->name;
             $stock = $stocks->get($item['product_id']);
-            $item['price'] = $stock && $stock->price > 0 ? (float) $stock->price : (float) $product->price_1;
+            $item['price'] = (float) $product->price_1;
             $item['subtotal'] = $item['price'] * (int) $item['qty'];
 
             return $item;
@@ -314,7 +314,7 @@ class Pos extends Page implements HasTable
                         );
                     }
 
-                    $price = $stock && $stock->price > 0 ? (float) $stock->price : (float) $product->price_1;
+                    $price = (float) $product->price_1;
                     $subtotal = $price * $qty;
                     $total += $subtotal;
 

@@ -76,23 +76,11 @@ class StockTransferEdit extends Page implements HasForms, HasTable
         ]);
 
         $this->items = $this->record->items->map(function ($item) {
-            $sellingPriceType = null;
-            if ($item->price) {
-                if ((float) $item->price == (float) $item->product->reseller_price) {
-                    $sellingPriceType = 'reseller';
-                } elseif ((float) $item->price == (float) $item->product->price_2) {
-                    $sellingPriceType = 'price_2';
-                } elseif ((float) $item->price == (float) $item->product->price_1) {
-                    $sellingPriceType = 'price_1';
-                }
-            }
-
             return [
                 'product_id' => $item->product_id,
                 'name' => $item->product->name,
                 'qty' => $item->qty,
-                'price' => $item->price,
-                'price_1_type' => $sellingPriceType,
+                'purchase_price' => $item->purchase_price,
             ];
         })->toArray();
     }
@@ -182,19 +170,6 @@ class StockTransferEdit extends Page implements HasForms, HasTable
                                             ->searchable()
                                             ->preload()
                                             ->different('from_location_id'),
-                                        Select::make('price_id')
-                                            ->label('Update Harga Tujuan (Ops.)')
-                                            ->options([
-                                                'price_1' => 'Harga 1',
-                                                'price_2' => 'Harga 2',
-                                                'reseller' => 'Harga Reseller',
-                                            ])
-                                            ->placeholder('Tetap / Tidak Diubah')
-                                            ->nullable()
-                                            ->live()
-                                            ->afterStateUpdated(function (callable $set) {
-                                                $this->items = [];
-                                            }),
                                     ]),
                                 Textarea::make('notes')
                                     ->label('Catatan')
@@ -213,22 +188,11 @@ class StockTransferEdit extends Page implements HasForms, HasTable
 
     protected function buildItemData(Product $record, int $qty, ?array $existing): array
     {
-        $sellingPriceType = $this->data['price_id'] ?? null;
-        $resolvedPrice = null;
-        if ($sellingPriceType === 'reseller') {
-            $resolvedPrice = (float) $record->reseller_price;
-        } elseif ($sellingPriceType === 'price_1') {
-            $resolvedPrice = (float) $record->price_1;
-        } elseif ($sellingPriceType === 'price_2') {
-            $resolvedPrice = (float) $record->price_2;
-        }
-
         return [
             'product_id' => $record->id,
             'name' => $record->name,
             'qty' => $qty,
-            'price_1_type' => $sellingPriceType,
-            'price' => $resolvedPrice, // for selected-items-preview
+            'purchase_price' => (float) $record->purchase_price, // for selected-items-preview
         ];
     }
 
@@ -244,31 +208,7 @@ class StockTransferEdit extends Page implements HasForms, HasTable
                             ->label('Nama Produk')
                             ->weight('bold')
                             ->searchable(),
-                        TextColumn::make('price_1')
-                            ->label('Harga 1')
-                            ->getStateUsing(function (Product $record) {
-                                $priceId = $this->data['price_id'] ?? null;
-                                if ($priceId === 'reseller') {
-                                    return (float) $record->reseller_price;
-                                }
-                                if ($priceId === 'price_1') {
-                                    return (float) $record->price_1;
-                                }
-                                if ($priceId === 'price_2') {
-                                    return (float) $record->price_2;
-                                }
 
-                                return (float) $record->price_1;
-                            })
-                            ->formatStateUsing(function ($state): string {
-                                $priceId = $this->data['price_id'] ?? null;
-                                if ($priceId === null) {
-                                    return 'Harga Tujuan: Tetap';
-                                }
-
-                                return 'Harga Tujuan: Rp '.number_format((float) $state, 0, ',', '.');
-                            })
-                            ->color('gray'),
                         TextColumn::make('stock_info')
                             ->label('Stok')
                             ->getStateUsing(function (Product $record) {
@@ -375,7 +315,7 @@ class StockTransferEdit extends Page implements HasForms, HasTable
                     $this->record->items()->create([
                         'product_id' => $item['product_id'],
                         'qty' => $item['qty'],
-                        'price' => $item['price'] !== null ? (float) $item['price'] : null,
+                        'purchase_price' => null,
                     ]);
                 }
             });

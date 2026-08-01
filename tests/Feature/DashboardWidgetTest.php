@@ -31,7 +31,7 @@ it('renders admin stats overview widget with global data', function () {
         ->assertSee('Stok Keluar')
         ->assertSee('Total Stok')
         ->assertSee('Pendapatan')
-        ->assertSee('Laba')
+        ->assertSee('Untung')
         ->assertSuccessful();
 });
 

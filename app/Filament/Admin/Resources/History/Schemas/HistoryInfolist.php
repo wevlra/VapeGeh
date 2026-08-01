@@ -158,10 +158,10 @@ class HistoryInfolist
                                             ->width(350),
                                         TableColumn::make('Jumlah')
                                             ->width(80),
-                                        TableColumn::make('Harga')
-                                            ->width(180),
-                                        TableColumn::make('Subtotal')
-                                            ->width(180),
+                                        ...(auth()->user()?->role !== 'staff' ? [
+                                            TableColumn::make('Harga')->width(180),
+                                            TableColumn::make('Subtotal')->width(180),
+                                        ] : []),
                                     ])
                                     ->schema([
                                         TextEntry::make('product.name')
@@ -170,12 +170,14 @@ class HistoryInfolist
                                             ->label('Jumlah'),
                                         TextEntry::make('price')
                                             ->label('Harga')
+                                            ->hidden(fn () => auth()->user()?->role === 'staff')
                                             ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
-                                            ->state(fn ($record) => empty($record->price) ? $record->product->price_1 : $record->price),
+                                            ->state(fn ($record) => $record->purchase_price ?? 0),
                                         TextEntry::make('subtotal')
                                             ->label('Subtotal')
+                                            ->hidden(fn () => auth()->user()?->role === 'staff')
                                             ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
-                                            ->state(fn ($record) => $record->qty * (empty($record->price) ? $record->product->price_1 : $record->price)),
+                                            ->state(fn ($record) => $record->qty * ($record->purchase_price ?? 0)),
                                     ]),
                             ];
                         }
