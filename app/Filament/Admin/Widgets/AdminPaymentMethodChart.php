@@ -21,13 +21,13 @@ class AdminPaymentMethodChart extends ChartWidget
 
         $salesData = Sale::select(DB::raw("{$pmExpr} as pm"))
             ->selectRaw('count(*) as count')
-            ->groupBy(DB::raw($pmExpr))
+            ->groupBy('pm')
             ->pluck('count', 'pm');
 
         $stockOutData = StockEntry::where('type', 'out')
             ->select(DB::raw("{$pmExpr} as pm"))
             ->selectRaw('count(*) as count')
-            ->groupBy(DB::raw($pmExpr))
+            ->groupBy('pm')
             ->pluck('count', 'pm');
 
         $data = collect();

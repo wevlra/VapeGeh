@@ -40,15 +40,17 @@ class Location extends Model
     public function getTotalAssetAttribute(): float
     {
         return (float) DB::table('stocks')
-            ->where('location_id', $this->id)
-            ->selectRaw('SUM(qty * COALESCE(purchase_price, 0)) as total')
+            ->join('products', 'stocks.product_id', '=', 'products.id')
+            ->where('stocks.location_id', $this->id)
+            ->selectRaw('SUM(stocks.qty * COALESCE(stocks.purchase_price, products.purchase_price, 0)) as total')
             ->value('total') ?? 0;
     }
 
     public static function getTotalAssetOfAll(): float
     {
         return (float) DB::table('stocks')
-            ->selectRaw('SUM(qty * COALESCE(purchase_price, 0)) as total')
+            ->join('products', 'stocks.product_id', '=', 'products.id')
+            ->selectRaw('SUM(stocks.qty * COALESCE(stocks.purchase_price, products.purchase_price, 0)) as total')
             ->value('total') ?? 0;
     }
 

@@ -4,6 +4,7 @@ namespace App\Filament\Staff\Widgets;
 
 use App\Models\Sale;
 use Filament\Widgets\ChartWidget;
+use Illuminate\Support\Facades\DB;
 
 class StaffPaymentMethodChart extends ChartWidget
 {
@@ -17,11 +18,13 @@ class StaffPaymentMethodChart extends ChartWidget
     {
         $locationId = auth()->user()->location_id;
 
+        $pmExpr = "COALESCE(NULLIF(payment_method, ''), 'other')";
+
         $data = Sale::where('location_id', $locationId)
-            ->select('payment_method')
+            ->select(DB::raw("{$pmExpr} as pm"))
             ->selectRaw('count(*) as count')
-            ->groupBy('payment_method')
-            ->pluck('count', 'payment_method');
+            ->groupBy('pm')
+            ->pluck('count', 'pm');
 
         $colors = [
             'cash' => 'rgba(34, 197, 94, 0.8)',
