@@ -47,6 +47,35 @@ it('can perform stock in and set custom selling price', function () {
         ->and($expense->category)->toBe('purchase');
 });
 
+it('shows the purchase price in the selected items summary on stock in', function () {
+    $admin = User::factory()->admin()->create();
+    $this->actingAs($admin);
+
+    $location = Location::factory()->create();
+    $vendor = Vendor::factory()->create();
+    $product = Product::factory()->create([
+        'purchase_price' => 70000,
+        'price_1' => 150000,
+        'price_2' => 200000,
+    ]);
+
+    Livewire::test(StockIn::class)
+        ->fillForm([
+            'vendor_id' => $vendor->id,
+            'location_id' => $location->id,
+        ])
+        ->set('items', [
+            [
+                'product_id' => $product->id,
+                'name' => $product->name,
+                'qty' => 2,
+                'price' => 85000,
+            ],
+        ])
+        ->assertSee('Rp 85.000')
+        ->assertDontSee('Rp 150.000');
+});
+
 it('calculates simple average purchase price when new stock is added with different price', function () {
     $admin = User::factory()->admin()->create();
     $this->actingAs($admin);

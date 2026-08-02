@@ -55,6 +55,33 @@ it('can perform stock out and record income', function () {
         ->and($income->category)->toBe('sale');
 });
 
+it('shows the selected price in the selected items summary on stock out', function () {
+    $admin = User::factory()->admin()->create();
+    $this->actingAs($admin);
+
+    $location = Location::factory()->create();
+    $product = Product::factory()->create([
+        'price_1' => 150000,
+        'price_2' => 200000,
+    ]);
+
+    Livewire::test(StockOut::class)
+        ->fillForm([
+            'location_id' => $location->id,
+            'price_id' => 'price_2',
+        ])
+        ->set('items', [
+            [
+                'product_id' => $product->id,
+                'name' => $product->name,
+                'qty' => 2,
+                'price' => 200000,
+            ],
+        ])
+        ->assertSee('Rp 200.000')
+        ->assertDontSee('Rp 150.000');
+});
+
 it('includes additional costs in stock entry total amount for stock out history', function () {
     $admin = User::factory()->admin()->create();
     $this->actingAs($admin);

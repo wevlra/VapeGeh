@@ -33,14 +33,16 @@
             @php
                 $price = $item['price'] ?? $item['purchase_price'] ?? 0;
                 $locationId = $getLivewire()->data['to_location_id'] ?? null;
-                $location = $locationId ? \App\Models\Location::find($locationId) : null;
-                $priceType = $location ? $location->price_type : '1';
+                if ($locationId) {
+                    $location = \App\Models\Location::find($locationId);
+                    $priceType = $location ? $location->price_type : '1';
 
-                $product = \App\Models\Product::find($item['product_id']);
-                if ($product) {
-                    $price = $priceType === '2' ? (float) $product->price_2 : (float) $product->price_1;
+                    $product = \App\Models\Product::find($item['product_id']);
+                    if ($product) {
+                        $price = $priceType === '2' ? (float) $product->price_2 : (float) $product->price_1;
+                    }
                 }
-                
+
                 $subtotal = $price * $item['qty'];
                 $totalAll += $subtotal;
             @endphp
