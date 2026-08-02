@@ -61,19 +61,7 @@ class HistoryResource extends Resource
                         Stock::class => ['product'],
                     ]);
                 },
-            ])
-            ->whereIn('id', function ($sub) {
-                $sub->selectRaw('MIN(id)')
-                    ->from('stock_movements')
-                    ->groupBy(['related_type', 'related_id', 'location_id']);
-            })
-            ->where(function ($query) {
-                $query->where('type', '!=', 'transfer')
-                    ->orWhere(function ($q) {
-                        $q->where('type', 'transfer')
-                            ->where('quantity', '>', 0);
-                    });
-            });
+            ]);
     }
 
     public static function table(Table $table): Table
