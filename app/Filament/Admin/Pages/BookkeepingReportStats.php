@@ -33,13 +33,17 @@ class BookkeepingReportStats extends StatsOverviewWidget
         $totalIncome = (float) $incomeQuery->sum('amount');
         $totalExpense = (float) $expenseQuery->sum('amount');
 
-        $cogsQuery = StockMovement::where('type', 'out');
+        $cogsQuery = StockMovement::where('stock_movements.type', 'out')
+            ->join('products', 'products.id', '=', 'stock_movements.product_id');
         if ($this->periodStart) {
-            $cogsQuery->where('created_at', '>=', $this->periodStart);
+            $cogsQuery->where('stock_movements.created_at', '>=', $this->periodStart);
         }
-        $cogs = (float) $cogsQuery->sum(DB::raw('ABS(quantity) * COALESCE(unit_price, 0)'));
+        $cogs = (float) $cogsQuery->sum(DB::raw('ABS(stock_movements.quantity) * products.purchase_price'));
 
-        $opExpenseQuery = clone $expenseQuery;
+        $opExpenseQuery = Expense::query();
+        if ($this->periodStart) {
+            $opExpenseQuery->where('date', '>=', $this->periodStart);
+        }
         $opExpenseQuery->where('category', '!=', 'purchase');
         $opExpense = (float) $opExpenseQuery->sum('amount');
 

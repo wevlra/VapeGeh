@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\History\Schemas;
 
 use App\Models\Sale;
+use App\Models\Stock;
 use App\Models\StockEntry;
 use App\Models\StockOpname;
 use App\Models\StockTransfer;
@@ -332,9 +333,16 @@ class HistoryInfolist
                         }
 
                         // Fallback for unknown/unsupported related types
-                        // (e.g., Location::class from DeleteLocation action)
+                        // (e.g., Location::class from DeleteLocation action, or Stock::class from manual adjustment)
                         return [
                             RepeatableEntry::make('sibling_movements')
+                                ->state(function ($record) {
+                                    if ($record->related instanceof Stock) {
+                                        return [$record];
+                                    }
+
+                                    return method_exists($record, 'siblingMovements') ? $record->siblingMovements : [$record];
+                                })
                                 ->columnSpanFull()
                                 ->hiddenLabel()
                                 ->table([
@@ -344,7 +352,7 @@ class HistoryInfolist
                                 ->schema([
                                     TextEntry::make('product.name')
                                         ->label('Produk'),
-                                    TextEntry::make('quantity_display')
+                                    TextEntry::make('quantity')
                                         ->label('Jumlah')
                                         ->state(fn ($record): string => (int) $record->quantity > 0 ? '+'.$record->quantity : (string) $record->quantity),
                                 ]),

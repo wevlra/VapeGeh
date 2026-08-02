@@ -7,6 +7,7 @@ use App\Filament\Admin\Resources\History\Pages\ViewHistory;
 use App\Filament\Admin\Resources\History\Schemas\HistoryInfolist;
 use App\Filament\Admin\Resources\History\Tables\HistoryTable;
 use App\Models\Sale;
+use App\Models\Stock;
 use App\Models\StockEntry;
 use App\Models\StockMovement;
 use App\Models\StockOpname;
@@ -57,6 +58,7 @@ class HistoryResource extends Resource
                         StockEntry::class => ['items.product', 'buyer'],
                         StockOpname::class => ['items.product'],
                         StockTransfer::class => ['items.product', 'items.stockTransfer.toLocation'],
+                        Stock::class => ['product'],
                     ]);
                 },
             ])

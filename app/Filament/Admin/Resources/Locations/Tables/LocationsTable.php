@@ -36,6 +36,15 @@ class LocationsTable
                         'warehouse' => 'info',
                         default => 'gray',
                     }),
+                TextColumn::make('price_type')
+                    ->label('Tipe Harga')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        '1' => 'Harga 1',
+                        '2' => 'Harga 2',
+                        default => "Harga {$state}",
+                    })
+                    ->color('warning'),
                 TextColumn::make('address')
                     ->label('Alamat')
                     ->placeholder('Tidak ada alamat')
