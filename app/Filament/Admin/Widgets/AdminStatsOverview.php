@@ -8,55 +8,25 @@ use App\Models\Location;
 use App\Models\Stock;
 use App\Models\StockMovement;
 use Carbon\Carbon;
-use Filament\Forms\Components\Select;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Schema;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\DB;
-use Livewire\Attributes\Url;
 
 class AdminStatsOverview extends StatsOverviewWidget
 {
+    use InteractsWithPageFilters;
+
     protected string $view = 'filament.admin.widgets.stats-overview';
 
-    #[Url(as: 'period')]
-    public string $period = 'all';
-
-    public function setPeriod(string $period): void
+    protected function period(): string
     {
-        $this->period = $period;
-    }
-
-    public function content(Schema $schema): Schema
-    {
-        return $schema
-            ->components([
-                Section::make()
-                    ->schema([
-                        Select::make('period')
-                            ->label('Periode')
-                            ->options([
-                                'all' => 'Semua waktu',
-                                'today' => 'Hari ini',
-                                '7days' => '7 hari terakhir',
-                                '30days' => '30 hari terakhir',
-                            ])
-                            ->default(fn () => $this->period)
-                            ->native(false)
-                            ->live()
-                            ->afterStateUpdated(fn ($state) => $this->setPeriod($state ?? 'all')),
-                    ])
-                    ->extraAttributes(['class' => 'mb-4'])
-                    ->contained(false),
-
-                $this->getSectionContentComponent(),
-            ]);
+        return $this->pageFilters['period'] ?? 'all';
     }
 
     protected function periodStart(): ?Carbon
     {
-        return match ($this->period) {
+        return match ($this->period()) {
             'today' => now()->startOfDay(),
             '7days' => now()->subDays(6)->startOfDay(),
             '30days' => now()->subDays(29)->startOfDay(),
@@ -66,7 +36,7 @@ class AdminStatsOverview extends StatsOverviewWidget
 
     protected function periodLabel(): string
     {
-        return match ($this->period) {
+        return match ($this->period()) {
             'today' => 'Hari ini',
             '7days' => '7 hari terakhir',
             '30days' => '30 hari terakhir',
@@ -76,6 +46,7 @@ class AdminStatsOverview extends StatsOverviewWidget
 
     protected function getStats(): array
     {
+        $period = $this->period();
         $start = $this->periodStart();
 
         $stockMovIn = StockMovement::where('type', 'in');
@@ -109,7 +80,7 @@ class AdminStatsOverview extends StatsOverviewWidget
 
         $profit = $revenue - $cogs - $operationalExpense;
 
-        $days = match ($this->period) {
+        $days = match ($period) {
             'today' => 1,
             '7days' => 7,
             '30days' => 30,

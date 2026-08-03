@@ -1,18 +1,18 @@
 <x-filament-widgets::widget class="fi-wi-stats-mobile md:hidden">
     <x-filament::section>
-        <x-slot name="heading">Ringkasan Hari Ini</x-slot>
+        <x-slot name="heading">Ringkasan {{ $periodHeading }}</x-slot>
 
         <dl class="grid grid-cols-2 gap-3">
             <div class="rounded-md bg-gray-50 p-2.5 dark:bg-gray-900/40">
                 <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Stok Masuk</dt>
                 <dd class="mt-0.5 text-base font-semibold text-gray-950 dark:text-white">
-                    {{ number_format($stockIn) }}
+                    {{ number_format($stockIn, 0, ',', '.') }}
                 </dd>
             </div>
             <div class="rounded-md bg-gray-50 p-2.5 dark:bg-gray-900/40">
                 <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Stok Keluar</dt>
                 <dd class="mt-0.5 text-base font-semibold text-gray-950 dark:text-white">
-                    {{ number_format($stockOut) }}
+                    {{ number_format($stockOut, 0, ',', '.') }}
                 </dd>
             </div>
             <div class="rounded-md bg-gray-50 p-2.5 dark:bg-gray-900/40">

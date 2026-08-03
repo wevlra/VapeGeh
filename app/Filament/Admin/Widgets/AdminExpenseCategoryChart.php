@@ -4,9 +4,12 @@ namespace App\Filament\Admin\Widgets;
 
 use App\Models\Expense;
 use Filament\Widgets\ChartWidget;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 
 class AdminExpenseCategoryChart extends ChartWidget
 {
+    use InteractsWithPageFilters;
+
     protected ?string $heading = 'Pengeluaran per Kategori';
 
     protected ?string $pollingInterval = null;
@@ -15,7 +18,14 @@ class AdminExpenseCategoryChart extends ChartWidget
 
     protected function getData(): array
     {
-        $data = Expense::where('date', '>=', now()->subYear())
+        $start = match ($this->pageFilters['period'] ?? 'all') {
+            'today' => now()->startOfDay(),
+            '7days' => now()->subDays(6)->startOfDay(),
+            '30days' => now()->subDays(29)->startOfDay(),
+            default => now()->subYear(),
+        };
+
+        $data = Expense::where('date', '>=', $start->toDateString())
             ->select('category')
             ->selectRaw('sum(amount) as total')
             ->groupBy('category')
