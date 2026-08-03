@@ -130,19 +130,18 @@
 
     <body>
         {{-- Header --}}
-        @if($invoice->logo)
-            <img src="{{ $invoice->getLogo() }}" alt="logo" height="150">
-        @endif
-
-        <table class="table mt-5">
+        <table class="table mt-5" style="margin-top: 0 !important;">
             <tbody>
                 <tr>
                     <td class="border-0 pl-0" width="70%">
+                        @if($invoice->logo)
+                            <img src="{{ $invoice->getLogo() }}" alt="logo" height="100">
+                        @endif
                         <h4 class="text-uppercase">
                             <strong>{{ $invoice->name }}</strong>
                         </h4>
                     </td>
-                    <td class="border-0 pl-0">
+                    <td class="border-0 pl-0" style="vertical-align: bottom;">
                         @if($invoice->status)
                             <h4 class="text-uppercase cool-gray">
                                 <strong>{{ $invoice->status }}</strong>

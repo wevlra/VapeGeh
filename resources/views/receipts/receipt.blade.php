@@ -14,7 +14,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Courier New', monospace; font-size: 11px; width: {{ $paperSize }}; padding: 4px 4px 20px; color: #000; margin: 0 auto; }
         .header { text-align: center; margin-bottom: 8px; }
-        .header img { max-height: 48px; }
+        .header img { max-height: 48px; margin-bottom: -15px; }
         .header .name { font-size: 14px; font-weight: bold; }
         .header .tagline { font-size: 10px; font-style: italic; margin-bottom: 2px; }
         .header .info { font-size: 9px; }
