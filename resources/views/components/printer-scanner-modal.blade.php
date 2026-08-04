@@ -204,7 +204,6 @@
                     new FilamentNotification()
                         .title('Mencetak nota...')
                         .body('Menghubungkan ke printer dan mengirim data nota.')
-                        .color('info')
                         .icon('heroicon-o-printer')
                         .duration(4000)
                         .send();
