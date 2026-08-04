@@ -87,8 +87,8 @@ class AdminPaymentMethodChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Transaksi',
-                    'data' => $data->map(fn ($row) => $row['count'])->values()->toArray(),
+                    'label' => 'Total',
+                    'data' => $data->map(fn ($row) => (float) $row['amount'])->values()->toArray(),
                     'backgroundColor' => $backgroundColors,
                 ],
             ],

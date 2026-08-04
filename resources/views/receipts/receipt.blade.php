@@ -71,9 +71,9 @@
     <div class="meta">
         {{ $typeLabel }} &middot; {{ $movement->created_at->format('d M Y H:i') }}<br>
         Staf: {{ $movement->creator?->name ?? '-' }}<br>
-        Lokasi: {{ $location->name }}
-        @if ($movement->buyer)
-            <br>Pembeli: {{ $movement->buyer->name }}
+        Lokasi: {{ config('store.name') }} - {{ $location->name ?? 'Pusat' }}
+        @if ($movement->buyer?->name ?? $related?->buyer?->name)
+            <br>Pembeli: {{ $movement->buyer?->name ?? $related->buyer?->name }}
         @endif
     </div>
 
@@ -153,8 +153,8 @@
         </table>
         <div class="totals">
             <div>Total: Rp {{ number_format((float) $related->total_amount, 0, ',', '.') }}</div>
-            @if (! $stockIn && $related->buyer)
-                <div>Pembeli: {{ $related->buyer->name }}</div>
+            @if (! $stockIn && ($movement->buyer?->name ?? $related?->buyer?->name))
+                <div>Pembeli: {{ $movement->buyer?->name ?? $related->buyer?->name }}</div>
             @endif
             @if ($stockIn && $related->vendor)
                 <div>Vendor: {{ $related->vendor->name }}</div>

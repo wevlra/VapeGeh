@@ -65,8 +65,8 @@ class StaffPaymentMethodChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Transaksi',
-                    'data' => $data->map(fn ($row) => (int) $row['count'])->values()->toArray(),
+                    'label' => 'Total',
+                    'data' => $data->map(fn ($row) => (float) $row['amount'])->values()->toArray(),
                     'backgroundColor' => $backgroundColors,
                 ],
             ],

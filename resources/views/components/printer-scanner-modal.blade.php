@@ -80,7 +80,7 @@
             },
 
             async openModal(receiptData) {
-                this.pendingReceipt = receiptData;
+                this.pendingReceipt = receiptData?.url ? receiptData : null;
                 this.savedPrinter = JSON.parse(localStorage.getItem('savedPrinter'));
                 this.devices = [];
                 this.$dispatch('open-modal', { id: 'printer-scanner-modal' });
@@ -102,10 +102,10 @@
             async startScan() {
                 this.isScanning = true;
                 this.devices = [];
-                
+
                 const ThermalPrinter = window.Capacitor.Plugins.CapacitorThermalPrinter;
                 if (!ThermalPrinter) return;
-                
+
                 const discoverListener = await ThermalPrinter.addListener('discoverDevices', (data) => {
                     this.devices = data.devices;
                 });
@@ -113,7 +113,7 @@
                     this.isScanning = false;
                 });
                 this.listeners.push(discoverListener, finishListener);
-                
+
                 try {
                     await ThermalPrinter.startScan();
                 } catch (e) {
@@ -133,6 +133,32 @@
                 this.listeners = [];
             },
 
+            _resizeLogo(dataUrl, maxWidth, maxHeight) {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        try {
+                            const scale = Math.min(1, maxWidth / img.width, maxHeight / img.height);
+                            const width = Math.max(1, Math.round(img.width * scale));
+                            const height = Math.max(1, Math.round(img.height * scale));
+                            const canvas = document.createElement('canvas');
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillRect(0, 0, width, height);
+                            ctx.drawImage(img, 0, 0, width, height);
+                            resolve(canvas.toDataURL('image/png'));
+                        } catch (e) {
+                            console.error('Logo resize failed', e);
+                            resolve(dataUrl);
+                        }
+                    };
+                    img.onerror = () => resolve(dataUrl);
+                    img.src = dataUrl;
+                });
+            },
+
             async connectToDevice(device) {
                 const ThermalPrinter = window.Capacitor.Plugins.CapacitorThermalPrinter;
                 if (!ThermalPrinter) return;
@@ -147,14 +173,16 @@
 
                         new FilamentNotification()
                             .title('Printer terhubung!')
+                            .body(`Berhasil terhubung ke ${result.name || 'printer'}.`)
                             .success()
                             .send();
 
+                        const pending = this.pendingReceipt;
+                        this.pendingReceipt = null;
                         this.closeModal();
 
-                        if (this.pendingReceipt) {
-                            // Printer sudah terhubung — langsung print tanpa connect ulang
-                            this.printReceiptData(this.pendingReceipt.url, false, this.pendingReceipt.paperSize || '58mm');
+                        if (pending?.url) {
+                            this.printReceiptData(pending.url, false, pending.paperSize || '58mm');
                         }
                     }
                 } catch (e) {
@@ -173,6 +201,14 @@
                 if (!ThermalPrinter) return;
 
                 try {
+                    new FilamentNotification()
+                        .title('Mencetak nota...')
+                        .body('Menghubungkan ke printer dan mengirim data nota.')
+                        .color('info')
+                        .icon('heroicon-o-printer')
+                        .duration(4000)
+                        .send();
+
                     // Reconnect hanya jika dipanggil langsung (bukan setelah baru saja connect)
                     if (shouldReconnect) {
                         const savedPrinter = JSON.parse(localStorage.getItem('savedPrinter'));
@@ -188,16 +224,20 @@
                     const response = await fetch(url);
                     if (!response.ok) throw new Error('Gagal mengambil data nota');
                     const receipt = await response.json();
-                    
+
                     const formatRupiah = (num) => 'Rp ' + new Intl.NumberFormat('id-ID').format(num);
 
                     // Raw plugin method calls require object arguments
                     await ThermalPrinter.begin();
-                    
-                    // Logo
+
                     if (receipt.logoBase64) {
+                        const logoDataUrl = await this._resizeLogo(
+                            `data:image/png;base64,${receipt.logoBase64}`,
+                            paperSize === '80mm' ? 400 : 280,
+                            paperSize === '80mm' ? 140 : 100,
+                        );
                         await ThermalPrinter.align({ alignment: 'center' });
-                        await ThermalPrinter.image({ image: `data:image/png;base64,${receipt.logoBase64}` });
+                        await ThermalPrinter.image({ image: logoDataUrl });
                         await ThermalPrinter.text({ text: `\n` });
                     }
 
@@ -226,6 +266,9 @@
                     await ThermalPrinter.text({ text: `No: ${receipt.header.receiptNo} Date: ${receipt.header.date}\n` });
                     if (receipt.header.cashier) {
                         await ThermalPrinter.text({ text: `Cashier: ${receipt.header.cashier}\n` });
+                    }
+                    if (receipt.header.buyer) {
+                        await ThermalPrinter.text({ text: `Buyer: ${receipt.header.buyer}\n` });
                     }
                     await ThermalPrinter.text({ text: sepDash });
 
@@ -311,16 +354,22 @@
 
                     await ThermalPrinter.feedCutPaper({ half: false });
                     await ThermalPrinter.write();
-                    
+
                     new FilamentNotification()
-                        .title('Mencetak nota...')
+                        .title('Nota berhasil dicetak')
+                        .body(`Nota ${receipt.header.receiptNo} berhasil dikirim ke printer.`)
                         .success()
+                        .icon('heroicon-o-check-circle')
+                        .duration(5000)
                         .send();
                 } catch(e) {
                      console.error("Print fail", e);
                      new FilamentNotification()
                         .title('Gagal mencetak nota')
+                        .body(e?.message ? `Terjadi kesalahan: ${e.message}` : 'Periksa koneksi Bluetooth printer, pastikan printer aktif dan coba lagi.')
                         .danger()
+                        .icon('heroicon-o-exclamation-triangle')
+                        .duration(6000)
                         .send();
                 }
             }

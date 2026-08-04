@@ -151,12 +151,13 @@ class ReceiptController extends Controller
 
         return [
             'header' => [
-                'storeName' => config('store.name'),
-                'address' => config('store.address'),
+                'storeName' => config('store.name').' - '.($movement->location?->name ?? 'Pusat'),
+                'address' => $movement->location?->address ?? config('store.address'),
                 'phone' => config('store.phone'),
                 'receiptNo' => $refNumber,
                 'date' => $movement->created_at->format('Y-m-d H:i'),
                 'cashier' => $movement->creator?->name ?? 'Kasir',
+                'buyer' => $movement->buyer?->name ?? $related?->buyer?->name,
                 'note' => config('store.receipt_footer'),
             ],
             'logoBase64' => $logoBase64,

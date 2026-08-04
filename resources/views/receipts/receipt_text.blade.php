@@ -17,7 +17,7 @@
     $padRight = function($str, $len) { return str_pad(substr($str, 0, $len), $len, " ", STR_PAD_RIGHT); };
     $padLeft = function($str, $len) { return str_pad(substr($str, 0, $len), $len, " ", STR_PAD_LEFT); };
 @endphp
-[C]<b>{{ config('store.name') }}</b>
+[C]<b>{{ config('store.name') }} - {{ $location->name ?? 'Pusat' }}</b>
 @if(config('store.tagline'))
 [C]{{ config('store.tagline') }}
 @endif
@@ -28,8 +28,8 @@
 [L]Tipe: {{ $typeLabel }}
 [L]Tgl: {{ $movement->created_at->format('d M Y H:i') }}
 [L]Staf: {{ $movement->creator?->name ?? '-' }}
-@if ($movement->buyer)
-[L]Pembeli: {{ $movement->buyer->name }}
+@if ($movement->buyer?->name ?? $related?->buyer?->name)
+[L]Pembeli: {{ $movement->buyer?->name ?? $related->buyer?->name }}
 @endif
 --------------------------------
 @if ($related instanceof \App\Models\Sale)

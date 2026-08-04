@@ -32,7 +32,7 @@ class InvoiceService
         }
 
         $sellerData = [
-            'name' => config('store.name'),
+            'name' => config('store.name').' - '.($location->name ?? 'Pusat'),
             'address' => $location->address ?? config('store.address'),
             'phone' => config('store.phone'),
         ];
@@ -49,11 +49,11 @@ class InvoiceService
                     $sellerData['address'] = $related->vendor->address ?? '';
                 }
 
-                $buyerData['name'] = config('store.name').' - '.$location->name;
+                $buyerData['name'] = config('store.name').' - '.($location->name ?? 'Pusat');
                 $buyerData['address'] = $location->address ?? config('store.address');
             } else {
                 // Stock Out: From Location, To Buyer
-                $sellerData['name'] = config('store.name').' - '.$location->name;
+                $sellerData['name'] = config('store.name').' - '.($location->name ?? 'Pusat');
                 $sellerData['address'] = $location->address ?? config('store.address');
 
                 if ($related->buyer) {
@@ -88,8 +88,6 @@ class InvoiceService
                 if ($stockMovement->buyer->email) {
                     $buyerData['address'] = $stockMovement->buyer->email;
                 }
-            } elseif ($isSale && $related->user) {
-                $buyerData['name'] = $related->user->name;
             }
         }
 
