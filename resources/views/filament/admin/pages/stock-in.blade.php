@@ -1,0 +1,19 @@
+<x-filament-panels::page>
+    <x-filament-actions::modals />
+    <form wire:submit="save" class="space-y-6">
+        {{ $this->form }}
+
+        <div class="flex gap-3">
+            <x-filament::button
+                tag="a"
+                href="{{ \App\Filament\Admin\Pages\Dashboard::getUrl() }}"
+                color="gray"
+            >
+                Batal
+            </x-filament::button>
+            <x-filament::button type="submit">
+                Simpan
+            </x-filament::button>
+        </div>
+    </form>
+</x-filament-panels::page>

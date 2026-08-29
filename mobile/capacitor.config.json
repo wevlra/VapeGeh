@@ -1,0 +1,9 @@
+{
+    "appId": "com.wevlra.vapegeh",
+    "appName": "VapeGeh",
+    "webDir": "www",
+    "server": {
+        "url": "http://10.78.156.31:8000",
+        "cleartext": true
+    }
+}

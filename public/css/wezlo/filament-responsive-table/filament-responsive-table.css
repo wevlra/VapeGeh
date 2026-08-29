@@ -1,0 +1,248 @@
+.fi-responsive-table .fi-responsive-table-cards {
+    display: none;
+}
+
+.fi-responsive-table-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    padding: 0.75rem;
+}
+
+.fi-responsive-table-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 0.625rem;
+    background-color: var(--color-white, #fff);
+    box-shadow:
+        0 0 0 1px color-mix(in oklch, var(--gray-950) 8%, transparent),
+        0 1px 2px 0 color-mix(in oklch, var(--gray-950) 4%, transparent);
+    transition:
+        box-shadow 180ms ease,
+        background-color 180ms ease,
+        transform 120ms ease;
+}
+
+:is(.dark) .fi-responsive-table-card {
+    background-color: var(--gray-900);
+    box-shadow:
+        0 0 0 1px color-mix(in oklch, white 10%, transparent),
+        0 1px 2px 0 rgb(0 0 0 / 0.3);
+}
+
+.fi-responsive-table-card-clickable {
+    cursor: pointer;
+}
+
+.fi-responsive-table-card-clickable:hover {
+    box-shadow:
+        0 0 0 1px color-mix(in oklch, var(--primary-500) 30%, transparent),
+        0 4px 12px -2px color-mix(in oklch, var(--gray-950) 10%, transparent),
+        0 2px 4px -1px color-mix(in oklch, var(--gray-950) 6%, transparent);
+    transform: translateY(-1px);
+}
+
+:is(.dark) .fi-responsive-table-card-clickable:hover {
+    background-color: var(--gray-800);
+    box-shadow:
+        0 0 0 1px color-mix(in oklch, var(--primary-400) 35%, transparent),
+        0 4px 12px -2px rgb(0 0 0 / 0.4),
+        0 2px 4px -1px rgb(0 0 0 / 0.3);
+}
+
+.fi-responsive-table-card-clickable:active {
+    transform: translateY(0);
+    box-shadow:
+        0 0 0 1px color-mix(in oklch, var(--primary-500) 30%, transparent),
+        0 1px 2px 0 color-mix(in oklch, var(--gray-950) 8%, transparent);
+}
+
+.fi-responsive-table-card-stretched-link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+
+.fi-responsive-table-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 0.875rem;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.375rem;
+    letter-spacing: -0.01em;
+    color: var(--gray-950);
+}
+
+:is(.dark) .fi-responsive-table-card-header {
+    border-bottom-color: color-mix(in oklch, white 8%, transparent);
+    color: white;
+}
+
+.fi-responsive-table-card-checkbox {
+    position: relative;
+    z-index: 3;
+    flex: 0 0 auto;
+}
+
+.fi-responsive-table-card-title {
+    flex: 1 1 0%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.fi-responsive-table-card-body {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+}
+
+.fi-responsive-table-card-field {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.5rem 0.875rem;
+    min-width: 0;
+}
+
+.fi-responsive-table-card-field + .fi-responsive-table-card-field {
+    border-top: 1px solid var(--gray-100);
+}
+
+:is(.dark) .fi-responsive-table-card-field + .fi-responsive-table-card-field {
+    border-top-color: color-mix(in oklch, white 5%, transparent);
+}
+
+.fi-responsive-table-card-field-label {
+    flex: 0 0 auto;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1rem;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+:is(.dark) .fi-responsive-table-card-field-label {
+    color: var(--gray-400);
+}
+
+.fi-responsive-table-card-field-value {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--gray-950);
+    text-align: end;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    margin: 0;
+}
+
+:is(.dark) .fi-responsive-table-card-field-value {
+    color: var(--gray-100);
+}
+
+/* Badges, icons, and images inside the value cell should render inline without forcing text-align. */
+.fi-responsive-table-card-field-value > .fi-badge,
+.fi-responsive-table-card-field-value > .fi-icon,
+.fi-responsive-table-card-field-value > img,
+.fi-responsive-table-card-field-value > .fi-ta-text {
+    flex: 0 0 auto;
+}
+
+.fi-responsive-table-card-footer {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    padding: 0.5rem 0.875rem;
+    border-top: 1px solid var(--gray-100);
+    background-color: color-mix(in oklch, var(--gray-50) 70%, transparent);
+}
+
+:is(.dark) .fi-responsive-table-card-footer {
+    border-top-color: color-mix(in oklch, white 8%, transparent);
+    background-color: color-mix(in oklch, var(--gray-950) 40%, transparent);
+}
+
+.fi-responsive-table-cards-pagination {
+    padding: 0.75rem;
+}
+
+@media (max-width: 639.98px) {
+    .fi-responsive-table[data-breakpoint="sm"] .fi-responsive-table-desktop .fi-ta-content-ctn,
+    .fi-responsive-table[data-breakpoint="sm"] .fi-responsive-table-desktop > .fi-ta nav.fi-pagination {
+        display: none;
+    }
+
+    .fi-responsive-table[data-breakpoint="sm"] .fi-responsive-table-cards {
+        display: block;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .fi-responsive-table[data-breakpoint="md"] .fi-responsive-table-desktop .fi-ta-content-ctn,
+    .fi-responsive-table[data-breakpoint="md"] .fi-responsive-table-desktop > .fi-ta nav.fi-pagination {
+        display: none;
+    }
+
+    .fi-responsive-table[data-breakpoint="md"] .fi-responsive-table-cards {
+        display: block;
+    }
+}
+
+@media (max-width: 1023.98px) {
+    .fi-responsive-table[data-breakpoint="lg"] .fi-responsive-table-desktop .fi-ta-content-ctn,
+    .fi-responsive-table[data-breakpoint="lg"] .fi-responsive-table-desktop > .fi-ta nav.fi-pagination {
+        display: none;
+    }
+
+    .fi-responsive-table[data-breakpoint="lg"] .fi-responsive-table-cards {
+        display: block;
+    }
+}
+
+@media (max-width: 1279.98px) {
+    .fi-responsive-table[data-breakpoint="xl"] .fi-responsive-table-desktop .fi-ta-content-ctn,
+    .fi-responsive-table[data-breakpoint="xl"] .fi-responsive-table-desktop > .fi-ta nav.fi-pagination {
+        display: none;
+    }
+
+    .fi-responsive-table[data-breakpoint="xl"] .fi-responsive-table-cards {
+        display: block;
+    }
+}
+
+@media (max-width: 1535.98px) {
+    .fi-responsive-table[data-breakpoint="2xl"] .fi-responsive-table-desktop .fi-ta-content-ctn,
+    .fi-responsive-table[data-breakpoint="2xl"] .fi-responsive-table-desktop > .fi-ta nav.fi-pagination {
+        display: none;
+    }
+
+    .fi-responsive-table[data-breakpoint="2xl"] .fi-responsive-table-cards {
+        display: block;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fi-responsive-table-card,
+    .fi-responsive-table-card-clickable {
+        transition: none;
+    }
+
+    .fi-responsive-table-card-clickable:hover,
+    .fi-responsive-table-card-clickable:active {
+        transform: none;
+    }
+}

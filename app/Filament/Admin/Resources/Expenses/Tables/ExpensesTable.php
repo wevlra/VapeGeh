@@ -1,0 +1,107 @@
+<?php
+
+namespace App\Filament\Admin\Resources\Expenses\Tables;
+
+use App\Filament\Admin\Resources\Expenses\ExpenseResource;
+use App\Filament\Concerns\NotifiesWithDetail;
+use App\Models\Expense;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+
+class ExpensesTable
+{
+    public static function configure(Table $table): Table
+    {
+        return $table
+            ->recordUrl(fn (Expense $record): string => ExpenseResource::getUrl('view', ['record' => $record]))
+            ->columns([
+                TextColumn::make('location.name')
+                    ->label('Lokasi')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('category')
+                    ->label('Kategori')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'purchase' => 'Pembelian',
+                        'salary' => 'Gaji',
+                        'utilities' => 'Utilitas',
+                        'transport' => 'Transportasi',
+                        'other' => 'Lainnya',
+                        default => ucfirst($state),
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'purchase' => 'warning',
+                        'salary' => 'primary',
+                        'utilities' => 'info',
+                        'transport' => 'gray',
+                        'other' => 'gray',
+                        default => 'gray',
+                    })
+                    ->icon(fn (string $state): ?string => match ($state) {
+                        'purchase' => 'heroicon-o-shopping-cart',
+                        'salary' => 'heroicon-o-user-group',
+                        'utilities' => 'heroicon-o-bolt',
+                        'transport' => 'heroicon-o-truck',
+                        'other' => 'heroicon-o-folder',
+                        default => null,
+                    })
+                    ->sortable(),
+                TextColumn::make('description')
+                    ->label('Deskripsi')
+                    ->searchable()
+                    ->limit(50)
+                    ->placeholder('Tidak ada deskripsi'),
+                TextColumn::make('amount')
+                    ->label('Jumlah')
+                    ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
+                    ->sortable(),
+                TextColumn::make('creator.name')
+                    ->label('Dibuat oleh'),
+                TextColumn::make('date')
+                    ->label('Tanggal')
+                    ->date()
+                    ->sortable(),
+                TextColumn::make('created_at')
+                    ->label('Dibuat pada')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+                SelectFilter::make('location_id')
+                    ->label('Lokasi')
+                    ->relationship('location', 'name'),
+                SelectFilter::make('category')
+                    ->options([
+                        'purchase' => 'Pembelian',
+                        'salary' => 'Gaji',
+                        'utilities' => 'Utilitas',
+                        'transport' => 'Transportasi',
+                        'other' => 'Lainnya',
+                    ]),
+            ])
+            ->recordActions([
+                EditAction::make()
+                    ->visible(fn (Expense $record): bool => $record->isManual()),
+                DeleteAction::make()
+                    ->successNotification(
+                        NotifiesWithDetail::buildSuccessNotification(
+                            'Data Berhasil Dihapus',
+                            'Data pengeluaran telah berhasil dihapus dari sistem.'
+                        )
+                    ),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
+            ])
+            ->defaultSort('date', 'desc');
+    }
+}

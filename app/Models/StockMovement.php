@@ -1,0 +1,140 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+
+#[Fillable(['product_id', 'location_id', 'type', 'quantity', 'unit_price', 'related_type', 'related_id', 'buyer_id', 'additional_costs', 'notes'])]
+class StockMovement extends Model
+{
+    use HasUuids;
+
+    protected static function booted(): void
+    {
+        static::creating(function (StockMovement $movement) {
+            if (is_null($movement->created_by)) {
+                $movement->created_by = auth()->id();
+            }
+        });
+    }
+
+    /**
+     * @return BelongsTo<Product, $this>
+     */
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * @return BelongsTo<Location, $this>
+     */
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(Location::class);
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * @return BelongsTo<Buyer, $this>
+     */
+    public function buyer(): BelongsTo
+    {
+        return $this->belongsTo(Buyer::class);
+    }
+
+    public function related(): MorphTo
+    {
+        return $this->morphTo()->morphWith([
+            Sale::class => ['items.product'],
+            StockTransfer::class => ['items.product'],
+            Stock::class => [],
+            StockEntry::class => ['items.product'],
+            StockOpname::class => ['items.product'],
+            Location::class => [],
+        ]);
+    }
+
+    /**
+     * Get sibling movements sharing the same related_type, related_id, location_id.
+     * Used by HistoryInfolist to show all products from a batch operation (e.g. location deletion).
+     *
+     * @return Collection<int, StockMovement>
+     */
+    public function getSiblingMovementsAttribute(): Collection
+    {
+        if ($this->related_type === Location::class) {
+            return static::where('related_type', $this->related_type)
+                ->where('related_id', $this->related_id)
+                ->where('location_id', $this->location_id)
+                ->where('type', $this->type)
+                ->where('quantity', '>', 0)
+                ->with(['product', 'location', 'creator', 'related'])
+                ->get();
+        }
+
+        if (is_null($this->related_type) && is_null($this->related_id)) {
+            return static::whereNull('related_type')
+                ->whereNull('related_id')
+                ->where('location_id', $this->location_id)
+                ->where('type', $this->type)
+                ->with(['product', 'location', 'creator'])
+                ->get();
+        }
+
+        return new Collection;
+    }
+
+    public function getFormattedProductNameAttribute(): string
+    {
+        $related = $this->related;
+
+        if (
+            $related instanceof Sale ||
+            $related instanceof StockTransfer ||
+            $related instanceof StockEntry ||
+            $related instanceof StockOpname
+        ) {
+            $items = $related->items->pluck('product.name')->filter()->values()->toArray();
+            $count = count($items);
+            if ($count > 1) {
+                return $items[0].' + '.($count - 1).' lainnya';
+            }
+
+            return $items[0] ?? '-';
+        }
+
+        if ($related === null && (is_null($this->related_type) || $this->related_type === Location::class)) {
+            $names = $this->sibling_movements->pluck('product.name')->filter()->values()->toArray();
+            $count = count($names);
+            if ($count > 1) {
+                return $names[0].' + '.($count - 1).' lainnya';
+            }
+
+            return $names[0] ?? $this->product?->name ?? '-';
+        }
+
+        return $this->product?->name ?? '-';
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'quantity' => 'integer',
+            'unit_price' => 'float',
+            'additional_costs' => 'array',
+        ];
+    }
+}

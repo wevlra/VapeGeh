@@ -1,0 +1,132 @@
+<?php
+
+namespace App\Providers\Filament;
+
+use App\Filament\Admin\Pages\Dashboard;
+use App\Filament\Admin\Pages\ManageStore;
+use App\Filament\Admin\Pages\Pos;
+use App\Filament\Admin\Pages\StockIn;
+use App\Filament\Admin\Pages\StockOut;
+use App\Filament\Admin\Widgets\AdminExpenseCategoryChart;
+use App\Filament\Admin\Widgets\AdminOtherInformationsMobile;
+use App\Filament\Admin\Widgets\AdminPaymentMethodChart;
+use App\Filament\Admin\Widgets\AdminSalesChart;
+use App\Filament\Admin\Widgets\AdminStatsOverview;
+use App\Filament\Admin\Widgets\AdminStatsOverviewMobile;
+use App\Filament\Admin\Widgets\OperationalQuickActionsWidget;
+use App\Filament\Admin\Widgets\StockQuickActionsWidget;
+use App\Filament\Middleware\RedirectPanelUser;
+use App\Http\Middleware\RedirectAuthenticatedStaff;
+use Filament\Auth\Http\Responses\Contracts\LogoutResponse;
+use Filament\Http\Middleware\Authenticate;
+use Filament\Http\Middleware\AuthenticateSession;
+use Filament\Http\Middleware\DisableBladeIconComponents;
+use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Panel;
+use Filament\PanelProvider;
+use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
+use Hammadzafar05\MobileBottomNav\MobileBottomNav;
+use Hammadzafar05\MobileBottomNav\MobileBottomNavItem;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Wezlo\FilamentResponsiveTable\FilamentResponsiveTablePlugin;
+
+class AdminPanelProvider extends PanelProvider
+{
+    public function panel(Panel $panel): Panel
+    {
+        return $panel
+            ->default()
+            ->id('admin')
+            ->path('admin')
+            ->authGuard('web')
+            ->viteTheme('resources/css/filament/admin/theme.css')
+            ->login()
+            ->profile()
+            ->sidebarCollapsibleOnDesktop()
+            ->brandLogo(fn () => view('filament.admin.brand'))
+            ->colors([
+                'primary' => Color::Amber,
+            ])
+            ->plugins([
+                FilamentResponsiveTablePlugin::make()
+                    ->defaultBreakpoint('md'),
+                MobileBottomNav::make()
+                    ->items([
+                        MobileBottomNavItem::make('Beranda')
+                            ->icon('heroicon-o-home')
+                            ->activeIcon('heroicon-s-home')
+                            ->url('/admin')
+                            ->isActive(fn () => request()->is('admin')),
+                        MobileBottomNavItem::make('Produk')
+                            ->icon('heroicon-o-archive-box')
+                            ->activeIcon('heroicon-s-archive-box')
+                            ->url('/admin/products')
+                            ->isActive(fn () => request()->is('admin/products*')),
+                        MobileBottomNavItem::make('Riwayat')
+                            ->icon('heroicon-o-clock')
+                            ->activeIcon('heroicon-s-clock')
+                            ->url('/admin/history')
+                            ->isActive(fn () => request()->is('admin/history*')),
+                    ]),
+            ])
+            ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\Filament\Admin\Resources')
+            ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\Filament\Admin\Pages')
+            ->pages([
+                Dashboard::class,
+                ManageStore::class,
+                Pos::class,
+                StockIn::class,
+                StockOut::class,
+            ])
+            ->widgets([
+                AdminStatsOverview::class,
+                AdminStatsOverviewMobile::class,
+                AdminOtherInformationsMobile::class,
+                StockQuickActionsWidget::class,
+                OperationalQuickActionsWidget::class,
+                AdminSalesChart::class,
+                AdminPaymentMethodChart::class,
+                AdminExpenseCategoryChart::class,
+            ])
+            ->middleware([
+                EncryptCookies::class,
+                AddQueuedCookiesToResponse::class,
+                StartSession::class,
+                AuthenticateSession::class,
+                ShareErrorsFromSession::class,
+                PreventRequestForgery::class,
+                SubstituteBindings::class,
+                DisableBladeIconComponents::class,
+                DispatchServingFilamentEvent::class,
+                RedirectAuthenticatedStaff::class,
+            ])
+            ->authMiddleware([
+                RedirectPanelUser::class,
+                Authenticate::class,
+            ], isPersistent: true)
+            ->bootUsing(function (): void {
+                FilamentView::registerRenderHook(
+                    PanelsRenderHook::BODY_END,
+                    fn (): string => Blade::render('<x-printer-scanner-modal /><x-receipt-action-modal /><x-network-check-modal />').
+                        Blade::render('@vite(["resources/js/app.js", "resources/js/receipt-image.js"])')
+                );
+
+                app()->bind(LogoutResponse::class, fn (): \Filament\Auth\Http\Responses\LogoutResponse => new class extends \Filament\Auth\Http\Responses\LogoutResponse
+                {
+                    public function toResponse($request): RedirectResponse
+                    {
+                        return redirect()->to('/');
+                    }
+                });
+            });
+    }
+}
