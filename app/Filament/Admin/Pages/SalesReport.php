@@ -8,6 +8,7 @@ use App\Models\Location;
 use App\Models\Sale;
 use App\Models\StockEntry;
 use BackedEnum;
+use Filament\Forms\Components\DatePicker;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
@@ -15,6 +16,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Url;
 use UnitEnum;
@@ -173,6 +175,22 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
                     ->sortable(),
             ])
             ->filters([
+                Tables\Filters\Filter::make('date')
+                    ->form([
+                        DatePicker::make('from')->label('Dari Tanggal'),
+                        DatePicker::make('until')->label('Sampai Tanggal'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    }),
                 Tables\Filters\SelectFilter::make('source_type')
                     ->label('Tipe')
                     ->options([
@@ -205,6 +223,7 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
         return [
             'period' => $this->period,
             'periodStart' => $this->getPeriodStart(),
+            'dateFilter' => $this->getTableFilterState('date') ?? [],
         ];
     }
 
