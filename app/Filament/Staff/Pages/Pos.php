@@ -103,7 +103,8 @@ class Pos extends Page implements HasTable
                 'md' => 2,
                 'xl' => 3,
             ])
-            ->defaultSort('name');
+            ->defaultSort('name')
+            ->poll('10s');
     }
 
     public function content(Schema $schema): Schema

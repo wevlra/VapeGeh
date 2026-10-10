@@ -123,7 +123,8 @@ class Pos extends StaffPos
                     ->query(fn ($query) => $query), // don't filter the actual query
             ])
             ->actions([])
-            ->defaultSort('locations.name');
+            ->defaultSort('locations.name')
+            ->poll('10s');
     }
 
     public function getCartItems(): array
