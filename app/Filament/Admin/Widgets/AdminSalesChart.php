@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Traits\HasCustomPeriodFilters;
 use App\Models\Income;
 use Carbon\Carbon;
 use Filament\Widgets\ChartWidget;
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class AdminSalesChart extends ChartWidget
 {
-    use InteractsWithPageFilters;
+    use HasCustomPeriodFilters, InteractsWithPageFilters;
 
     protected ?string $heading = 'Tren Penjualan';
 
@@ -60,43 +61,54 @@ class AdminSalesChart extends ChartWidget
      */
     private function trendConfig(string $period, bool $isSqlite): array
     {
-        return match ($period) {
-            'today' => [
+        $start = $this->periodStart();
+        $end = $this->periodEnd() ?? now()->endOfDay();
+
+        if (! $start) {
+            // "all" time: show last 6 months
+            $start = now()->subMonths(5)->startOfMonth();
+            $end = now()->endOfMonth();
+        }
+
+        $diffDays = $start->diffInDays($end);
+
+        if ($diffDays <= 1) {
+            // Hourly
+            $pointsCount = max(1, $start->diffInHours($end));
+
+            return [
                 'column' => 'created_at',
-                'start' => now()->startOfDay(),
-                'end' => now()->endOfDay(),
-                'points' => collect(range(0, 23))->map(fn ($hour) => now()->startOfDay()->addHours($hour)),
+                'start' => $start,
+                'end' => $end,
+                'points' => collect(range(0, $pointsCount))->map(fn ($hour) => $start->copy()->addHours($hour)),
                 'expr' => $isSqlite ? "strftime('%Y-%m-%d %H', created_at)" : "DATE_FORMAT(created_at, '%Y-%m-%d %H')",
                 'key' => fn (Carbon $point) => $point->format('Y-m-d H'),
                 'label' => fn (Carbon $point) => $point->format('H:00'),
-            ],
-            '7days' => $this->dailyConfig(6, $isSqlite),
-            '30days' => $this->dailyConfig(29, $isSqlite),
-            default => [
+            ];
+        } elseif ($diffDays <= 90) {
+            // Daily
+            return [
                 'column' => 'date',
-                'start' => now()->subMonths(5)->startOfMonth(),
-                'end' => now()->endOfMonth(),
-                'points' => collect(range(5, 0))->map(fn ($month) => now()->subMonths($month)),
+                'start' => $start,
+                'end' => $end,
+                'points' => collect(range(0, $diffDays))->map(fn ($day) => $start->copy()->addDays($day)),
+                'expr' => $isSqlite ? "strftime('%Y-%m-%d', date)" : "DATE_FORMAT(date, '%Y-%m-%d')",
+                'key' => fn (Carbon $point) => $point->format('Y-m-d'),
+                'label' => fn (Carbon $point) => $point->format('d M'),
+            ];
+        } else {
+            // Monthly
+            $diffMonths = $start->diffInMonths($end);
+
+            return [
+                'column' => 'date',
+                'start' => $start->copy()->startOfMonth(),
+                'end' => $end->copy()->endOfMonth(),
+                'points' => collect(range(0, $diffMonths))->map(fn ($month) => $start->copy()->addMonths($month)->startOfMonth()),
                 'expr' => $isSqlite ? "strftime('%Y-%m', date)" : "DATE_FORMAT(date, '%Y-%m')",
                 'key' => fn (Carbon $point) => $point->format('Y-m'),
                 'label' => fn (Carbon $point) => $point->format('M Y'),
-            ],
-        };
-    }
-
-    /**
-     * @return array{column: string, start: Carbon, end: Carbon, points: Collection<int, Carbon>, expr: string, key: callable, label: callable}
-     */
-    private function dailyConfig(int $daysAgo, bool $isSqlite): array
-    {
-        return [
-            'column' => 'date',
-            'start' => now()->subDays($daysAgo)->startOfDay(),
-            'end' => now()->endOfDay(),
-            'points' => collect(range($daysAgo, 0))->map(fn ($day) => now()->subDays($day)),
-            'expr' => $isSqlite ? "strftime('%Y-%m-%d', date)" : "DATE_FORMAT(date, '%Y-%m-%d')",
-            'key' => fn (Carbon $point) => $point->format('Y-m-d'),
-            'label' => fn (Carbon $point) => $point->format('d M'),
-        ];
+            ];
+        }
     }
 }

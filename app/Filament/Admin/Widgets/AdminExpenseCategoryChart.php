@@ -2,13 +2,14 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Traits\HasCustomPeriodFilters;
 use App\Models\Expense;
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 
 class AdminExpenseCategoryChart extends ChartWidget
 {
-    use InteractsWithPageFilters;
+    use HasCustomPeriodFilters, InteractsWithPageFilters;
 
     protected ?string $heading = 'Pengeluaran per Kategori';
 

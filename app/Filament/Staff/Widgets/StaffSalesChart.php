@@ -2,6 +2,7 @@
 
 namespace App\Filament\Staff\Widgets;
 
+use App\Filament\Traits\HasCustomPeriodFilters;
 use App\Models\Sale;
 use App\Models\StockEntry;
 use Carbon\Carbon;
@@ -12,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 class StaffSalesChart extends ChartWidget
 {
-    use InteractsWithPageFilters;
+    use HasCustomPeriodFilters, InteractsWithPageFilters;
 
     protected ?string $heading = 'Tren Penjualan';
 

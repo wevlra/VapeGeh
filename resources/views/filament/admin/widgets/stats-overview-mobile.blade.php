@@ -15,6 +15,18 @@
                     {{ number_format($stockOut, 0, ',', '.') }}
                 </dd>
             </div>
+                        <div class="rounded-md bg-gray-50 p-2.5 dark:bg-gray-900/40">
+                <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Pembelian</dt>
+                <dd class="mt-0.5 text-base font-semibold text-warning-600 dark:text-warning-400">
+                    Rp {{ number_format($totalPurchase, 0, ',', '.') }}
+                </dd>
+            </div>
+            <div class="rounded-md bg-gray-50 p-2.5 dark:bg-gray-900/40">
+                <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Pengeluaran</dt>
+                <dd class="mt-0.5 text-base font-semibold text-danger-600 dark:text-danger-400">
+                    Rp {{ number_format($opExpense, 0, ',', '.') }}
+                </dd>
+            </div>
             <div class="rounded-md bg-gray-50 p-2.5 dark:bg-gray-900/40">
                 <dt class="text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">Pendapatan</dt>
                 <dd class="mt-0.5 text-base font-semibold text-success-600 dark:text-success-400">

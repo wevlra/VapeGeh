@@ -2,12 +2,12 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Traits\HasCustomPeriodFilters;
 use App\Models\Expense;
 use App\Models\Income;
 use App\Models\Location;
 use App\Models\Stock;
 use App\Models\StockMovement;
-use Carbon\Carbon;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -15,39 +15,15 @@ use Illuminate\Support\Facades\DB;
 
 class AdminStatsOverview extends StatsOverviewWidget
 {
-    use InteractsWithPageFilters;
+    use HasCustomPeriodFilters, InteractsWithPageFilters;
 
     protected string $view = 'filament.admin.widgets.stats-overview';
-
-    protected function period(): string
-    {
-        return $this->pageFilters['period'] ?? 'all';
-    }
-
-    protected function periodStart(): ?Carbon
-    {
-        return match ($this->period()) {
-            'today' => now()->startOfDay(),
-            '7days' => now()->subDays(6)->startOfDay(),
-            '30days' => now()->subDays(29)->startOfDay(),
-            default => null,
-        };
-    }
-
-    protected function periodLabel(): string
-    {
-        return match ($this->period()) {
-            'today' => 'Hari ini',
-            '7days' => '7 hari terakhir',
-            '30days' => '30 hari terakhir',
-            default => 'Semua waktu',
-        };
-    }
 
     protected function getStats(): array
     {
         $period = $this->period();
         $start = $this->periodStart();
+        $end = $this->periodEnd();
 
         $stockMovIn = StockMovement::where('type', 'in');
         $stockMovOut = StockMovement::where('type', 'out');
@@ -60,6 +36,12 @@ class AdminStatsOverview extends StatsOverviewWidget
             $incomeQuery->where('date', '>=', $start->toDateString());
             $expenseQuery->where('date', '>=', $start->toDateString());
         }
+        if ($end) {
+            $stockMovIn->where('created_at', '<=', $end);
+            $stockMovOut->where('created_at', '<=', $end);
+            $incomeQuery->where('date', '<=', $end->toDateString());
+            $expenseQuery->where('date', '<=', $end->toDateString());
+        }
 
         $revenue = (float) $incomeQuery->sum('amount');
         $stockIn = (int) $stockMovIn->sum('quantity');
@@ -71,8 +53,15 @@ class AdminStatsOverview extends StatsOverviewWidget
         if ($start) {
             $cogsQuery->where('stock_movements.created_at', '>=', $start);
         }
+        if ($end) {
+            $cogsQuery->where('stock_movements.created_at', '<=', $end);
+        }
 
         $cogs = (float) $cogsQuery->sum(DB::raw('ABS(stock_movements.quantity) * products.purchase_price'));
+
+        $purchaseQuery = clone $expenseQuery;
+        $purchaseQuery->where('category', 'purchase');
+        $totalPurchase = (float) $purchaseQuery->sum('amount');
 
         $opExpenseQuery = clone $expenseQuery;
         $opExpenseQuery->where('category', '!=', 'purchase');
@@ -80,16 +69,20 @@ class AdminStatsOverview extends StatsOverviewWidget
 
         $profit = $revenue - $cogs - $operationalExpense;
 
-        $days = match ($period) {
-            'today' => 1,
-            '7days' => 7,
-            '30days' => 30,
-            default => 6,
-        };
+        if ($start && $end) {
+            $days = max(1, $start->diffInDays($end) + 1);
+            $chartStart = $start->copy();
+        } elseif ($start) {
+            $days = max(1, $start->diffInDays(now()) + 1);
+            $chartStart = $start->copy();
+        } else {
+            $days = 30; // 30 days for 'all'
+            $chartStart = now()->subDays(29)->startOfDay();
+        }
 
-        $chartStart = $start ?? now()->subMonths($days - 1)->startOfMonth();
+        $days = (int) $days;
 
-        $chartValues = collect(range($days - 1, 0))->map(function ($i) use ($chartStart) {
+        $chartValues = collect(range(0, $days - 1))->map(function ($i) use ($chartStart) {
             $day = $chartStart->copy()->addDays($i);
 
             return (int) Income::where('date', $day->toDateString())->sum('amount');
@@ -104,6 +97,12 @@ class AdminStatsOverview extends StatsOverviewWidget
             Stat::make('Untung', 'Rp '.number_format($profit, 0, ',', '.'))
                 ->description('Pendapatan - (Modal + Pengeluaran)')
                 ->color($profit >= 0 ? 'success' : 'danger'),
+            Stat::make('Total Pembelian', 'Rp '.number_format($totalPurchase, 0, ',', '.'))
+                ->description($this->periodLabel())
+                ->color('warning'),
+            Stat::make('Total Pengeluaran', 'Rp '.number_format($operationalExpense, 0, ',', '.'))
+                ->description($this->periodLabel())
+                ->color('danger'),
             Stat::make('Stok Masuk', number_format($stockIn, 0, ',', '.'))
                 ->description('Unit diterima')
                 ->color('success'),

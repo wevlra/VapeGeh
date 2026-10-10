@@ -2,17 +2,17 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Traits\HasCustomPeriodFilters;
 use App\Models\Expense;
 use App\Models\Income;
 use App\Models\StockMovement;
-use Carbon\Carbon;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\Widget;
 use Illuminate\Support\Facades\DB;
 
 class AdminStatsOverviewMobile extends Widget
 {
-    use InteractsWithPageFilters;
+    use HasCustomPeriodFilters, InteractsWithPageFilters;
 
     protected ?string $pollingInterval = '60s';
 
@@ -23,21 +23,6 @@ class AdminStatsOverviewMobile extends Widget
     public static function canView(): bool
     {
         return true;
-    }
-
-    protected function period(): string
-    {
-        return $this->pageFilters['period'] ?? 'all';
-    }
-
-    protected function periodStart(): ?Carbon
-    {
-        return match ($this->period()) {
-            'today' => now()->startOfDay(),
-            '7days' => now()->subDays(6)->startOfDay(),
-            '30days' => now()->subDays(29)->startOfDay(),
-            default => null,
-        };
     }
 
     protected function periodHeading(): string
@@ -53,18 +38,29 @@ class AdminStatsOverviewMobile extends Widget
     protected function getViewData(): array
     {
         $start = $this->periodStart();
+        $end = $this->periodEnd();
         $startDate = $start?->toDateString();
+        $endDate = $end?->toDateString();
 
         $stockMovIn = StockMovement::where('type', 'in');
         $stockMovOut = StockMovement::where('type', 'out');
         $incomeQuery = Income::query();
         $opExpenseQuery = Expense::where('category', '!=', 'purchase');
+        $purchaseQuery = Expense::where('category', 'purchase');
 
         if ($start) {
             $stockMovIn->where('created_at', '>=', $start);
             $stockMovOut->where('created_at', '>=', $start);
             $incomeQuery->where('date', '>=', $startDate);
             $opExpenseQuery->where('date', '>=', $startDate);
+            $purchaseQuery->where('date', '>=', $startDate);
+        }
+        if ($end) {
+            $stockMovIn->where('created_at', '<=', $end);
+            $stockMovOut->where('created_at', '<=', $end);
+            $incomeQuery->where('date', '<=', $endDate);
+            $opExpenseQuery->where('date', '<=', $endDate);
+            $purchaseQuery->where('date', '<=', $endDate);
         }
 
         $stockIn = (int) $stockMovIn->sum('quantity');
@@ -78,10 +74,14 @@ class AdminStatsOverviewMobile extends Widget
         if ($start) {
             $cogsQuery->where('stock_movements.created_at', '>=', $start);
         }
+        if ($end) {
+            $cogsQuery->where('stock_movements.created_at', '<=', $end);
+        }
 
         $cogs = (float) $cogsQuery->sum(DB::raw('ABS(stock_movements.quantity) * products.purchase_price'));
 
         $opExpense = (float) $opExpenseQuery->sum('amount');
+        $totalPurchase = (float) $purchaseQuery->sum('amount');
 
         $profit = $revenue - $cogs - $opExpense;
 
@@ -90,6 +90,8 @@ class AdminStatsOverviewMobile extends Widget
             'stockOut' => $stockOut,
             'revenue' => $revenue,
             'profit' => $profit,
+            'totalPurchase' => $totalPurchase,
+            'opExpense' => $opExpense,
             'periodHeading' => $this->periodHeading(),
         ];
     }

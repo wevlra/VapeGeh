@@ -2,16 +2,16 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Traits\HasCustomPeriodFilters;
 use App\Models\Sale;
 use App\Models\StockEntry;
-use Carbon\Carbon;
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Illuminate\Support\Facades\DB;
 
 class AdminPaymentMethodChart extends ChartWidget
 {
-    use InteractsWithPageFilters;
+    use HasCustomPeriodFilters, InteractsWithPageFilters;
 
     protected ?string $heading = 'Penjualan per Metode Bayar';
 
@@ -19,19 +19,10 @@ class AdminPaymentMethodChart extends ChartWidget
 
     protected static ?int $sort = 3;
 
-    protected function periodStart(): ?Carbon
-    {
-        return match ($this->pageFilters['period'] ?? 'all') {
-            'today' => now()->startOfDay(),
-            '7days' => now()->subDays(6)->startOfDay(),
-            '30days' => now()->subDays(29)->startOfDay(),
-            default => null,
-        };
-    }
-
     protected function getData(): array
     {
         $start = $this->periodStart();
+        $end = $this->periodEnd();
 
         $salesQuery = Sale::query();
         $stockOutQuery = StockEntry::where('type', 'out');
@@ -39,6 +30,10 @@ class AdminPaymentMethodChart extends ChartWidget
         if ($start) {
             $salesQuery->where('created_at', '>=', $start);
             $stockOutQuery->where('created_at', '>=', $start);
+        }
+        if ($end) {
+            $salesQuery->where('created_at', '<=', $end);
+            $stockOutQuery->where('created_at', '<=', $end);
         }
 
         $pmExpr = "COALESCE(NULLIF(payment_method, ''), 'other')";

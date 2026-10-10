@@ -2,15 +2,15 @@
 
 namespace App\Filament\Staff\Widgets;
 
+use App\Filament\Traits\HasCustomPeriodFilters;
 use App\Models\Sale;
-use Carbon\Carbon;
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Illuminate\Support\Facades\DB;
 
 class StaffPaymentMethodChart extends ChartWidget
 {
-    use InteractsWithPageFilters;
+    use HasCustomPeriodFilters, InteractsWithPageFilters;
 
     protected ?string $heading = 'Penjualan per Metode Bayar';
 
@@ -18,20 +18,11 @@ class StaffPaymentMethodChart extends ChartWidget
 
     protected static ?int $sort = 3;
 
-    protected function periodStart(): ?Carbon
-    {
-        return match ($this->pageFilters['period'] ?? 'all') {
-            'today' => now()->startOfDay(),
-            '7days' => now()->subDays(6)->startOfDay(),
-            '30days' => now()->subDays(29)->startOfDay(),
-            default => null,
-        };
-    }
-
     protected function getData(): array
     {
         $locationId = auth()->user()->location_id;
         $start = $this->periodStart();
+        $end = $this->periodEnd();
 
         $pmExpr = "COALESCE(NULLIF(payment_method, ''), 'other')";
 
@@ -39,6 +30,9 @@ class StaffPaymentMethodChart extends ChartWidget
 
         if ($start) {
             $salesQuery->where('created_at', '>=', $start);
+        }
+        if ($end) {
+            $salesQuery->where('created_at', '<=', $end);
         }
 
         $data = $salesQuery

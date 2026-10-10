@@ -2,33 +2,38 @@
 
 namespace App\Filament\Staff\Pages;
 
+use App\Filament\Traits\HasCustomPeriodFilters;
 use App\Models\Sale;
 use App\Models\StockEntry;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\DB;
-use Livewire\Attributes\Reactive;
 
 class SalesReportStats extends StatsOverviewWidget
 {
-    #[Reactive]
-    public ?string $period = 'all';
-
-    #[Reactive]
-    public ?string $periodStart = null;
+    use HasCustomPeriodFilters;
+    use InteractsWithPageFilters;
 
     protected static bool $isLazy = false;
 
     protected function getStats(): array
     {
+        $start = $this->periodStart();
+        $end = $this->periodEnd();
+
         $locationId = auth()->user()->location_id;
 
         $saleQuery = Sale::query()->where('location_id', $locationId);
         $stockOutQuery = StockEntry::where('stock_entries.type', 'out')->where('stock_entries.location_id', $locationId);
 
-        if ($this->periodStart) {
-            $saleQuery->where('created_at', '>=', $this->periodStart);
-            $stockOutQuery->where('stock_entries.created_at', '>=', $this->periodStart);
+        if ($start) {
+            $saleQuery->where('created_at', '>=', $start);
+            $stockOutQuery->where('stock_entries.created_at', '>=', $start);
+        }
+        if ($end) {
+            $saleQuery->where('created_at', '<=', $end);
+            $stockOutQuery->where('stock_entries.created_at', '<=', $end);
         }
 
         $totalSales = $saleQuery->count() + $stockOutQuery->count();
@@ -46,12 +51,7 @@ class SalesReportStats extends StatsOverviewWidget
 
         $totalRevenue = $posRevenue + $stockOutRevenue;
 
-        $periodLabel = match ($this->period) {
-            'today' => 'Hari Ini',
-            'week' => '7 Hari Terakhir',
-            'month' => '30 Hari Terakhir',
-            default => 'Semua Waktu',
-        };
+        $periodLabel = $this->periodLabel();
 
         return [
             Stat::make('Total Penjualan', number_format($totalSales))

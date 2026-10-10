@@ -4,10 +4,14 @@ namespace App\Filament\Admin\Pages;
 
 use App\Exports\SalesReportExport;
 use App\Filament\Concerns\HasExportActions;
+use App\Filament\Traits\HasCustomPeriodFilters;
 use App\Models\Location;
 use App\Models\Sale;
 use App\Models\StockEntry;
 use BackedEnum;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
@@ -16,16 +20,19 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
-use Livewire\Attributes\Url;
 use UnitEnum;
 use Wezlo\FilamentResponsiveTable\Concerns\HasResponsiveTable;
 use Wezlo\FilamentResponsiveTable\ResponsiveTableConfiguration;
 
 class SalesReport extends Page implements Tables\Contracts\HasTable
 {
+    use HasCustomPeriodFilters;
     use HasExportActions;
+    use HasFiltersForm, Tables\Concerns\InteractsWithTable {
+        HasFiltersForm::normalizeTableFilterValuesFromQueryString insteadof Tables\Concerns\InteractsWithTable;
+        HasFiltersForm::updatedFilters as traitUpdatedFilters;
+    }
     use HasResponsiveTable;
-    use Tables\Concerns\InteractsWithTable;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingCart;
 
@@ -34,14 +41,6 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
     protected static ?string $title = 'Laporan Penjualan';
 
     protected string $view = 'filament.admin.pages.sales-report';
-
-    #[Url]
-    public string $period = 'all';
-
-    public function updatedPeriod(): void
-    {
-        $this->resetTable();
-    }
 
     protected function getHeaderActions(): array
     {
@@ -67,6 +66,51 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
         return $config
             ->only(['location_name', 'total', 'payment_method'])
             ->cardTitle(fn ($record) => $record->reference ?: 'Stok Keluar');
+    }
+
+    public function filtersForm(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                Select::make('period')
+                    ->label('Periode')
+                    ->options([
+                        'all' => 'Semua waktu',
+                        'today' => 'Hari ini',
+                        '7days' => '7 hari terakhir',
+                        '30days' => '30 hari terakhir',
+                        '2months' => '2 Bulan terakhir',
+                        '3months' => '3 Bulan terakhir',
+                        'custom' => 'Kustom',
+                    ])
+                    ->default('today')
+                    ->native(false)
+                    ->columnSpanFull()
+                    ->live(),
+                DatePicker::make('start_date')
+                    ->label('Tanggal Mulai')
+                    ->visible(fn (callable $get) => $get('period') === 'custom')
+                    ->required(fn (callable $get) => $get('period') === 'custom')
+                    ->maxDate(now()),
+                DatePicker::make('end_date')
+                    ->label('Tanggal Akhir')
+                    ->visible(fn (callable $get) => $get('period') === 'custom')
+                    ->required(fn (callable $get) => $get('period') === 'custom')
+                    ->maxDate(now()),
+            ])->columns(3);
+    }
+
+    public function updatedFilters(): void
+    {
+        $this->traitUpdatedFilters();
+        $this->resetTable();
+    }
+
+    public function updated($name): void
+    {
+        if (str_starts_with($name, 'filters')) {
+            $this->resetTable();
+        }
     }
 
     public function table(Table $table): Table
@@ -115,8 +159,8 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
 
         return $table
             ->query($model->newQuery()->fromSub($union, 'combined')->when(
-                $this->period !== 'all',
-                fn ($query) => $query->where('created_at', '>=', $this->getPeriodStart()),
+                true,
+                fn ($query) => $this->applyPeriod($query, 'created_at'),
             ))
             ->columns([
                 TextColumn::make('source_type')
@@ -202,19 +246,6 @@ class SalesReport extends Page implements Tables\Contracts\HasTable
 
     public function getWidgetData(): array
     {
-        return [
-            'period' => $this->period,
-            'periodStart' => $this->getPeriodStart(),
-        ];
-    }
-
-    public function getPeriodStart(): ?string
-    {
-        return match ($this->period) {
-            'today' => now()->startOfDay()->toDateTimeString(),
-            'week' => now()->subDays(7)->startOfDay()->toDateTimeString(),
-            'month' => now()->subDays(30)->startOfDay()->toDateTimeString(),
-            default => null,
-        };
+        return ['pageFilters' => $this->filters ?? ['period' => 'all']];
     }
 }

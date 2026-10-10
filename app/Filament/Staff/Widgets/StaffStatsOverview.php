@@ -2,11 +2,11 @@
 
 namespace App\Filament\Staff\Widgets;
 
+use App\Filament\Traits\HasCustomPeriodFilters;
 use App\Models\Income;
 use App\Models\Sale;
 use App\Models\Stock;
 use App\Models\StockEntry;
-use Carbon\Carbon;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -14,38 +14,14 @@ use Illuminate\Support\Facades\DB;
 
 class StaffStatsOverview extends StatsOverviewWidget
 {
-    use InteractsWithPageFilters;
-
-    protected function period(): string
-    {
-        return $this->pageFilters['period'] ?? 'all';
-    }
-
-    protected function periodStart(): ?Carbon
-    {
-        return match ($this->period()) {
-            'today' => now()->startOfDay(),
-            '7days' => now()->subDays(6)->startOfDay(),
-            '30days' => now()->subDays(29)->startOfDay(),
-            default => null,
-        };
-    }
-
-    protected function periodLabel(): string
-    {
-        return match ($this->period()) {
-            'today' => 'Hari ini',
-            '7days' => '7 hari terakhir',
-            '30days' => '30 hari terakhir',
-            default => 'Semua waktu',
-        };
-    }
+    use HasCustomPeriodFilters, InteractsWithPageFilters;
 
     protected function getStats(): array
     {
         $period = $this->period();
         $locationId = auth()->user()->location_id;
         $start = $this->periodStart();
+        $end = $this->periodEnd();
 
         $saleQuery = Sale::where('sales.location_id', $locationId);
         $stockOutQuery = StockEntry::where('stock_entries.type', 'out')->where('stock_entries.location_id', $locationId);
@@ -55,6 +31,11 @@ class StaffStatsOverview extends StatsOverviewWidget
             $saleQuery->where('sales.created_at', '>=', $start);
             $stockOutQuery->where('stock_entries.created_at', '>=', $start);
             $incomeQuery->where('incomes.date', '>=', $start->toDateString());
+        }
+        if ($end) {
+            $saleQuery->where('sales.created_at', '<=', $end);
+            $stockOutQuery->where('stock_entries.created_at', '<=', $end);
+            $incomeQuery->where('incomes.date', '<=', $end->toDateString());
         }
 
         $totalSales = $saleQuery->count() + $stockOutQuery->count();
