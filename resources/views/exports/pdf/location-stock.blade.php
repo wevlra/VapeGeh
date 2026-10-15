@@ -6,7 +6,10 @@
             <tr>
                 <th>Produk</th>
                 <th>Kategori</th>
-                <th style="text-align: right;">Jumlah</th>
+                <th style="text-align: right;">Stok Sistem</th>
+                <th>+</th>
+                <th></th>
+                <th>-</th>
             </tr>
         </thead>
         <tbody>
