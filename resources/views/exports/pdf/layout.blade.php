@@ -10,13 +10,13 @@
         .title-container { text-align: right; }
         .title-container h1 { margin: 0; font-size: 20px; color: #1a1a2e; }
         .meta { display: flex; flex-direction: column; gap: 2px; font-size: 10px; margin-top: 8px; opacity: 0.8; text-align: right; }
-        table { width: 100%; border-collapse: collapse; margin-top: 16px; page-break-inside: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; page-break-inside: auto; border: 1px solid #d1d5db; }
         tr { page-break-inside: avoid; page-break-after: auto; }
-        th { background: #1a1a2e; color: white; padding: 8px 10px; text-align: left; font-size: 10px; }
-        td { padding: 7px 10px; border-bottom: 1px solid #e5e7eb; }
+        th { background: #1a1a2e; color: white; padding: 8px 10px; text-align: left; font-size: 10px; border: 1px solid #1a1a2e; }
+        td { padding: 7px 10px; border: 1px solid #e5e7eb; }
         tr:nth-child(even) td { background: #f9fafb; }
         .footer { margin-top: 30px; font-size: 9px; color: #6b7280; text-align: right; border-top: 1px solid #e5e7eb; padding-top: 10px; }
-        .total-row td { font-weight: bold; background: #f0f9ff !important; border-top: 2px solid #1a1a2e; }
+        .total-row td { font-weight: bold; background: #f0f9ff !important; border-top: 2px solid #1a1a2e; border: 1px solid #d1d5db; }
         .badge { padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: bold; }
         .badge-success { background: #dcfce7; color: #166534; }
         .badge-warning { background: #fef08a; color: #854d0e; }

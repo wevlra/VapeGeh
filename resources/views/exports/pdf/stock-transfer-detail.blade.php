@@ -38,7 +38,7 @@
                 <th>No</th>
                 <th>Produk</th>
                 <th style="text-align: center;">Jumlah</th>
-                <th style="text-align: right;">Harga Beli/th>
+                <th style="text-align: right;">Harga Beli</th>
                 <th style="text-align: right;">Subtotal</th>
             </tr>
         </thead>

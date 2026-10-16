@@ -23,7 +23,12 @@ class ViewLocation extends ViewRecord
     public function buildExportQuery()
     {
         return Stock::query()
-            ->where('location_id', $this->record->id)
+            ->where('stocks.location_id', $this->record->id)
+            ->join('products', 'stocks.product_id', '=', 'products.id')
+            ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
+            ->select('stocks.*')
+            ->orderByRaw('COALESCE(categories.name, "zzz") ASC')
+            ->orderBy('products.name', 'ASC')
             ->with(StockReportExport::getEagerLoads());
     }
 

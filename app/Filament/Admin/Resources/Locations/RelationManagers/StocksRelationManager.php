@@ -34,6 +34,11 @@ class StocksRelationManager extends RelationManager
                     ->label('Produk')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('product.category.name')
+                    ->label('Kategori')
+                    ->searchable()
+                    ->sortable()
+                    ->badge(),
                 TextColumn::make('qty')
                     ->label('Jumlah')
                     ->badge()
@@ -43,7 +48,6 @@ class StocksRelationManager extends RelationManager
                         default => 'success',
                     })
                     ->sortable(),
-
             ])
             ->defaultSort('product.name')
             ->recordActions([

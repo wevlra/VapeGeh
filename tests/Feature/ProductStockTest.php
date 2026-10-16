@@ -1,10 +1,16 @@
 <?php
 
+use App\Filament\Admin\Resources\Locations\Pages\ViewLocation;
+use App\Filament\Admin\Resources\Locations\RelationManagers\StocksRelationManager;
+use App\Models\Category;
 use App\Models\Location;
 use App\Models\Product;
 use App\Models\Stock;
+use App\Models\User;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -78,4 +84,57 @@ it('computes total asset per location and globally', function () {
     expect((float) $warehouse->total_asset)->toBe(500000.0)
         ->and((float) $store->total_asset)->toBe(240000.0)
         ->and(Location::getTotalAssetOfAll())->toBe(740000.0);
+});
+
+it('renders product category in location stocks relation manager', function () {
+    $admin = User::factory()->admin()->create();
+    $this->actingAs($admin);
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+    $category = Category::create(['name' => 'Liquid Freebase']);
+    $product = Product::factory()->create([
+        'name' => 'Oat Drips V1',
+        'category_id' => $category->id,
+    ]);
+    $location = Location::factory()->create();
+    $stock = Stock::factory()->create([
+        'product_id' => $product->id,
+        'location_id' => $location->id,
+        'qty' => 15,
+    ]);
+
+    Livewire::test(StocksRelationManager::class, [
+        'ownerRecord' => $location,
+        'pageClass' => ViewLocation::class,
+    ])
+        ->assertCanSeeTableRecords([$stock])
+        ->assertTableColumnExists('product.category.name')
+        ->assertSee('Liquid Freebase');
+});
+
+it('orders location stock export query by category name alphabetically', function () {
+    $location = Location::factory()->create();
+
+    $catZ = Category::create(['name' => 'Z Coil']);
+    $catA = Category::create(['name' => 'A Liquid']);
+    $catB = Category::create(['name' => 'B Device']);
+
+    $prodZ = Product::factory()->create(['name' => 'Z Product', 'category_id' => $catZ->id]);
+    $prodA = Product::factory()->create(['name' => 'A Product', 'category_id' => $catA->id]);
+    $prodB = Product::factory()->create(['name' => 'B Product', 'category_id' => $catB->id]);
+
+    $stockZ = Stock::factory()->create(['location_id' => $location->id, 'product_id' => $prodZ->id, 'qty' => 10]);
+    $stockA = Stock::factory()->create(['location_id' => $location->id, 'product_id' => $prodA->id, 'qty' => 20]);
+    $stockB = Stock::factory()->create(['location_id' => $location->id, 'product_id' => $prodB->id, 'qty' => 30]);
+
+    $viewLocation = new ViewLocation;
+    $viewLocation->record = $location;
+
+    $results = $viewLocation->buildExportQuery()->get();
+
+    expect($results->pluck('id')->all())->toBe([
+        $stockA->id,
+        $stockB->id,
+        $stockZ->id,
+    ]);
 });
