@@ -190,14 +190,12 @@ class StockTransferEdit extends Page implements HasForms, HasTable
     {
         $locationId = $this->data['to_location_id'] ?? null;
         $location = $locationId ? Location::find($locationId) : null;
-        $priceType = $location ? $location->price_type : '1';
-        $priceField = $priceType === '2' ? 'price_2' : 'price_1';
 
         return [
             'product_id' => $record->id,
             'name' => $record->name,
             'qty' => $qty,
-            'price' => (float) $record->{$priceField}, // for selected-items-preview
+            'price' => $location ? $location->priceFor($record) : (float) $record->price_1, // for selected-items-preview
         ];
     }
 
@@ -222,9 +220,8 @@ class StockTransferEdit extends Page implements HasForms, HasTable
                                     return $record->price_1;
                                 }
                                 $location = Location::find($toLocationId);
-                                $priceType = $location ? $location->price_type : '1';
 
-                                return $priceType === '2' ? $record->price_2 : $record->price_1;
+                                return $location ? $location->priceFor($record) : (float) $record->price_1;
                             })
                             ->formatStateUsing(fn (float $state): string => 'Harga: Rp '.number_format($state, 0, ',', '.'))
                             ->color('gray'),

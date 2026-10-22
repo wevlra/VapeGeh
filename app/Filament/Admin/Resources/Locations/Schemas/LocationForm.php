@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Locations\Schemas;
 
+use App\Models\Location;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -34,11 +35,9 @@ class LocationForm
                 Select::make('price_type')
                     ->label('Tipe Harga')
                     ->required()
-                    ->options([
-                        '1' => 'Harga 1',
-                        '2' => 'Harga 2',
-                    ])
-                    ->default('1'),
+                    ->options(Location::PRICE_TYPE_OPTIONS)
+                    ->default('1')
+                    ->helperText('Produk yang belum memiliki harga pada tipe ini akan menggunakan Harga 1.'),
                 Select::make('status')
                     ->label('Status')
                     ->required()

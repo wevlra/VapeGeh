@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Locations\Schemas;
 
+use App\Models\Location;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -34,11 +35,7 @@ class LocationInfolist
                         TextEntry::make('price_type')
                             ->label('Tipe Harga')
                             ->badge()
-                            ->formatStateUsing(fn (string $state): string => match ($state) {
-                                '1' => 'Harga 1',
-                                '2' => 'Harga 2',
-                                default => "Harga {$state}",
-                            })
+                            ->formatStateUsing(fn (string $state): string => Location::PRICE_TYPE_OPTIONS[$state] ?? "Harga {$state}")
                             ->color('warning'),
                         TextEntry::make('address')
                             ->label('Alamat')

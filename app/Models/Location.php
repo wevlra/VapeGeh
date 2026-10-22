@@ -18,6 +18,15 @@ class Location extends Model
     use HasFactory, HasUuids;
 
     /**
+     * @var array<string, string>
+     */
+    public const PRICE_TYPE_OPTIONS = [
+        '1' => 'Harga 1',
+        '2' => 'Harga 2',
+        'reseller' => 'Harga Reseller',
+    ];
+
+    /**
      * @return HasMany<User, $this>
      */
     public function users(): HasMany
@@ -31,6 +40,41 @@ class Location extends Model
     public function stocks(): HasMany
     {
         return $this->hasMany(Stock::class);
+    }
+
+    /**
+     * Product price column used by this location.
+     */
+    public function priceField(): string
+    {
+        return match ($this->price_type) {
+            '2' => 'price_2',
+            'reseller' => 'reseller_price',
+            default => 'price_1',
+        };
+    }
+
+    /**
+     * Price column to use for a product, falling back to Harga 1 when the
+     * location's tier has no price set for that product.
+     */
+    public function priceFieldFor(Product $product): string
+    {
+        $priceField = $this->priceField();
+
+        if ($priceField !== 'price_1' && (float) ($product->{$priceField} ?? 0) <= 0) {
+            return 'price_1';
+        }
+
+        return $priceField;
+    }
+
+    /**
+     * Resolve the selling price for a product based on this location's price type.
+     */
+    public function priceFor(Product $product): float
+    {
+        return (float) ($product->{$this->priceFieldFor($product)} ?? 0);
     }
 
     /**

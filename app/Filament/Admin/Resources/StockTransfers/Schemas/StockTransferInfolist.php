@@ -85,8 +85,8 @@ class StockTransferInfolist
                                         }
                                         if ($record->relationLoaded('stockTransfer') || $record->stockTransfer()->exists()) {
                                             if ($record->stockTransfer && $record->stockTransfer->toLocation) {
-                                                $priceType = $record->stockTransfer->toLocation->price_type;
-                                                $targetPrice = $priceType === '2' ? ($record->product->price_2 ?? 0) : ($record->product->price_1 ?? 0);
+                                                $toLocation = $record->stockTransfer->toLocation;
+                                                $targetPrice = $record->product ? $toLocation->priceFor($record->product) : 0;
 
                                                 return $targetPrice;
                                             }
@@ -104,8 +104,8 @@ class StockTransferInfolist
                                         $targetPrice = $record->product->price_1 ?? 0;
                                         if ($record->relationLoaded('stockTransfer') || $record->stockTransfer()->exists()) {
                                             if ($record->stockTransfer && $record->stockTransfer->toLocation) {
-                                                $priceType = $record->stockTransfer->toLocation->price_type;
-                                                $targetPrice = $priceType === '2' ? ($record->product->price_2 ?? 0) : ($record->product->price_1 ?? 0);
+                                                $toLocation = $record->stockTransfer->toLocation;
+                                                $targetPrice = $record->product ? $toLocation->priceFor($record->product) : 0;
                                             }
                                         }
 

@@ -35,11 +35,10 @@
                 $locationId = $getLivewire()->data['to_location_id'] ?? null;
                 if ($locationId) {
                     $location = \App\Models\Location::find($locationId);
-                    $priceType = $location ? $location->price_type : '1';
 
                     $product = \App\Models\Product::find($item['product_id']);
                     if ($product) {
-                        $price = $priceType === '2' ? (float) $product->price_2 : (float) $product->price_1;
+                        $price = $location ? $location->priceFor($product) : (float) $product->price_1;
                     }
                 }
 

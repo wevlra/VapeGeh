@@ -39,11 +39,7 @@ class LocationsTable
                 TextColumn::make('price_type')
                     ->label('Tipe Harga')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        '1' => 'Harga 1',
-                        '2' => 'Harga 2',
-                        default => "Harga {$state}",
-                    })
+                    ->formatStateUsing(fn (string $state): string => Location::PRICE_TYPE_OPTIONS[$state] ?? "Harga {$state}")
                     ->color('warning'),
                 TextColumn::make('address')
                     ->label('Alamat')

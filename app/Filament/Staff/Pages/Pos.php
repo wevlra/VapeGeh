@@ -75,9 +75,8 @@ class Pos extends Page implements HasTable
                         ->label('Harga')
                         ->getStateUsing(function (Product $record) {
                             $location = auth()->user()?->location;
-                            $priceType = $location ? $location->price_type : '1';
 
-                            return $priceType === '2' ? (float) $record->price_2 : (float) $record->price_1;
+                            return $location ? $location->priceFor($record) : (float) $record->price_1;
                         })
                         ->formatStateUsing(fn ($state) => 'Rp '.number_format($state, 0, ',', '.'))
                         ->weight('bold'),
@@ -127,17 +126,15 @@ class Pos extends Page implements HasTable
             ->keyBy('product_id');
 
         $location = auth()->user()?->location;
-        $priceType = $location ? $location->price_type : '1';
-        $priceField = $priceType === '2' ? 'price_2' : 'price_1';
 
-        return collect($this->items)->map(function ($item) use ($products, $stocks, $priceField) {
+        return collect($this->items)->map(function ($item) use ($products, $stocks, $location) {
             $product = $products->get($item['product_id']);
             if (! $product) {
                 return null;
             }
             $item['name'] = $product->name;
             $stock = $stocks->get($item['product_id']);
-            $item['price'] = (float) $product->{$priceField};
+            $item['price'] = $location ? $location->priceFor($product) : (float) $product->price_1;
             $item['subtotal'] = $item['price'] * (int) $item['qty'];
 
             return $item;
@@ -326,10 +323,7 @@ class Pos extends Page implements HasTable
                     }
 
                     $location = auth()->user()?->location;
-                    $priceType = $location ? $location->price_type : '1';
-                    $priceField = $priceType === '2' ? 'price_2' : 'price_1';
-
-                    $price = (float) $product->{$priceField};
+                    $price = $location ? $location->priceFor($product) : (float) $product->price_1;
                     $subtotal = $price * $qty;
                     $total += $subtotal;
 

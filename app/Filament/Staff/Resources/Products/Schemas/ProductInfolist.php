@@ -25,14 +25,10 @@ class ProductInfolist
                             ->badge(),
                         TextEntry::make('price_info')
                             ->label('Harga')
-                            ->getStateUsing(function ($record) use ($locationId): float {
-                                $stock = $record->stocks->firstWhere('location_id', $locationId);
-
+                            ->getStateUsing(function ($record): float {
                                 $location = auth()->user()?->location;
-                                $priceType = $location ? $location->price_type : '1';
-                                $priceField = $priceType === '2' ? 'price_2' : 'price_1';
 
-                                return $stock && $stock->price > 0 ? (float) $stock->price : (float) $record->{$priceField};
+                                return $location ? $location->priceFor($record) : (float) $record->price_1;
                             })
                             ->formatStateUsing(fn (float $state): string => 'Rp '.number_format($state, 0, ',', '.'))
                             ->color('primary'),
